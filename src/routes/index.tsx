@@ -137,10 +137,10 @@ function Landing() {
             <Badge variant="secondary" className="mb-5">
               Integrações de pagamento: não configuradas
             </Badge>
-            <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] text-primary-foreground sm:text-6xl">
+            <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] text-hero-foreground sm:text-6xl">
               Investimentos e apostas, numa arquitetura feita para confiança.
             </h1>
-            <p className="mt-5 max-w-xl text-base text-primary-foreground/75 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base text-hero-muted sm:text-lg">
               Dois produtos independentes — SQs Investimentos e SQs Apostas — sobre uma Core
               Platform com auth, wallet, KYC, ledger, risco e backoffice.
             </p>
@@ -162,9 +162,9 @@ function Landing() {
                 ["Idiomas previstos", "PT · EN · FR"],
                 ["Ledger", "Imutável"],
               ].map(([k, v]) => (
-                <div key={k} className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-3">
-                  <dt className="text-xs text-primary-foreground/60">{k}</dt>
-                  <dd className="mt-1 font-display text-lg font-semibold text-primary-foreground">
+                <div key={k} className="rounded-xl border border-hero-foreground/15 bg-hero-foreground/5 p-3">
+                  <dt className="text-xs text-hero-muted">{k}</dt>
+                  <dd className="mt-1 font-display text-lg font-semibold text-hero-foreground">
                     {v}
                   </dd>
                 </div>
