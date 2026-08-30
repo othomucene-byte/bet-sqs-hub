@@ -10,11 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
+import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagamentosRoute = PagamentosRouteImport.update({
@@ -22,30 +34,50 @@ const PagamentosRoute = PagamentosRouteImport.update({
   path: '/pagamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
+  id: '/crash',
+  path: '/crash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
+  '/crash': typeof AuthenticatedCrashRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
+  '/crash': typeof AuthenticatedCrashRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
+  '/_authenticated/crash': typeof AuthenticatedCrashRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/pagamentos'
+  fullPaths: '/' | '/auth' | '/pagamentos' | '/crash'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/pagamentos'
-  id: '__root__' | '/' | '/pagamentos'
+  to: '/' | '/auth' | '/pagamentos' | '/crash'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/pagamentos'
+    | '/_authenticated/crash'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   PagamentosRoute: typeof PagamentosRoute
 }
 
@@ -58,6 +90,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pagamentos': {
       id: '/pagamentos'
       path: '/pagamentos'
@@ -65,11 +111,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/crash': {
+      id: '/_authenticated/crash'
+      path: '/crash'
+      fullPath: '/crash'
+      preLoaderRoute: typeof AuthenticatedCrashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCrashRoute: AuthenticatedCrashRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   PagamentosRoute: PagamentosRoute,
 }
 export const routeTree = rootRouteImport
