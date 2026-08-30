@@ -58,7 +58,7 @@ export const placeBet = createServerFn({ method: "POST" })
       _user_id: context.userId,
       _round_id: data.roundId,
       _amount: data.amount,
-      _auto_cashout: data.autoCashout ?? undefined,
+      ...(data.autoCashout ? { _auto_cashout: data.autoCashout } : {}),
     });
 
     if (error) return { ok: false as const, error: error.message };
