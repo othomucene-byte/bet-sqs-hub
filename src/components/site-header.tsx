@@ -5,12 +5,11 @@ import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
-  { href: "#produtos", label: "Produtos" },
-  { href: "#como-funciona", label: "Como funciona" },
-  { href: "#seguranca", label: "Segurança" },
-  { href: "#empresas", label: "Empresas" },
+  { href: "/#produtos", label: "Produtos" },
+  { href: "/crash", label: "Crash" },
   { href: "/pagamentos", label: "Pagamentos" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#seguranca", label: "Segurança" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function SiteHeader() {
@@ -36,10 +35,10 @@ export function SiteHeader() {
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
           <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-            <a href="#conta">Entrar</a>
+            <a href="/auth">Entrar</a>
           </Button>
           <Button size="sm" className="hidden sm:inline-flex" asChild>
-            <a href="#conta">Criar conta</a>
+            <a href="/auth">Criar conta</a>
           </Button>
           <Button
             variant="ghost"
@@ -69,10 +68,10 @@ export function SiteHeader() {
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" asChild>
-              <a href="#conta">Entrar</a>
+              <a href="/auth">Entrar</a>
             </Button>
             <Button size="sm" asChild>
-              <a href="#conta">Criar conta</a>
+              <a href="/auth">Criar conta</a>
             </Button>
           </div>
         </div>
