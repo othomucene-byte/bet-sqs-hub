@@ -35,10 +35,10 @@ export function SiteHeader() {
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
           <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-            <a href="#conta">Entrar</a>
+            <a href="/auth">Entrar</a>
           </Button>
           <Button size="sm" className="hidden sm:inline-flex" asChild>
-            <a href="#conta">Criar conta</a>
+            <a href="/auth">Criar conta</a>
           </Button>
           <Button
             variant="ghost"
@@ -68,10 +68,10 @@ export function SiteHeader() {
           </nav>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" asChild>
-              <a href="#conta">Entrar</a>
+              <a href="/auth">Entrar</a>
             </Button>
             <Button size="sm" asChild>
-              <a href="#conta">Criar conta</a>
+              <a href="/auth">Criar conta</a>
             </Button>
           </div>
         </div>
