@@ -29,6 +29,10 @@ import {
   type NetshopMethod,
   type PaymentDirection,
 } from "@/lib/payments/netshop";
+import logoCard from "@/assets/logo-card.png.asset.json";
+import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
+import logoEmola from "@/assets/logo-emola.png.asset.json";
+import logoMkesh from "@/assets/logo-mkesh.png.asset.json";
 
 const TITLE = "Pagamentos Netshop — BETFCOM SQs";
 const DESCRIPTION =
@@ -54,15 +58,34 @@ const kindIcon = {
   bank_transfer: Landmark,
 } as const;
 
+/** Logos oficiais dos métodos (recortes das marcas enviadas pelo utilizador). */
+const methodLogo: Partial<Record<NetshopMethod["id"], string>> = {
+  mpesa: logoMpesa.url,
+  emola: logoEmola.url,
+  mkesh: logoMkesh.url,
+  card: logoCard.url,
+};
+
 function MethodCard({ method }: { method: NetshopMethod }) {
   const Icon = kindIcon[method.kind];
+  const logo = methodLogo[method.id];
   return (
     <Card className="card-elevated">
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-            <Icon className="size-5 text-primary" />
-          </div>
+          {logo ? (
+            <img
+              src={logo}
+              alt={`Logótipo ${method.name}`}
+              width={40}
+              height={40}
+              className="size-10 rounded-xl object-contain"
+            />
+          ) : (
+            <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+              <Icon className="size-5 text-primary" />
+            </div>
+          )}
           <Badge variant="outline">{NETSHOP_STATUS_LABEL[NETSHOP_STATUS]}</Badge>
         </div>
         <CardTitle className="text-base">{method.name}</CardTitle>
