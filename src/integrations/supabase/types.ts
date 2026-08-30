@@ -321,6 +321,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      refund_round: { Args: { _round_id: string }; Returns: number }
       round_reveal: {
         Args: { _round_number: number }
         Returns: {
@@ -332,6 +333,7 @@ export type Database = {
           server_seed_hash: string
         }[]
       }
+      settle_round: { Args: { _round_id: string }; Returns: number }
       wallet_apply: {
         Args: {
           _amount: number
