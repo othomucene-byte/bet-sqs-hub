@@ -73,6 +73,24 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
         const failed = event.event.endsWith(".failed");
 
         if (failed) {
+          // Payout falhado: o valor reservado volta ao disponível (idempotente
+          // pela referência de reembolso).
+          if (intent.direction === "withdrawal" && intent.status === "pending") {
+            const { error: refundError } = await supabaseAdmin.rpc("wallet_apply", {
+              _wallet_id: intent.wallet_id,
+              _type: "refund",
+              _amount: Number(intent.amount),
+              _reference: `netshop:${event.reference}:refund`,
+              _provider: "netshop",
+              _provider_transaction_id: event.transaction_id,
+              _metadata: { event: event.event },
+            });
+            if (refundError) {
+              console.error("netshop webhook refund error", refundError.message);
+              return Response.json({ error: "ledger_error" }, { status: 500 });
+            }
+          }
+
           await supabaseAdmin
             .from("payment_intents")
             .update({ status: "failed", provider_transaction_id: event.transaction_id })
