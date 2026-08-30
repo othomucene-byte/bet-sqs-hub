@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_bets: {
+        Row: {
+          amount: number
+          auto_cashout: number | null
+          cashed_out_at: string | null
+          cashout_multiplier: number | null
+          id: string
+          payout: number | null
+          placed_at: string
+          round_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          auto_cashout?: number | null
+          cashed_out_at?: string | null
+          cashout_multiplier?: number | null
+          id?: string
+          payout?: number | null
+          placed_at?: string
+          round_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          auto_cashout?: number | null
+          cashed_out_at?: string | null
+          cashout_multiplier?: number | null
+          id?: string
+          payout?: number | null
+          placed_at?: string
+          round_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_bets_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "game_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_rounds: {
+        Row: {
+          betting_closed_at: string | null
+          betting_started_at: string | null
+          client_seed: string
+          crash_multiplier: number | null
+          crashed_at: string | null
+          created_at: string
+          house_edge: number
+          id: string
+          nonce: number
+          round_number: number
+          server_seed: string | null
+          server_seed_hash: string
+          settled_at: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          betting_closed_at?: string | null
+          betting_started_at?: string | null
+          client_seed: string
+          crash_multiplier?: number | null
+          crashed_at?: string | null
+          created_at?: string
+          house_edge?: number
+          id?: string
+          nonce: number
+          round_number?: never
+          server_seed?: string | null
+          server_seed_hash: string
+          settled_at?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          betting_closed_at?: string | null
+          betting_started_at?: string | null
+          client_seed?: string
+          crash_multiplier?: number | null
+          crashed_at?: string | null
+          created_at?: string
+          house_edge?: number
+          id?: string
+          nonce?: number
+          round_number?: never
+          server_seed?: string | null
+          server_seed_hash?: string
+          settled_at?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -153,12 +254,83 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cashout_bet: {
+        Args: { _bet_id: string; _user_id: string }
+        Returns: {
+          amount: number
+          auto_cashout: number | null
+          cashed_out_at: string | null
+          cashout_multiplier: number | null
+          id: string
+          payout: number | null
+          placed_at: string
+          round_id: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_bets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      crash_multiplier_at: {
+        Args: { _at?: string; _started_at: string }
+        Returns: number
+      }
+      crash_result: {
+        Args: {
+          _client_seed: string
+          _house_edge?: number
+          _nonce: number
+          _server_seed: string
+        }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      place_bet: {
+        Args: {
+          _amount: number
+          _auto_cashout?: number
+          _round_id: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          auto_cashout: number | null
+          cashed_out_at: string | null
+          cashout_multiplier: number | null
+          id: string
+          payout: number | null
+          placed_at: string
+          round_id: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "game_bets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      round_reveal: {
+        Args: { _round_number: number }
+        Returns: {
+          client_seed: string
+          crash_multiplier: number
+          nonce: number
+          round_number: number
+          server_seed: string
+          server_seed_hash: string
+        }[]
       }
       wallet_apply: {
         Args: {
