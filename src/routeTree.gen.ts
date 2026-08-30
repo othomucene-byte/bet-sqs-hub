@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
+import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,18 +40,26 @@ const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
   path: '/crash',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWebhooksNetshopRoute =
+  ApiPublicWebhooksNetshopRouteImport.update({
+    id: '/api/public/webhooks/netshop',
+    path: '/api/public/webhooks/netshop',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +68,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/pagamentos': typeof PagamentosRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
+  '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/pagamentos' | '/crash'
+  fullPaths:
+    '/' | '/auth' | '/pagamentos' | '/crash' | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/pagamentos' | '/crash'
+  to: '/' | '/auth' | '/pagamentos' | '/crash' | '/api/public/webhooks/netshop'
   id:
     | '__root__'
     | '/'
@@ -72,6 +83,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pagamentos'
     | '/_authenticated/crash'
+    | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -79,6 +91,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PagamentosRoute: typeof PagamentosRoute
+  ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -118,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrashRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/netshop': {
+      id: '/api/public/webhooks/netshop'
+      path: '/api/public/webhooks/netshop'
+      fullPath: '/api/public/webhooks/netshop'
+      preLoaderRoute: typeof ApiPublicWebhooksNetshopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -137,6 +157,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PagamentosRoute: PagamentosRoute,
+  ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
