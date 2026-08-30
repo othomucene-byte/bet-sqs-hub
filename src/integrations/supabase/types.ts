@@ -115,6 +115,68 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          direction: string
+          id: string
+          metadata: Json
+          method: string
+          payer_identifier: string | null
+          provider: string
+          provider_transaction_id: string | null
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          direction: string
+          id?: string
+          metadata?: Json
+          method: string
+          payer_identifier?: string | null
+          provider?: string
+          provider_transaction_id?: string | null
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          direction?: string
+          id?: string
+          metadata?: Json
+          method?: string
+          payer_identifier?: string | null
+          provider?: string
+          provider_transaction_id?: string | null
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
