@@ -100,7 +100,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
     // até o payout ser confirmado pelo provedor.
     const { error: holdError } = await supabaseAdmin.rpc("wallet_apply", {
       _wallet_id: wallet.id,
-      _type: "withdrawal_hold",
+      _type: "withdrawal",
       _amount: -data.amount,
       _reference: `netshop:${reference}:hold`,
       _provider: "netshop",
