@@ -81,21 +81,23 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
           return Response.json({ ok: true });
         }
 
-        // Depósito credita; payout confirma o débito já reservado.
-        const isDeposit = intent.direction === "deposit";
-        const { error } = await supabaseAdmin.rpc("wallet_apply", {
-          _wallet_id: intent.wallet_id,
-          _type: isDeposit ? "deposit" : "withdrawal_settled",
-          _amount: isDeposit ? Number(intent.amount) : 0,
-          _reference: `netshop:${event.reference}`,
-          _provider: "netshop",
-          _provider_transaction_id: event.transaction_id,
-          _metadata: { method: event.method ?? null, event: event.event },
-        });
+        // O depósito credita agora; no levantamento o débito já foi lançado na
+        // reserva, pelo que a confirmação só fecha a intenção.
+        if (intent.direction === "deposit") {
+          const { error } = await supabaseAdmin.rpc("wallet_apply", {
+            _wallet_id: intent.wallet_id,
+            _type: "deposit",
+            _amount: Number(intent.amount),
+            _reference: `netshop:${event.reference}`,
+            _provider: "netshop",
+            _provider_transaction_id: event.transaction_id,
+            _metadata: { method: event.method ?? null, event: event.event },
+          });
 
-        if (error) {
-          console.error("netshop webhook ledger error", error.message);
-          return Response.json({ error: "ledger_error" }, { status: 500 });
+          if (error) {
+            console.error("netshop webhook ledger error", error.message);
+            return Response.json({ error: "ledger_error" }, { status: 500 });
+          }
         }
 
         await supabaseAdmin
