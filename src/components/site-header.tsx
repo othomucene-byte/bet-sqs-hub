@@ -5,12 +5,11 @@ import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
-  { href: "#produtos", label: "Produtos" },
-  { href: "#como-funciona", label: "Como funciona" },
-  { href: "#seguranca", label: "Segurança" },
-  { href: "#empresas", label: "Empresas" },
+  { href: "/#produtos", label: "Produtos" },
+  { href: "/crash", label: "Crash" },
   { href: "/pagamentos", label: "Pagamentos" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#seguranca", label: "Segurança" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function SiteHeader() {
