@@ -8,7 +8,6 @@ import {
   ArrowUpFromLine,
   CheckCircle2,
   CreditCard,
-  Landmark,
   Loader2,
   Lock,
   ShieldCheck,
@@ -28,6 +27,7 @@ import {
   createDepositIntent,
   getPaymentsStatus,
   requestWithdrawal,
+  syncPaymentIntent,
 } from "@/lib/payments/netshop.functions";
 import logoCard from "@/assets/logo-card.png.asset.json";
 import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
@@ -55,7 +55,6 @@ export const Route = createFileRoute("/pagamentos")({
 const kindIcon = {
   mobile_money: Smartphone,
   card: CreditCard,
-  bank_transfer: Landmark,
 } as const;
 
 /** Logos oficiais dos métodos (recortes das marcas enviadas pelo utilizador). */
@@ -102,6 +101,7 @@ function MethodCard({ method, configured }: { method: NetshopMethod; configured:
           {method.directions.includes("withdrawal") && (
             <Badge variant="secondary">Levantamento</Badge>
           )}
+          <Badge variant="outline">mín. {method.minDeposit} MZN</Badge>
         </div>
       </CardContent>
     </Card>
@@ -114,7 +114,8 @@ const ERROR_LABEL: Record<string, string> = {
   insufficient_funds: "Saldo insuficiente na Betting Wallet.",
   identifier_required: "Indica o número/identificador do pagador.",
   invalid_identifier: "Identificador inválido para o método escolhido.",
-  method_unavailable: "Este método não permite levantamentos.",
+  method_unavailable: "Este método não permite levantamentos (payout B2C só M-Pesa e e-Mola).",
+  amount_below_minimum: "Valor abaixo do mínimo do método escolhido.",
   failed: "O gateway recusou a operação. Tenta novamente.",
 };
 
@@ -244,7 +245,10 @@ function TransactionForm({
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={!configured || busy}
               />
-              <p className="text-xs text-muted-foreground">Taxa para o cliente: 0 MZN.</p>
+              <p className="text-xs text-muted-foreground">
+                Taxa para o cliente: 0 MZN
+                {isDeposit && selected ? ` · mínimo ${selected.minDeposit} MZN` : ""}.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor={`${direction}-identifier`}>
