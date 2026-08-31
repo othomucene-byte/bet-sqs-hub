@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import {
-  AlertTriangle,
   ArrowDownToLine,
   ArrowUpFromLine,
+  CheckCircle2,
   CreditCard,
   Landmark,
+  Loader2,
   Lock,
   ShieldCheck,
   Smartphone,
@@ -17,18 +22,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NETSHOP_METHODS, type NetshopMethod, type PaymentDirection } from "@/lib/payments/netshop";
 import {
-  NETSHOP_API_BASE,
-  NETSHOP_METHODS,
-  NETSHOP_REQUIRED_SECRETS,
-  NETSHOP_STATUS,
-  NETSHOP_STATUS_LABEL,
-  isNetshopConfigured,
-  type NetshopMethod,
-  type PaymentDirection,
-} from "@/lib/payments/netshop";
+  createDepositIntent,
+  getPaymentsStatus,
+  requestWithdrawal,
+} from "@/lib/payments/netshop.functions";
 import logoCard from "@/assets/logo-card.png.asset.json";
 import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
 import logoEmola from "@/assets/logo-emola.png.asset.json";
@@ -36,7 +36,7 @@ import logoMkesh from "@/assets/logo-mkesh.png.asset.json";
 
 const TITLE = "Pagamentos Netshop — BETFCOM SQs";
 const DESCRIPTION =
-  "Integração de pagamentos Netshop para Moçambique: M-Pesa, e-Mola, mKesh, cartão e transferência bancária, com validação no servidor e ledger imutável.";
+  "Depósitos e levantamentos em MZN via Netshop: M-Pesa, e-Mola, mKesh, cartão Visa/Mastercard e transferência bancária, com validação no servidor e ledger imutável.";
 
 export const Route = createFileRoute("/pagamentos")({
   head: () => ({
@@ -66,7 +66,7 @@ const methodLogo: Partial<Record<NetshopMethod["id"], string>> = {
   card: logoCard.url,
 };
 
-function MethodCard({ method }: { method: NetshopMethod }) {
+function MethodCard({ method, configured }: { method: NetshopMethod; configured: boolean }) {
   const Icon = kindIcon[method.kind];
   const logo = methodLogo[method.id];
   return (
@@ -86,7 +86,9 @@ function MethodCard({ method }: { method: NetshopMethod }) {
               <Icon className="size-5 text-primary" />
             </div>
           )}
-          <Badge variant="outline">{NETSHOP_STATUS_LABEL[NETSHOP_STATUS]}</Badge>
+          <Badge variant={configured ? "default" : "outline"}>
+            {configured ? "Ativo" : "Não configurado"}
+          </Badge>
         </div>
         <CardTitle className="text-base">{method.name}</CardTitle>
         <CardDescription>
@@ -106,9 +108,78 @@ function MethodCard({ method }: { method: NetshopMethod }) {
   );
 }
 
-function TransactionForm({ direction }: { direction: PaymentDirection }) {
+const ERROR_LABEL: Record<string, string> = {
+  not_configured: "Integração não configurada no servidor.",
+  no_wallet: "Carteira de apostas indisponível.",
+  insufficient_funds: "Saldo insuficiente na Betting Wallet.",
+  identifier_required: "Indica o número/identificador do pagador.",
+  failed: "O gateway recusou a operação. Tenta novamente.",
+};
+
+function TransactionForm({
+  direction,
+  configured,
+}: {
+  direction: PaymentDirection;
+  configured: boolean;
+}) {
   const isDeposit = direction === "deposit";
   const methods = NETSHOP_METHODS.filter((m) => m.directions.includes(direction));
+  const [method, setMethod] = useState(methods[0]?.id ?? "mpesa");
+  const [amount, setAmount] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [reference, setReference] = useState<string | null>(null);
+
+  const callDeposit = useServerFn(createDepositIntent);
+  const callWithdrawal = useServerFn(requestWithdrawal);
+
+  const selected = methods.find((m) => m.id === method) ?? methods[0];
+  const needsIdentifier = direction === "withdrawal" || selected?.kind !== "card";
+
+  async function submit() {
+    const value = Number(amount.replace(",", "."));
+    if (!Number.isFinite(value) || value <= 0) {
+      toast.error("Indica um valor válido em MZN.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const payload = {
+        method: method as "mpesa" | "emola" | "mkesh" | "card" | "bank_transfer",
+        amount: value,
+        ...(identifier ? { payerIdentifier: identifier.trim() } : {}),
+      };
+      const result = isDeposit
+        ? await callDeposit({ data: payload })
+        : await callWithdrawal({ data: payload });
+
+      if (!result.ok) {
+        toast.error(ERROR_LABEL[result.error] ?? "Operação recusada.");
+        return;
+      }
+
+      setReference(result.reference);
+      if (result.checkoutUrl) {
+        toast.success("Checkout criado — a redirecionar para o gateway…");
+        window.location.assign(result.checkoutUrl);
+        return;
+      }
+      toast.success(
+        isDeposit
+          ? "Cobrança enviada. Confirma no telemóvel (USSD push)."
+          : "Levantamento em processamento. O valor fica reservado até confirmação.",
+      );
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("Unauthorized")) {
+        toast.error("Precisas de iniciar sessão para movimentar a carteira.");
+      } else {
+        toast.error("Falha de comunicação com o servidor.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -120,7 +191,7 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
           <CardDescription>
             {isDeposit
               ? "O valor só entra na carteira depois de o gateway confirmar o pagamento por webhook."
-              : "Levantamentos exigem KYC aprovado e são libertados após validação de risco no servidor."}
+              : "O valor fica reservado no ledger e só sai de vez após confirmação do payout."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -131,11 +202,10 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
               disabled
               className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <option>Carteira de Investimentos</option>
-              <option>Betting Wallet</option>
+              <option>Betting Wallet (MZN)</option>
             </select>
             <p className="text-xs text-muted-foreground">
-              As duas carteiras são contabilisticamente separadas — sem transferências implícitas.
+              As carteiras de apostas e de investimentos são contabilisticamente separadas.
             </p>
           </div>
 
@@ -143,11 +213,13 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
             <Label htmlFor={`${direction}-method`}>Método Netshop</Label>
             <select
               id={`${direction}-method`}
-              disabled
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              disabled={!configured || busy}
+              className="h-10 rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               {methods.map((m) => (
-                <option key={m.id}>
+                <option key={m.id} value={m.id}>
                   {m.name} — {m.provider}
                 </option>
               ))}
@@ -157,23 +229,62 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor={`${direction}-amount`}>Valor (MZN)</Label>
-              <Input id={`${direction}-amount`} placeholder="0,00" disabled />
+              <Input
+                id={`${direction}-amount`}
+                inputMode="decimal"
+                placeholder="0,00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={!configured || busy}
+              />
+              <p className="text-xs text-muted-foreground">Taxa para o cliente: 0 MZN.</p>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`${direction}-identifier`}>Identificador</Label>
-              <Input id={`${direction}-identifier`} placeholder="84xxxxxxx" disabled />
+              <Label htmlFor={`${direction}-identifier`}>
+                {needsIdentifier ? "Número / identificador" : "Identificador (opcional)"}
+              </Label>
+              <Input
+                id={`${direction}-identifier`}
+                placeholder={selected?.identifierHint ?? "84xxxxxxx"}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                disabled={!configured || busy}
+              />
             </div>
           </div>
 
-          <Button className="w-full" disabled>
-            <Lock className="mr-2 size-4" />
+          <Button
+            className="w-full"
+            disabled={!configured || busy}
+            onClick={() => void submit()}
+          >
+            {busy ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Lock className="mr-2 size-4" />
+            )}
             {isDeposit ? "Depositar" : "Solicitar levantamento"}
           </Button>
-          <p className="text-xs text-muted-foreground">
-            Formulário inativo: a integração Netshop está{" "}
-            <span className="font-medium text-foreground">não configurada</span> e nenhum movimento
-            pode ser criado sem backend.
-          </p>
+
+          {reference && (
+            <p className="flex items-start gap-2 rounded-lg bg-primary/5 p-3 text-xs text-muted-foreground">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span>
+                Referência <code className="rounded bg-secondary px-1 py-0.5">{reference}</code> —
+                o saldo só muda quando o webhook da Netshop confirmar a operação.
+              </span>
+            </p>
+          )}
+
+          {!configured && (
+            <p className="text-xs text-muted-foreground">
+              Formulário inativo: a integração Netshop está a ser ativada no servidor.{" "}
+              <Link to="/auth" className="font-medium text-primary underline-offset-4 hover:underline">
+                Inicia sessão
+              </Link>{" "}
+              para movimentar a carteira quando estiver ativa.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -187,17 +298,17 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
             {(isDeposit
               ? [
                   "Pedido de depósito criado no backend com valor, carteira e método.",
-                  "Movimento registado no ledger imutável como pending, sem alterar saldo.",
                   "Netshop inicia a cobrança (USSD push ou checkout alojado).",
                   "Webhook assinado confirma o pagamento; a assinatura HMAC é verificada.",
-                  "Ledger recebe a entrada settled e o saldo é recalculado no servidor.",
+                  "Ledger recebe a entrada com referência única (idempotente).",
+                  "O saldo é atualizado no servidor — nunca pelo browser.",
                 ]
               : [
-                  "Pedido de levantamento criado no backend após verificação de KYC.",
-                  "Risk/Fraud avalia limites, histórico e destino antes de aprovar.",
+                  "Pedido de levantamento validado no servidor (saldo suficiente).",
                   "Fundos reservados no ledger (hold) — saldo disponível reduzido.",
-                  "Netshop executa o payout para a carteira móvel ou conta bancária.",
-                  "Webhook confirma a execução e o hold converte-se em débito final.",
+                  "Netshop executa o payout para a carteira móvel do titular.",
+                  "Webhook confirma a execução e fecha a intenção.",
+                  "Em falha, o valor reservado é reembolsado automaticamente.",
                 ]
             ).map((step, i) => (
               <li key={step} className="flex gap-3">
@@ -215,7 +326,13 @@ function TransactionForm({ direction }: { direction: PaymentDirection }) {
 }
 
 function PagamentosPage() {
-  const configured = isNetshopConfigured();
+  const fetchStatus = useServerFn(getPaymentsStatus);
+  const { data: status } = useQuery({
+    queryKey: ["payments-status"],
+    queryFn: () => fetchStatus(),
+    staleTime: 60_000,
+  });
+  const configured = status?.configured ?? false;
 
   return (
     <>
@@ -223,71 +340,29 @@ function PagamentosPage() {
       <main className="mx-auto w-full max-w-6xl px-4 py-12">
         <header className="max-w-3xl space-y-4">
           <Badge variant="outline" className="gap-1.5">
-            <AlertTriangle className="size-3.5" />
-            Netshop: {NETSHOP_STATUS_LABEL[NETSHOP_STATUS]}
+            <ShieldCheck className="size-3.5" />
+            Netshop: {configured ? "Ativo (produção)" : "A configurar"}
           </Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             Gateway de pagamentos Netshop
           </h1>
           <p className="text-muted-foreground">
-            Arquitetura de depósitos e levantamentos em meticais para todos os métodos usados em
-            Moçambique. A interface está pronta, mas nenhuma transação pode ser criada enquanto o
-            backend e as credenciais não estiverem ativos.
+            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh, cartão
+            Visa/Mastercard e transferência bancária. Sem taxas para o cliente — o saldo só muda
+            após confirmação assinada pelo gateway.
           </p>
         </header>
-
-        {!configured && (
-          <Card className="mt-8 border-destructive/40 bg-destructive/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <AlertTriangle className="size-4 text-destructive" />
-                Integração não configurada
-              </CardTitle>
-              <CardDescription>
-                Sem backend ativo não existem saldos, referências nem confirmações reais. Nada nesta
-                página representa dinheiro movimentado.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <div>
-                <p className="font-medium">Falta ativar, por esta ordem:</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                  <li>Backend da plataforma (base de dados, auth, ledger e server functions).</li>
-                  <li>
-                    Secrets do gateway:{" "}
-                    <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">
-                      {NETSHOP_REQUIRED_SECRETS.join(", ")}
-                    </code>
-                  </li>
-                  <li>
-                    Endpoint de webhook assinado registado no painel Netshop:{" "}
-                    <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">
-                      /api/public/webhooks/netshop
-                    </code>
-                  </li>
-                </ul>
-              </div>
-              <Separator />
-              <p className="text-muted-foreground">
-                API base prevista:{" "}
-                <code className="rounded bg-secondary px-1.5 py-0.5 text-xs">
-                  {NETSHOP_API_BASE}
-                </code>
-              </p>
-            </CardContent>
-          </Card>
-        )}
 
         <section className="mt-12">
           <h2 className="font-heading text-2xl font-semibold tracking-tight">
             Métodos de pagamento
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Catálogo previsto para Moçambique, em meticais (MZN).
+            Métodos disponíveis para Moçambique, em meticais (MZN).
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {NETSHOP_METHODS.map((m) => (
-              <MethodCard key={m.id} method={m} />
+              <MethodCard key={m.id} method={m} configured={configured} />
             ))}
           </div>
         </section>
@@ -308,10 +383,10 @@ function PagamentosPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="deposit" className="mt-6">
-              <TransactionForm direction="deposit" />
+              <TransactionForm direction="deposit" configured={configured} />
             </TabsContent>
             <TabsContent value="withdrawal" className="mt-6">
-              <TransactionForm direction="withdrawal" />
+              <TransactionForm direction="withdrawal" configured={configured} />
             </TabsContent>
           </Tabs>
         </section>
@@ -324,11 +399,11 @@ function PagamentosPage() {
             {[
               {
                 title: "Credenciais só no servidor",
-                text: "API key e merchant ID nunca chegam ao browser; as chamadas partem de server functions.",
+                text: "Wallet ID e API key nunca chegam ao browser; as chamadas partem de server functions.",
               },
               {
                 title: "Webhook com assinatura verificada",
-                text: "Confirmações são aceites apenas com HMAC válido e comparação em tempo constante.",
+                text: "Confirmações são aceites apenas com HMAC-SHA256 válido e comparação em tempo constante.",
               },
               {
                 title: "Idempotência por referência",
