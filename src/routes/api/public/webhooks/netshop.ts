@@ -3,32 +3,53 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 
 /**
- * Webhook NetShop — única autoridade para confirmar pagamentos.
+ * Webhook NetShop — autoridade principal para confirmar pagamentos.
  *
  * Regras:
- *  - Assinatura HMAC-SHA256 sobre o corpo cru é verificada ANTES de qualquer
- *    leitura do payload.
- *  - Idempotência garantida pelo `reference` único no ledger (`wallet_apply`).
- *  - Sem `NETSHOP_WEBHOOK_SECRET` configurado a rota responde 503: nada é
- *    creditado com base em pressupostos.
+ *  - Assinatura HMAC-SHA256 sobre o corpo cru no header `X-NetShop-Signature`,
+ *    verificada ANTES de qualquer leitura do payload.
+ *  - Eventos oficiais: charge.paid | charge.failed | charge.pending |
+ *    payout.completed | payout.failed.
+ *  - Idempotência garantida pela referência única no ledger (`wallet_apply`).
+ *  - Sem `NETSHOP_WEBHOOK_SECRET` a rota responde 503: nada é creditado com
+ *    base em pressupostos.
  */
 
-const payloadSchema = z.object({
-  event: z.enum(["payment.succeeded", "payment.failed", "payout.succeeded", "payout.failed"]),
-  reference: z.string().min(6).max(120),
-  transaction_id: z.string().min(1).max(120),
-  amount: z.number().positive().max(10_000_000),
-  currency: z.literal("MZN"),
-  method: z.string().min(2).max(40).optional(),
-});
+const EVENTS = [
+  "charge.paid",
+  "charge.failed",
+  "charge.pending",
+  "payout.completed",
+  "payout.failed",
+] as const;
+
+const payloadSchema = z
+  .object({
+    event: z.enum(EVENTS).optional(),
+    type: z.enum(EVENTS).optional(),
+    data: z.record(z.string(), z.unknown()).optional(),
+    id: z.string().max(120).optional(),
+    reference: z.string().max(120).optional(),
+    amount: z.number().positive().max(10_000_000).optional(),
+    provider: z.record(z.string(), z.unknown()).optional(),
+    failed_reason: z.string().max(400).nullable().optional(),
+  })
+  .passthrough();
 
 function verifySignature(rawBody: string, signature: string | null, secret: string): boolean {
   if (!signature) return false;
   const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const received = Buffer.from(signature.replace(/^sha256=/, ""), "utf8");
+  const received = Buffer.from(signature.replace(/^sha256=/, "").trim(), "utf8");
   const expectedBuf = Buffer.from(expected, "utf8");
   if (received.length !== expectedBuf.length) return false;
   return timingSafeEqual(received, expectedBuf);
+}
+
+function pickString(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return null;
 }
 
 export const Route = createFileRoute("/api/public/webhooks/netshop")({
@@ -37,40 +58,67 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
       POST: async ({ request }) => {
         const secret = process.env["NETSHOP_WEBHOOK_SECRET"];
         if (!secret) {
-          return Response.json(
-            { error: "integration_not_configured" },
-            { status: 503 },
-          );
+          return Response.json({ error: "integration_not_configured" }, { status: 503 });
         }
 
         const rawBody = await request.text();
         const signature =
-          request.headers.get("x-netshop-signature") ?? request.headers.get("x-signature");
+          request.headers.get("x-netshop-signature") ??
+          request.headers.get("x-signature") ??
+          request.headers.get("x-webhook-signature");
 
         if (!verifySignature(rawBody, signature, secret)) {
           return Response.json({ error: "invalid_signature" }, { status: 401 });
         }
 
-        const parsed = payloadSchema.safeParse(JSON.parse(rawBody));
+        let body: unknown;
+        try {
+          body = JSON.parse(rawBody);
+        } catch {
+          return Response.json({ error: "invalid_json" }, { status: 400 });
+        }
+
+        const parsed = payloadSchema.safeParse(body);
         if (!parsed.success) {
           return Response.json({ error: "invalid_payload" }, { status: 400 });
         }
-        const event = parsed.data;
+
+        // A NetShop pode enviar o objeto na raiz ou dentro de `data`.
+        const envelope = parsed.data;
+        const inner = (envelope.data ?? {}) as Record<string, unknown>;
+        const eventName = envelope.event ?? envelope.type;
+        if (!eventName) return Response.json({ error: "missing_event" }, { status: 400 });
+
+        const reference = pickString(envelope.reference, inner["reference"]);
+        if (!reference) return Response.json({ error: "missing_reference" }, { status: 400 });
+
+        const providerObj = (envelope.provider ??
+          (inner["provider"] as Record<string, unknown> | undefined) ??
+          {}) as Record<string, unknown>;
+        const providerTransactionId = pickString(
+          providerObj["transactionID"],
+          providerObj["transaction_id"],
+          envelope.id,
+          inner["id"],
+        );
+
+        // Evento intermédio: nada muda no ledger.
+        if (eventName === "charge.pending") return Response.json({ ok: true });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        // A intenção de pagamento foi criada pelo backend com este `reference`.
         const { data: intent } = await supabaseAdmin
           .from("payment_intents")
-          .select("id, wallet_id, direction, amount, status")
-          .eq("reference", event.reference)
+          .select("id, wallet_id, direction, method, amount, status")
+          .eq("reference", reference)
           .maybeSingle();
 
         if (!intent) {
           return Response.json({ error: "unknown_reference" }, { status: 404 });
         }
 
-        const failed = event.event.endsWith(".failed");
+        const failed = eventName.endsWith(".failed");
+        const amount = Number(intent.amount);
 
         if (failed) {
           // Payout falhado: o valor reservado volta ao disponível (idempotente
@@ -79,13 +127,15 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
             const { error: refundError } = await supabaseAdmin.rpc("wallet_apply", {
               _wallet_id: intent.wallet_id,
               _type: "refund",
-              _amount: Number(intent.amount),
-              _reference: `netshop:${event.reference}:refund`,
+              _amount: amount,
+              _reference: `netshop:${reference}:refund`,
               _provider: "netshop",
-              _provider_transaction_id: event.transaction_id,
-              _metadata: { event: event.event },
+              ...(providerTransactionId
+                ? { _provider_transaction_id: providerTransactionId }
+                : {}),
+              _metadata: { event: eventName, reason: envelope.failed_reason ?? null },
             });
-            if (refundError) {
+            if (refundError && !/duplicate|unique/i.test(refundError.message)) {
               console.error("netshop webhook refund error", refundError.message);
               return Response.json({ error: "ledger_error" }, { status: 500 });
             }
@@ -93,26 +143,31 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
 
           await supabaseAdmin
             .from("payment_intents")
-            .update({ status: "failed", provider_transaction_id: event.transaction_id })
+            .update({
+              status: "failed",
+              ...(providerTransactionId
+                ? { provider_transaction_id: providerTransactionId }
+                : {}),
+            })
             .eq("id", intent.id)
             .eq("status", "pending");
           return Response.json({ ok: true });
         }
 
-        // O depósito credita agora; no levantamento o débito já foi lançado na
-        // reserva, pelo que a confirmação só fecha a intenção.
+        // Sucesso. O depósito credita agora; no levantamento o débito já foi
+        // lançado na reserva, pelo que a confirmação só fecha a intenção.
         if (intent.direction === "deposit") {
           const { error } = await supabaseAdmin.rpc("wallet_apply", {
             _wallet_id: intent.wallet_id,
             _type: "deposit",
-            _amount: Number(intent.amount),
-            _reference: `netshop:${event.reference}`,
+            _amount: amount,
+            _reference: `netshop:${reference}`,
             _provider: "netshop",
-            _provider_transaction_id: event.transaction_id,
-            _metadata: { method: event.method ?? null, event: event.event },
+            ...(providerTransactionId ? { _provider_transaction_id: providerTransactionId } : {}),
+            _metadata: { method: intent.method, event: eventName },
           });
 
-          if (error) {
+          if (error && !/duplicate|unique/i.test(error.message)) {
             console.error("netshop webhook ledger error", error.message);
             return Response.json({ error: "ledger_error" }, { status: 500 });
           }
@@ -120,7 +175,10 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
 
         await supabaseAdmin
           .from("payment_intents")
-          .update({ status: "succeeded", provider_transaction_id: event.transaction_id })
+          .update({
+            status: "succeeded",
+            ...(providerTransactionId ? { provider_transaction_id: providerTransactionId } : {}),
+          })
           .eq("id", intent.id);
 
         return Response.json({ ok: true });
