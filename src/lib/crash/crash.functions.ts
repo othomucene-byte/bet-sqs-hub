@@ -111,6 +111,61 @@ export const getMyBet = createServerFn({ method: "POST" })
     };
   });
 
+/**
+ * Estatísticas públicas da ronda e maiores ganhos recentes.
+ * Só leitura; os nomes de outros jogadores são mascarados.
+ */
+export const getRoundStats = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ roundId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { maskName } = await import("./stats.server");
+
+    const [{ data: roundBets }, { data: topBets }] = await Promise.all([
+      supabaseAdmin
+        .from("game_bets")
+        .select("id, amount, cashout_multiplier, payout, status, user_id")
+        .eq("round_id", data.roundId)
+        .order("amount", { ascending: false })
+        .limit(50),
+      supabaseAdmin
+        .from("game_bets")
+        .select("id, amount, cashout_multiplier, payout, user_id")
+        .eq("status", "cashed_out")
+        .order("payout", { ascending: false })
+        .limit(10),
+    ]);
+
+    const ids = new Set<string>();
+    for (const row of roundBets ?? []) ids.add(row.user_id as string);
+    for (const row of topBets ?? []) ids.add(row.user_id as string);
+
+    const { data: profiles } = ids.size
+      ? await supabaseAdmin.from("profiles").select("id, display_name").in("id", [...ids])
+      : { data: [] as { id: string; display_name: string | null }[] };
+
+    const names = new Map<string, string>();
+    for (const p of profiles ?? []) names.set(p.id as string, maskName(p.display_name));
+
+    const map = (row: Record<string, unknown>) => ({
+      id: row["id"] as string,
+      player: names.get(row["user_id"] as string) ?? "Jogador",
+      amount: Number(row["amount"]),
+      multiplier: row["cashout_multiplier"] === null ? null : Number(row["cashout_multiplier"]),
+      payout: row["payout"] === null ? null : Number(row["payout"]),
+      status: (row["status"] as string | undefined) ?? "cashed_out",
+    });
+
+    const bets = (roundBets ?? []).map(map);
+    return {
+      bets,
+      top: (topBets ?? []).map(map),
+      totalBets: bets.length,
+      totalStaked: bets.reduce((sum, b) => sum + b.amount, 0),
+      totalPaid: bets.reduce((sum, b) => sum + (b.payout ?? 0), 0),
+    };
+  });
+
 /** Dados de verificação de uma ronda terminada (provably fair). */
 export const revealRound = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ roundNumber: z.number().int() }).parse(input))
