@@ -388,15 +388,20 @@ function PagamentosPage() {
         <header className="max-w-3xl space-y-4">
           <Badge variant="outline" className="gap-1.5">
             <ShieldCheck className="size-3.5" />
-            Netshop: {configured ? "Ativo (produção)" : "A configurar"}
+            Netshop:{" "}
+            {configured
+              ? status?.gatewayOnline
+                ? "Ativo (produção, gateway online)"
+                : "Ativo (gateway sem resposta)"
+              : "A configurar"}
           </Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             Gateway de pagamentos Netshop
           </h1>
           <p className="text-muted-foreground">
-            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh, cartão
-            Visa/Mastercard e transferência bancária. Sem taxas para o cliente — o saldo só muda
-            após confirmação assinada pelo gateway.
+            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh e cartão
+            Visa/Mastercard. Sem taxas para o cliente — o saldo só muda após confirmação assinada
+            pelo gateway ou reconciliação direta com a NetShop.
           </p>
         </header>
 
