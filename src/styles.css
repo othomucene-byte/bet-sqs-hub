@@ -202,3 +202,17 @@
   box-shadow: var(--shadow-card);
 }
 
+
+@keyframes crash-pulse-soft {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@utility animate-pulse-soft {
+  animation: crash-pulse-soft 1.1s ease-in-out infinite;
+}
