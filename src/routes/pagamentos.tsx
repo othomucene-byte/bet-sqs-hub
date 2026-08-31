@@ -113,6 +113,8 @@ const ERROR_LABEL: Record<string, string> = {
   no_wallet: "Carteira de apostas indisponível.",
   insufficient_funds: "Saldo insuficiente na Betting Wallet.",
   identifier_required: "Indica o número/identificador do pagador.",
+  invalid_identifier: "Identificador inválido para o método escolhido.",
+  method_unavailable: "Este método não permite levantamentos.",
   failed: "O gateway recusou a operação. Tenta novamente.",
 };
 
