@@ -151,13 +151,15 @@ function TransactionForm({
         method: method as "mpesa" | "emola" | "mkesh" | "card" | "bank_transfer",
         amount: value,
         ...(identifier ? { payerIdentifier: identifier.trim() } : {}),
+        ...(isDeposit ? { returnUrl: `${window.location.origin}/pagamentos` } : {}),
       };
       const result = isDeposit
         ? await callDeposit({ data: payload })
         : await callWithdrawal({ data: payload });
 
       if (!result.ok) {
-        toast.error(ERROR_LABEL[result.error] ?? "Operação recusada.");
+        const base = ERROR_LABEL[result.error] ?? "Operação recusada.";
+        toast.error(result.message ? `${base} (${result.message})` : base);
         return;
       }
 
@@ -168,9 +170,12 @@ function TransactionForm({
         return;
       }
       toast.success(
-        isDeposit
-          ? "Cobrança enviada. Confirma no telemóvel (USSD push)."
-          : "Levantamento em processamento. O valor fica reservado até confirmação.",
+        result.instructions ??
+          (isDeposit
+            ? selected?.kind === "bank_transfer"
+              ? "Transferência registada. Usa a referência abaixo no descritivo."
+              : "Cobrança enviada. Confirma no telemóvel (USSD push)."
+            : "Levantamento em processamento. O valor fica reservado até confirmação."),
       );
     } catch (err) {
       if (err instanceof Error && err.message.includes("Unauthorized")) {
