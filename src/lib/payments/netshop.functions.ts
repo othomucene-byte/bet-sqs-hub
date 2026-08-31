@@ -15,15 +15,34 @@ import { z } from "zod";
  * plataforma e é registada à parte, nunca descontada ao cliente.
  */
 
+const METHODS = ["mpesa", "emola", "mkesh", "card", "bank_transfer"] as const;
+type Method = (typeof METHODS)[number];
+
 const intentInput = z.object({
-  method: z.enum(["mpesa", "emola", "mkesh", "card", "bank_transfer"]),
+  method: z.enum(METHODS),
   amount: z.number().positive().max(1_000_000),
   payerIdentifier: z.string().min(6).max(64).optional(),
+  returnUrl: z.string().url().max(300).optional(),
 });
 
+type IntentError =
+  | "not_configured"
+  | "no_wallet"
+  | "insufficient_funds"
+  | "identifier_required"
+  | "invalid_identifier"
+  | "method_unavailable"
+  | "failed";
+
 type IntentResult =
-  | { ok: false; error: "not_configured" | "no_wallet" | "insufficient_funds" | "identifier_required" | "failed" }
-  | { ok: true; reference: string; status: "pending"; checkoutUrl: string | null };
+  | { ok: false; error: IntentError; message?: string | null }
+  | {
+      ok: true;
+      reference: string;
+      status: "pending";
+      checkoutUrl: string | null;
+      instructions?: string | null;
+    };
 
 function isConfigured(): boolean {
   return Boolean(
@@ -35,6 +54,24 @@ function isConfigured(): boolean {
 
 function makeReference(direction: "deposit" | "withdrawal"): string {
   return `${direction === "deposit" ? "dep" : "wdr"}_${crypto.randomUUID().replace(/-/g, "")}`;
+}
+
+/** Prefixos MSISDN por operador em Moçambique + formato de conta bancária. */
+const IDENTIFIER_RULES: Record<Method, RegExp | null> = {
+  mpesa: /^(?:\+?258)?8[45]\d{7}$/,
+  emola: /^(?:\+?258)?8[67]\d{7}$/,
+  mkesh: /^(?:\+?258)?8[23]\d{7}$/,
+  bank_transfer: /^[A-Z0-9]{8,34}$/i,
+  card: null,
+};
+
+function normalizeIdentifier(method: Method, raw: string): string | null {
+  const value = raw.replace(/[\s-]/g, "");
+  const rule = IDENTIFIER_RULES[method];
+  if (!rule) return value;
+  if (!rule.test(value)) return null;
+  if (method === "bank_transfer") return value.toUpperCase();
+  return value.replace(/^\+?258/, "");
 }
 
 /** Estado da integração, lido do servidor — nunca presumido no browser. */
@@ -50,30 +87,28 @@ export const createDepositIntent = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<IntentResult> => {
     if (!isConfigured()) return { ok: false, error: "not_configured" };
 
-    // Mobile money exige o número do pagador; cartão usa checkout alojado.
-    if (data.method !== "card" && !data.payerIdentifier) {
-      return { ok: false, error: "identifier_required" };
+    // Mobile money e transferência exigem identificador; cartão usa checkout alojado.
+    let identifier: string | null = null;
+    if (data.method !== "card") {
+      if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
+      identifier = normalizeIdentifier(data.method, data.payerIdentifier);
+      if (!identifier) return { ok: false, error: "invalid_identifier" };
     }
 
-    const { data: wallet } = await context.supabase
-      .from("wallets")
-      .select("id")
-      .eq("user_id", context.userId)
-      .eq("kind", "betting")
-      .maybeSingle();
-    if (!wallet) return { ok: false, error: "no_wallet" };
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const walletId = await ensureBettingWallet(supabaseAdmin, context.userId);
+    if (!walletId) return { ok: false, error: "no_wallet" };
+
     const reference = makeReference("deposit");
 
     const { error } = await supabaseAdmin.from("payment_intents").insert({
       user_id: context.userId,
-      wallet_id: wallet.id,
+      wallet_id: walletId,
       direction: "deposit",
       method: data.method,
       amount: data.amount,
       reference,
-      ...(data.payerIdentifier ? { payer_identifier: data.payerIdentifier } : {}),
+      ...(identifier ? { payer_identifier: identifier } : {}),
     });
     if (error) {
       console.error("deposit intent error", error.message);
@@ -83,12 +118,16 @@ export const createDepositIntent = createServerFn({ method: "POST" })
     const netshop = await import("@/lib/payments/netshop.server");
     const charge =
       data.method === "card"
-        ? await netshop.initiateCardCheckout({ amount: data.amount, reference })
+        ? await netshop.initiateCardCheckout({
+            amount: data.amount,
+            reference,
+            ...(data.returnUrl ? { returnUrl: data.returnUrl } : {}),
+          })
         : await netshop.initiateCharge({
             method: data.method,
             amount: data.amount,
             reference,
-            payerIdentifier: data.payerIdentifier!,
+            payerIdentifier: identifier!,
           });
 
     if (!charge.ok) {
@@ -96,7 +135,7 @@ export const createDepositIntent = createServerFn({ method: "POST" })
         .from("payment_intents")
         .update({ status: "failed" })
         .eq("reference", reference);
-      return { ok: false, error: "failed" };
+      return { ok: false, error: "failed", message: charge.message };
     }
 
     if (charge.transactionId) {
@@ -106,7 +145,13 @@ export const createDepositIntent = createServerFn({ method: "POST" })
         .eq("reference", reference);
     }
 
-    return { ok: true, reference, status: "pending", checkoutUrl: charge.checkoutUrl };
+    return {
+      ok: true,
+      reference,
+      status: "pending",
+      checkoutUrl: charge.checkoutUrl,
+      instructions: charge.instructions,
+    };
   });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
@@ -114,7 +159,11 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
     if (!isConfigured()) return { ok: false, error: "not_configured" };
+    // Cartão não suporta payout: reembolso de cartão não é levantamento.
+    if (data.method === "card") return { ok: false, error: "method_unavailable" };
     if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
+    const identifier = normalizeIdentifier(data.method, data.payerIdentifier);
+    if (!identifier) return { ok: false, error: "invalid_identifier" };
 
     const { data: wallet } = await context.supabase
       .from("wallets")
@@ -149,7 +198,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       method: data.method,
       amount: data.amount,
       reference,
-      payer_identifier: data.payerIdentifier,
+      payer_identifier: identifier,
     });
     if (error) {
       console.error("withdrawal intent error", error.message);
@@ -162,7 +211,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       method: data.method,
       amount: data.amount,
       reference,
-      payeeIdentifier: data.payerIdentifier,
+      payeeIdentifier: identifier,
     });
 
     if (!payout.ok) {
@@ -171,7 +220,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
         .update({ status: "failed" })
         .eq("reference", reference);
       await refundHold(supabaseAdmin, wallet.id, data.amount, reference);
-      return { ok: false, error: "failed" };
+      return { ok: false, error: "failed", message: payout.message };
     }
 
     if (payout.transactionId) {
@@ -187,6 +236,31 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
 type AdminClient = Awaited<
   typeof import("@/integrations/supabase/client.server")
 >["supabaseAdmin"];
+
+/** Garante a carteira de apostas do utilizador antes de qualquer depósito. */
+async function ensureBettingWallet(
+  admin: AdminClient,
+  userId: string,
+): Promise<string | null> {
+  const { data: existing } = await admin
+    .from("wallets")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("kind", "betting")
+    .maybeSingle();
+  if (existing) return existing.id as string;
+
+  const { data: created, error } = await admin
+    .from("wallets")
+    .insert({ user_id: userId, kind: "betting" })
+    .select("id")
+    .maybeSingle();
+  if (error) {
+    console.error("wallet create error", error.message);
+    return null;
+  }
+  return (created?.id as string) ?? null;
+}
 
 /** Reembolsa a reserva quando a intenção falha antes de chegar à NetShop. */
 async function refundHold(
