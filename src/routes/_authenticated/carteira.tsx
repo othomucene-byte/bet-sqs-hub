@@ -349,6 +349,32 @@ function CarteiraPage() {
                 devolve apenas o capital.
               </p>
 
+              <div className="space-y-2 rounded-xl border border-border p-3">
+                <p className="text-xs font-medium">Transferir de Apostas → Investimentos</p>
+                <p className="text-xs text-muted-foreground">
+                  Disponível em apostas: {MZN.format(balances.data?.betting ?? 0)}
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    step="50"
+                    placeholder="Montante"
+                    value={transferAmount}
+                    onChange={(e) => setTransferAmount(e.target.value)}
+                  />
+                  <Button
+                    variant="secondary"
+                    disabled={
+                      !transferAmount || Number(transferAmount) <= 0 || transferMutation.isPending
+                    }
+                    onClick={() => transferMutation.mutate()}
+                  >
+                    Transferir
+                  </Button>
+                </div>
+              </div>
+
               <Button variant="outline" className="w-full" asChild>
                 <Link to="/pagamentos">Depositar na carteira</Link>
               </Button>
