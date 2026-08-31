@@ -26,7 +26,7 @@ type IntentResult =
 
 function isConfigured(): boolean {
   return Boolean(
-    process.env["NETSHOP_MERCHANT_ID"] &&
+    process.env["NETSHOP_WALLET_ID"] &&
       process.env["NETSHOP_API_KEY"] &&
       process.env["NETSHOP_WEBHOOK_SECRET"],
   );
