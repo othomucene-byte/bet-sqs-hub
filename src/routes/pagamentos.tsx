@@ -258,7 +258,7 @@ function TransactionForm({
             <select
               id={`${direction}-method`}
               value={method}
-              onChange={(e) => setMethod(e.target.value)}
+              onChange={(e) => setMethod(e.target.value as typeof method)}
               disabled={!configured || busy}
               className="h-10 rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
