@@ -1,27 +1,20 @@
 /**
- * Cliente HTTP da API NetShop (server-only).
+ * Cliente HTTP da API NetShop (server-only) — https://www.netshop.co.mz/api/v1
  *
- * Todas as chamadas usam a Wallet ID da conta Betfcom + API key; nada deste
- * módulo pode chegar ao browser. O `reference` gerado pelo nosso backend é
- * enviado em cada operação e devolvido pelo webhook — é a chave de
- * idempotência partilhada.
+ * Conforme a documentação oficial:
+ *  - Autenticação: `Authorization: Bearer <API key>` + `X-Wallet-ID`.
+ *  - Cobranças: POST /charges (card | mpesa | emola | mkesh).
+ *  - Payouts B2C: POST /payouts (mpesa | emola).
+ *  - Estado: GET /charges/{id|reference} e GET /payouts/{id|reference} —
+ *    fonte de verdade para reconciliação.
+ *  - Idempotência: header `Idempotency-Key` com a nossa referência única.
+ *
+ * Nada deste módulo pode chegar ao browser.
  */
 
 const API_BASE = "https://www.netshop.co.mz/api/v1";
 
-/** Canal do agregador por método — cada um tem endpoint e payload próprios. */
-const CHANNEL: Record<string, string> = {
-  mpesa: "mpesa",
-  emola: "emola",
-  mkesh: "mkesh",
-  card: "card",
-  bank_transfer: "bank",
-};
-
-type NetshopCredentials = {
-  walletId: string;
-  apiKey: string;
-};
+type NetshopCredentials = { walletId: string; apiKey: string };
 
 function credentials(): NetshopCredentials | null {
   const walletId = process.env["NETSHOP_WALLET_ID"];
@@ -30,147 +23,171 @@ function credentials(): NetshopCredentials | null {
   return { walletId, apiKey };
 }
 
-function providerMessage(data: Record<string, unknown>): string | null {
-  for (const key of ["message", "error", "detail", "status_description"]) {
-    const value = data[key];
-    if (typeof value === "string" && value.trim()) return value.slice(0, 200);
+function authHeaders(creds: NetshopCredentials): Record<string, string> {
+  return {
+    Accept: "application/json",
+    Authorization: `Bearer ${creds.apiKey}`,
+    "X-Wallet-ID": creds.walletId,
+  };
+}
+
+type Json = Record<string, unknown>;
+
+function asObject(value: unknown): Json | null {
+  return value && typeof value === "object" ? (value as Json) : null;
+}
+
+function str(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+/** Mensagem legível: failed_reason > responseDesc > error/message da API. */
+function providerMessage(data: Json): string | null {
+  const failed = str(data["failed_reason"]);
+  if (failed) return failed.slice(0, 200);
+  const provider = asObject(data["provider"]);
+  const desc = provider ? str(provider["responseDesc"]) : null;
+  if (desc) return desc.slice(0, 200);
+  for (const key of ["error", "message", "detail"]) {
+    const value = str(data[key]);
+    if (value) return value.slice(0, 200);
   }
   return null;
 }
 
-async function netshopRequest(
+/** Estado normalizado do lado da nossa plataforma. */
+export type NetshopStatus = "paid" | "pending" | "failed";
+
+function normalizeStatus(raw: string | null): NetshopStatus {
+  if (raw === "paid" || raw === "completed" || raw === "succeeded") return "paid";
+  if (raw === "failed" || raw === "rejected" || raw === "cancelled") return "failed";
+  return "pending";
+}
+
+export type NetshopOperation = {
+  id: string | null;
+  status: NetshopStatus;
+  providerTransactionId: string | null;
+  checkoutUrl: string | null;
+  message: string | null;
+};
+
+export type NetshopResult =
+  | ({ ok: true } & NetshopOperation)
+  | { ok: false; httpStatus: number; code: string | null; message: string | null };
+
+function parseOperation(data: Json): NetshopOperation {
+  const checkout = asObject(data["checkout"]);
+  const provider = asObject(data["provider"]);
+  return {
+    id: str(data["id"]),
+    status: normalizeStatus(str(data["status"])),
+    providerTransactionId: provider ? str(provider["transactionID"]) : null,
+    checkoutUrl: checkout ? (str(checkout["hosted_url"]) ?? str(checkout["url"])) : null,
+    message: providerMessage(data),
+  };
+}
+
+async function request(
+  method: "GET" | "POST",
   path: string,
-  body: Record<string, unknown>,
-): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
+  options: { body?: Json; idempotencyKey?: string } = {},
+): Promise<NetshopResult> {
   const creds = credentials();
-  if (!creds) throw new Error("netshop_not_configured");
+  if (!creds) return { ok: false, httpStatus: 0, code: "not_configured", message: null };
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      Authorization: `Bearer ${creds.apiKey}`,
-      "X-Wallet-Id": creds.walletId,
-      // Idempotência do lado do agregador: a mesma referência nunca cobra duas vezes.
-      "Idempotency-Key": String(body["reference"] ?? ""),
-    },
-    body: JSON.stringify({ wallet_id: creds.walletId, ...body }),
-  });
-
-  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok) {
-    console.error("netshop api error", path, res.status, JSON.stringify(data).slice(0, 300));
-  }
-  return { ok: res.ok, status: res.status, data };
-}
-
-export type ChargeResult =
-  | { ok: true; transactionId: string | null; checkoutUrl: string | null; instructions: string | null }
-  | { ok: false; message: string | null };
-
-function readString(data: Record<string, unknown>, ...keys: string[]): string | null {
-  for (const key of keys) {
-    const value = data[key];
-    if (typeof value === "string" && value.trim()) return value;
-  }
-  const nested = data["data"];
-  if (nested && typeof nested === "object") {
-    return readString(nested as Record<string, unknown>, ...keys);
-  }
-  return null;
-}
-
-/** Cobrança C2B (M-Pesa / e-Mola / mKesh) — USSD push no telemóvel do pagador. */
-export async function initiateCharge(input: {
-  method: string;
-  amount: number;
-  reference: string;
-  payerIdentifier: string;
-}): Promise<ChargeResult> {
   try {
-    const isBank = input.method === "bank_transfer";
-    const res = await netshopRequest("/payments/charge", {
-      method: CHANNEL[input.method] ?? input.method,
-      channel: CHANNEL[input.method] ?? input.method,
-      amount: input.amount,
-      currency: "MZN",
-      reference: input.reference,
-      customer: isBank
-        ? { account: input.payerIdentifier }
-        : { phone: input.payerIdentifier, msisdn: input.payerIdentifier },
+    const res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers: {
+        ...authHeaders(creds),
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
+      },
+      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
     });
-    if (!res.ok) return { ok: false, message: providerMessage(res.data) };
-    return {
-      ok: true,
-      transactionId: readString(res.data, "transaction_id", "transactionId", "id"),
-      checkoutUrl: readString(res.data, "checkout_url", "checkoutUrl", "redirect_url"),
-      instructions: readString(res.data, "instructions", "payment_instructions"),
-    };
+
+    const data = (await res.json().catch(() => ({}))) as Json;
+    if (!res.ok) {
+      console.error("netshop api error", method, path, res.status, JSON.stringify(data).slice(0, 300));
+      return {
+        ok: false,
+        httpStatus: res.status,
+        code: str(data["error"]),
+        message: providerMessage(data),
+      };
+    }
+    return { ok: true, ...parseOperation(data) };
   } catch (err) {
-    console.error("netshop charge failed", err instanceof Error ? err.message : err);
-    return { ok: false, message: null };
+    console.error("netshop request failed", path, err instanceof Error ? err.message : err);
+    return { ok: false, httpStatus: 0, code: "network_error", message: null };
   }
 }
 
-/** Checkout alojado para cartão VISA/Mastercard — devolve URL de redirecionamento. */
-export async function initiateCardCheckout(input: {
+/** Health-check da Base URL (`GET /ping`). */
+export async function ping(): Promise<{ ok: boolean; canonicalHost: boolean }> {
+  try {
+    const res = await fetch(`${API_BASE}/ping`, { headers: { Accept: "application/json" } });
+    const data = (await res.json().catch(() => ({}))) as Json;
+    return { ok: res.ok && data["ok"] === true, canonicalHost: data["canonical_host"] === true };
+  } catch {
+    return { ok: false, canonicalHost: false };
+  }
+}
+
+/**
+ * Cobrança (depósito). `card` devolve `checkout.hosted_url`; carteiras móveis
+ * confirmam por PIN/USSD no telemóvel do pagador.
+ */
+export async function createCharge(input: {
+  method: "card" | "mpesa" | "emola" | "mkesh";
   amount: number;
   reference: string;
+  msisdn?: string;
   returnUrl?: string;
-}): Promise<ChargeResult> {
-  try {
-    const res = await netshopRequest("/payments/checkout", {
-      method: "card",
-      channel: "card",
+  metadata?: Json;
+}): Promise<NetshopResult> {
+  return request("POST", "/charges", {
+    idempotencyKey: input.reference,
+    body: {
       amount: input.amount,
       currency: "MZN",
+      method: input.method,
       reference: input.reference,
-      ...(input.returnUrl
-        ? { return_url: input.returnUrl, callback_url: input.returnUrl }
-        : {}),
-    });
-    if (!res.ok) return { ok: false, message: providerMessage(res.data) };
-    return {
-      ok: true,
-      transactionId: readString(res.data, "transaction_id", "transactionId", "id"),
-      checkoutUrl: readString(res.data, "checkout_url", "checkoutUrl", "redirect_url", "url"),
-      instructions: null,
-    };
-  } catch (err) {
-    console.error("netshop checkout failed", err instanceof Error ? err.message : err);
-    return { ok: false, message: null };
-  }
+      ...(input.msisdn ? { msisdn: input.msisdn } : {}),
+      ...(input.returnUrl ? { return_url: input.returnUrl } : {}),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
+    },
+  });
 }
 
-/** Payout B2C (levantamento) para carteira móvel ou conta bancária do cliente. */
-export async function initiatePayout(input: {
-  method: string;
+/** Payout B2C (levantamento) — apenas M-Pesa e e-Mola. */
+export async function createPayout(input: {
+  method: "mpesa" | "emola";
   amount: number;
   reference: string;
-  payeeIdentifier: string;
-}): Promise<ChargeResult> {
-  try {
-    const isBank = input.method === "bank_transfer";
-    const res = await netshopRequest("/payouts", {
-      method: CHANNEL[input.method] ?? input.method,
-      channel: CHANNEL[input.method] ?? input.method,
+  msisdn: string;
+  metadata?: Json;
+}): Promise<NetshopResult> {
+  return request("POST", "/payouts", {
+    idempotencyKey: input.reference,
+    body: {
       amount: input.amount,
       currency: "MZN",
+      method: input.method,
+      msisdn: input.msisdn,
       reference: input.reference,
-      beneficiary: isBank
-        ? { account: input.payeeIdentifier }
-        : { phone: input.payeeIdentifier, msisdn: input.payeeIdentifier },
-    });
-    if (!res.ok) return { ok: false, message: providerMessage(res.data) };
-    return {
-      ok: true,
-      transactionId: readString(res.data, "transaction_id", "transactionId", "id"),
-      checkoutUrl: null,
-      instructions: null,
-    };
-  } catch (err) {
-    console.error("netshop payout failed", err instanceof Error ? err.message : err);
-    return { ok: false, message: null };
-  }
+      ...(input.metadata ? { metadata: input.metadata } : {}),
+    },
+  });
+}
+
+/** Estado atual de uma cobrança — fonte de verdade para reconciliação. */
+export function getCharge(idOrReference: string): Promise<NetshopResult> {
+  return request("GET", `/charges/${encodeURIComponent(idOrReference)}`);
+}
+
+/** Estado atual de um payout. */
+export function getPayout(idOrReference: string): Promise<NetshopResult> {
+  return request("GET", `/payouts/${encodeURIComponent(idOrReference)}`);
 }
