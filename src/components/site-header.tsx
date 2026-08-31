@@ -5,10 +5,11 @@ import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
-  { href: "/#produtos", label: "Produtos" },
+  { href: "/investimentos", label: "Investimentos" },
+  { href: "/empresas", label: "Empresas" },
   { href: "/crash", label: "Crash" },
+  { href: "/carteira", label: "Carteira" },
   { href: "/pagamentos", label: "Pagamentos" },
-  { href: "/#seguranca", label: "Segurança" },
   { href: "/#faq", label: "FAQ" },
 ];
 

@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          description: string
+          founded_year: number | null
+          headquarters: string | null
+          id: string
+          legal_name: string | null
+          listed_bvm: boolean
+          name: string
+          sector: string
+          slug: string
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          founded_year?: number | null
+          headquarters?: string | null
+          id?: string
+          legal_name?: string | null
+          listed_bvm?: boolean
+          name: string
+          sector: string
+          slug: string
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          founded_year?: number | null
+          headquarters?: string | null
+          id?: string
+          legal_name?: string | null
+          listed_bvm?: boolean
+          name?: string
+          sector?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      company_applications: {
+        Row: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          description: string
+          funding_goal: number | null
+          id: string
+          nuit: string | null
+          review_notes: string | null
+          sector: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          description: string
+          funding_goal?: number | null
+          id?: string
+          nuit?: string | null
+          review_notes?: string | null
+          sector: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string
+          funding_goal?: number | null
+          id?: string
+          nuit?: string | null
+          review_notes?: string | null
+          sector?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       game_bets: {
         Row: {
           amount: number
@@ -114,6 +216,118 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      investment_products: {
+        Row: {
+          capacity: number
+          company_id: string
+          created_at: string
+          currency: string
+          description: string
+          id: string
+          min_amount: number
+          name: string
+          raised: number
+          risk_level: string
+          slug: string
+          status: string
+          target_rate_annual: number
+          term_months: number
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          company_id: string
+          created_at?: string
+          currency?: string
+          description: string
+          id?: string
+          min_amount?: number
+          name: string
+          raised?: number
+          risk_level?: string
+          slug: string
+          status?: string
+          target_rate_annual: number
+          term_months: number
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          company_id?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          min_amount?: number
+          name?: string
+          raised?: number
+          risk_level?: string
+          slug?: string
+          status?: string
+          target_rate_annual?: number
+          term_months?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_products_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investments: {
+        Row: {
+          amount: number
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          matures_at: string
+          product_id: string
+          reference: string
+          status: string
+          target_rate_annual: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          matures_at: string
+          product_id: string
+          reference: string
+          status?: string
+          target_rate_annual: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          matures_at?: string
+          product_id?: string
+          reference?: string
+          status?: string
+          target_rate_annual?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "investment_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_intents: {
         Row: {
@@ -316,6 +530,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_investment: {
+        Args: { _investment_id: string; _user_id: string }
+        Returns: {
+          amount: number
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          matures_at: string
+          product_id: string
+          reference: string
+          status: string
+          target_rate_annual: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cashout_bet: {
         Args: { _bet_id: string; _user_id: string }
         Returns: {
@@ -350,6 +586,10 @@ export type Database = {
         }
         Returns: number
       }
+      ensure_wallet: {
+        Args: { _kind: string; _user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -383,6 +623,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      place_investment: {
+        Args: { _amount: number; _product_id: string; _user_id: string }
+        Returns: {
+          amount: number
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          matures_at: string
+          product_id: string
+          reference: string
+          status: string
+          target_rate_annual: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       refund_round: { Args: { _round_id: string }; Returns: number }
       round_reveal: {
         Args: { _round_number: number }
@@ -396,6 +658,15 @@ export type Database = {
         }[]
       }
       settle_round: { Args: { _round_id: string }; Returns: number }
+      transfer_between_wallets: {
+        Args: {
+          _amount: number
+          _from_kind: string
+          _to_kind: string
+          _user_id: string
+        }
+        Returns: number
+      }
       wallet_apply: {
         Args: {
           _amount: number

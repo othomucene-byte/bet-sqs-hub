@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as EmpresasRouteImport } from './routes/empresas'
+import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
+import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
@@ -30,10 +33,25 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmpresasRoute = EmpresasRouteImport.update({
+  id: '/empresas',
+  path: '/empresas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestimentosRoute = InvestimentosRouteImport.update({
+  id: '/investimentos',
+  path: '/investimentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PagamentosRoute = PagamentosRouteImport.update({
   id: '/pagamentos',
   path: '/pagamentos',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
+  id: '/carteira',
+  path: '/carteira',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
   id: '/crash',
@@ -50,14 +68,20 @@ const ApiPublicWebhooksNetshopRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/empresas': typeof EmpresasRoute
+  '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/empresas': typeof EmpresasRoute
+  '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -66,22 +90,43 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/empresas': typeof EmpresasRoute
+  '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/pagamentos' | '/crash' | '/api/public/webhooks/netshop'
+    | '/'
+    | '/auth'
+    | '/empresas'
+    | '/investimentos'
+    | '/pagamentos'
+    | '/carteira'
+    | '/crash'
+    | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/pagamentos' | '/crash' | '/api/public/webhooks/netshop'
+  to:
+    | '/'
+    | '/auth'
+    | '/empresas'
+    | '/investimentos'
+    | '/pagamentos'
+    | '/carteira'
+    | '/crash'
+    | '/api/public/webhooks/netshop'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/empresas'
+    | '/investimentos'
     | '/pagamentos'
+    | '/_authenticated/carteira'
     | '/_authenticated/crash'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
@@ -90,6 +135,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  EmpresasRoute: typeof EmpresasRoute
+  InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
 }
@@ -117,12 +164,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/empresas': {
+      id: '/empresas'
+      path: '/empresas'
+      fullPath: '/empresas'
+      preLoaderRoute: typeof EmpresasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investimentos': {
+      id: '/investimentos'
+      path: '/investimentos'
+      fullPath: '/investimentos'
+      preLoaderRoute: typeof InvestimentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pagamentos': {
       id: '/pagamentos'
       path: '/pagamentos'
       fullPath: '/pagamentos'
       preLoaderRoute: typeof PagamentosRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/carteira': {
+      id: '/_authenticated/carteira'
+      path: '/carteira'
+      fullPath: '/carteira'
+      preLoaderRoute: typeof AuthenticatedCarteiraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/crash': {
       id: '/_authenticated/crash'
@@ -142,10 +210,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
 }
 
@@ -156,6 +226,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  EmpresasRoute: EmpresasRoute,
+  InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
 }

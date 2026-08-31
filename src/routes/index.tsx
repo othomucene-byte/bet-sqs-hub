@@ -266,7 +266,7 @@ function Landing() {
                 documentos e dashboard financeiro — com estado da candidatura sempre visível.
               </p>
               <Button className="mt-6" variant="outline" asChild>
-                <a href="#conta">
+                <a href="/empresas#candidatura">
                   Submeter candidatura <ArrowRight className="ml-1.5 size-4" />
                 </a>
               </Button>
@@ -312,16 +312,16 @@ function Landing() {
               <FileCheck2 className="size-6 text-primary" />
               <h2 className="mt-4 text-2xl font-bold sm:text-3xl">Contas e KYC</h2>
               <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                O registo, login, recuperação de palavra-passe e verificação de email dependem do
-                backend da plataforma, que ainda não está ativado neste ambiente.
+                Registo com email verificado, login com palavra-passe ou Google, e carteiras
+                separadas para investimentos e apostas — tudo validado no servidor.
               </p>
             </div>
             <div className="flex w-full gap-3 lg:w-auto">
-              <Button className="flex-1 lg:flex-none" disabled>
-                Criar conta
+              <Button className="flex-1 lg:flex-none" asChild>
+                <a href="/auth">Criar conta</a>
               </Button>
-              <Button variant="outline" className="flex-1 lg:flex-none" disabled>
-                Entrar
+              <Button variant="outline" className="flex-1 lg:flex-none" asChild>
+                <a href="/auth">Entrar</a>
               </Button>
             </div>
           </div>
