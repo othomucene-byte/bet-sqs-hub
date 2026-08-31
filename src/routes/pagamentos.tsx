@@ -136,9 +136,35 @@ function TransactionForm({
 
   const callDeposit = useServerFn(createDepositIntent);
   const callWithdrawal = useServerFn(requestWithdrawal);
+  const callSync = useServerFn(syncPaymentIntent);
 
   const selected = methods.find((m) => m.id === method) ?? methods[0];
-  const needsIdentifier = direction === "withdrawal" || selected?.kind !== "card";
+  const needsIdentifier = selected?.kind !== "card";
+
+  /** Reconciliação: a NetShop é a fonte de verdade do estado. */
+  function watchIntent(ref: string) {
+    let attempts = 0;
+    const timer = setInterval(async () => {
+      attempts += 1;
+      try {
+        const res = await callSync({ data: { reference: ref } });
+        if (res.status === "succeeded") {
+          clearInterval(timer);
+          toast.success(
+            isDeposit
+              ? "Depósito confirmado — saldo atualizado no ledger."
+              : "Levantamento concluído pelo provedor.",
+          );
+        } else if (res.status === "failed") {
+          clearInterval(timer);
+          toast.error(res.message ?? "A operação foi recusada pelo provedor.");
+        }
+      } catch {
+        /* silencioso: nova tentativa no próximo ciclo */
+      }
+      if (attempts >= 40) clearInterval(timer);
+    }, 6000);
+  }
 
   async function submit() {
     const value = Number(amount.replace(",", "."));
@@ -146,10 +172,14 @@ function TransactionForm({
       toast.error("Indica um valor válido em MZN.");
       return;
     }
+    if (isDeposit && selected && value < selected.minDeposit) {
+      toast.error(`O mínimo em ${selected.name} é ${selected.minDeposit} MZN.`);
+      return;
+    }
     setBusy(true);
     try {
       const payload = {
-        method: method as "mpesa" | "emola" | "mkesh" | "card" | "bank_transfer",
+        method: method as "mpesa" | "emola" | "mkesh" | "card",
         amount: value,
         ...(identifier ? { payerIdentifier: identifier.trim() } : {}),
         ...(isDeposit ? { returnUrl: `${window.location.origin}/pagamentos` } : {}),
@@ -170,14 +200,20 @@ function TransactionForm({
         window.location.assign(result.checkoutUrl);
         return;
       }
+      if (result.status === "paid") {
+        toast.success(
+          isDeposit
+            ? "Depósito confirmado — saldo atualizado no ledger."
+            : "Levantamento concluído pelo provedor.",
+        );
+        return;
+      }
       toast.success(
-        result.instructions ??
-          (isDeposit
-            ? selected?.kind === "bank_transfer"
-              ? "Transferência registada. Usa a referência abaixo no descritivo."
-              : "Cobrança enviada. Confirma no telemóvel (USSD push)."
-            : "Levantamento em processamento. O valor fica reservado até confirmação."),
+        isDeposit
+          ? "Cobrança enviada. Confirma no telemóvel com o teu PIN."
+          : "Levantamento em processamento. O valor fica reservado até confirmação.",
       );
+      watchIntent(result.reference);
     } catch (err) {
       if (err instanceof Error && err.message.includes("Unauthorized")) {
         toast.error("Precisas de iniciar sessão para movimentar a carteira.");
