@@ -1,51 +1,50 @@
 /**
- * Camada de integração Netshop (https://www.netshop.co.mz/api/v1)
+ * Camada de apresentação da integração NetShop (https://www.netshop.co.mz/api/v1)
  *
  * IMPORTANTE — arquitetura:
- * Este ficheiro contém APENAS metadados de apresentação (catálogo de métodos,
- * estados possíveis, limites informativos). Não faz — e nunca deve fazer —
- * chamadas à API Netshop a partir do browser.
+ * Este ficheiro contém APENAS metadados de apresentação (catálogo de métodos
+ * suportados pela API, mínimos publicados, estados possíveis). Não faz — e
+ * nunca deve fazer — chamadas à API NetShop a partir do browser.
  *
- * Quando o backend (Lovable Cloud) estiver ativo:
- *  - As credenciais (NETSHOP_API_KEY / NETSHOP_MERCHANT_ID / NETSHOP_WEBHOOK_SECRET)
- *    ficam guardadas como secrets do lado do servidor.
- *  - Depósitos/levantamentos são iniciados por server functions que escrevem no
- *    ledger imutável em estado `pending` e devolvem apenas o `reference`.
- *  - A confirmação de pagamento chega exclusivamente por webhook assinado em
- *    `/api/public/webhooks/netshop`, verificado com HMAC antes de qualquer
- *    movimento de saldo.
- *  - O frontend nunca decide se um pagamento foi concluído: apenas mostra o
- *    estado devolvido pelo backend.
+ * As credenciais (NETSHOP_WALLET_ID / NETSHOP_API_KEY / NETSHOP_WEBHOOK_SECRET)
+ * vivem no servidor. Depósitos e levantamentos são iniciados por server
+ * functions que escrevem no ledger imutável e a confirmação chega por webhook
+ * assinado (`X-NetShop-Signature`, HMAC-SHA256) em
+ * `/api/public/webhooks/netshop`, ou por reconciliação via
+ * `GET /charges/{ref}` / `GET /payouts/{ref}`.
  */
 
 export const NETSHOP_API_BASE = "https://www.netshop.co.mz/api/v1";
 
-export type IntegrationStatus = "not_configured" | "sandbox" | "live";
-
-/** Estado real da integração — só o backend pode reportar `sandbox`/`live`. */
-export const NETSHOP_STATUS: IntegrationStatus = "not_configured";
+export type IntegrationStatus = "not_configured" | "live";
 
 export const NETSHOP_STATUS_LABEL: Record<IntegrationStatus, string> = {
   not_configured: "Não configurado",
-  sandbox: "Ambiente de teste",
   live: "Produção",
 };
 
 export type PaymentDirection = "deposit" | "withdrawal";
 
+export type NetshopMethodId = "mpesa" | "emola" | "mkesh" | "card";
+
 export type NetshopMethod = {
-  id: string;
+  id: NetshopMethodId;
   name: string;
   provider: string;
-  kind: "mobile_money" | "card" | "bank_transfer";
+  kind: "mobile_money" | "card";
   currency: "MZN";
   directions: PaymentDirection[];
+  /** Mínimo publicado pela NetShop para cobranças (MZN). */
+  minDeposit: number;
   /** Formato esperado do identificador do pagador (ajuda de UI, não validação final). */
   identifierHint: string;
   notes: string;
 };
 
-/** Métodos de pagamento em Moçambique cobertos pelo agregador Netshop. */
+/**
+ * Métodos efetivamente suportados pela API NetShop v1.
+ * Cobranças: card | mpesa | emola | mkesh. Payouts B2C: mpesa | emola.
+ */
 export const NETSHOP_METHODS: NetshopMethod[] = [
   {
     id: "mpesa",
@@ -54,8 +53,9 @@ export const NETSHOP_METHODS: NetshopMethod[] = [
     kind: "mobile_money",
     currency: "MZN",
     directions: ["deposit", "withdrawal"],
+    minDeposit: 10,
     identifierHint: "84xxxxxxx ou 85xxxxxxx",
-    notes: "Confirmação por USSD push no telemóvel do titular.",
+    notes: "Confirmação por PIN/USSD no telemóvel do titular.",
   },
   {
     id: "emola",
@@ -64,8 +64,9 @@ export const NETSHOP_METHODS: NetshopMethod[] = [
     kind: "mobile_money",
     currency: "MZN",
     directions: ["deposit", "withdrawal"],
+    minDeposit: 10,
     identifierHint: "86xxxxxxx ou 87xxxxxxx",
-    notes: "Confirmação por USSD push no telemóvel do titular.",
+    notes: "Push de pagamento com confirmação por PIN do titular.",
   },
   {
     id: "mkesh",
@@ -73,43 +74,31 @@ export const NETSHOP_METHODS: NetshopMethod[] = [
     provider: "Tmcel",
     kind: "mobile_money",
     currency: "MZN",
-    directions: ["deposit", "withdrawal"],
+    directions: ["deposit"],
+    minDeposit: 10,
     identifierHint: "82xxxxxxx ou 83xxxxxxx",
-    notes: "Disponibilidade sujeita à cobertura do agregador.",
+    notes: "Depósitos apenas — a NetShop não suporta payout B2C em mKesh.",
   },
   {
     id: "card",
     name: "Cartão Visa / Mastercard",
-    provider: "Netshop Checkout",
+    provider: "NetShop Checkout",
     kind: "card",
     currency: "MZN",
     directions: ["deposit"],
+    minDeposit: 50,
     identifierHint: "Checkout alojado pelo gateway",
-    notes: "Sem dados de cartão na plataforma — redirecionamento para o gateway.",
-  },
-  {
-    id: "bank_transfer",
-    name: "Transferência bancária",
-    provider: "Bancos nacionais",
-    kind: "bank_transfer",
-    currency: "MZN",
-    directions: ["deposit", "withdrawal"],
-    identifierHint: "IBAN / NIB do titular",
-    notes: "Conciliação por referência única gerada no backend.",
+    notes: "Sem dados de cartão na plataforma — redirecionamento seguro para o gateway.",
   },
 ];
 
-/**
- * Secrets que o backend precisa antes de a integração poder ser ativada.
- * A conta é identificada por Wallet ID (M-Pesa, mKesh, VISA) — não usamos
- * Merchant ID.
- */
+/** Secrets que o backend precisa para a integração estar ativa. */
 export const NETSHOP_REQUIRED_SECRETS = [
   "NETSHOP_WALLET_ID",
   "NETSHOP_API_KEY",
   "NETSHOP_WEBHOOK_SECRET",
 ] as const;
 
-export function isNetshopConfigured(status: IntegrationStatus = NETSHOP_STATUS): boolean {
-  return status !== "not_configured";
+export function methodById(id: string): NetshopMethod | undefined {
+  return NETSHOP_METHODS.find((m) => m.id === id);
 }

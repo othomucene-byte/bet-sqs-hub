@@ -8,7 +8,6 @@ import {
   ArrowUpFromLine,
   CheckCircle2,
   CreditCard,
-  Landmark,
   Loader2,
   Lock,
   ShieldCheck,
@@ -28,6 +27,7 @@ import {
   createDepositIntent,
   getPaymentsStatus,
   requestWithdrawal,
+  syncPaymentIntent,
 } from "@/lib/payments/netshop.functions";
 import logoCard from "@/assets/logo-card.png.asset.json";
 import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
@@ -55,7 +55,6 @@ export const Route = createFileRoute("/pagamentos")({
 const kindIcon = {
   mobile_money: Smartphone,
   card: CreditCard,
-  bank_transfer: Landmark,
 } as const;
 
 /** Logos oficiais dos métodos (recortes das marcas enviadas pelo utilizador). */
@@ -102,6 +101,7 @@ function MethodCard({ method, configured }: { method: NetshopMethod; configured:
           {method.directions.includes("withdrawal") && (
             <Badge variant="secondary">Levantamento</Badge>
           )}
+          <Badge variant="outline">mín. {method.minDeposit} MZN</Badge>
         </div>
       </CardContent>
     </Card>
@@ -113,6 +113,9 @@ const ERROR_LABEL: Record<string, string> = {
   no_wallet: "Carteira de apostas indisponível.",
   insufficient_funds: "Saldo insuficiente na Betting Wallet.",
   identifier_required: "Indica o número/identificador do pagador.",
+  invalid_identifier: "Identificador inválido para o método escolhido.",
+  method_unavailable: "Este método não permite levantamentos (payout B2C só M-Pesa e e-Mola).",
+  amount_below_minimum: "Valor abaixo do mínimo do método escolhido.",
   failed: "O gateway recusou a operação. Tenta novamente.",
 };
 
@@ -133,9 +136,35 @@ function TransactionForm({
 
   const callDeposit = useServerFn(createDepositIntent);
   const callWithdrawal = useServerFn(requestWithdrawal);
+  const callSync = useServerFn(syncPaymentIntent);
 
   const selected = methods.find((m) => m.id === method) ?? methods[0];
-  const needsIdentifier = direction === "withdrawal" || selected?.kind !== "card";
+  const needsIdentifier = selected?.kind !== "card";
+
+  /** Reconciliação: a NetShop é a fonte de verdade do estado. */
+  function watchIntent(ref: string) {
+    let attempts = 0;
+    const timer = setInterval(async () => {
+      attempts += 1;
+      try {
+        const res = await callSync({ data: { reference: ref } });
+        if (res.status === "succeeded") {
+          clearInterval(timer);
+          toast.success(
+            isDeposit
+              ? "Depósito confirmado — saldo atualizado no ledger."
+              : "Levantamento concluído pelo provedor.",
+          );
+        } else if (res.status === "failed") {
+          clearInterval(timer);
+          toast.error(res.message ?? "A operação foi recusada pelo provedor.");
+        }
+      } catch {
+        /* silencioso: nova tentativa no próximo ciclo */
+      }
+      if (attempts >= 40) clearInterval(timer);
+    }, 6000);
+  }
 
   async function submit() {
     const value = Number(amount.replace(",", "."));
@@ -143,19 +172,25 @@ function TransactionForm({
       toast.error("Indica um valor válido em MZN.");
       return;
     }
+    if (isDeposit && selected && value < selected.minDeposit) {
+      toast.error(`O mínimo em ${selected.name} é ${selected.minDeposit} MZN.`);
+      return;
+    }
     setBusy(true);
     try {
       const payload = {
-        method: method as "mpesa" | "emola" | "mkesh" | "card" | "bank_transfer",
+        method: method as "mpesa" | "emola" | "mkesh" | "card",
         amount: value,
         ...(identifier ? { payerIdentifier: identifier.trim() } : {}),
+        ...(isDeposit ? { returnUrl: `${window.location.origin}/pagamentos` } : {}),
       };
       const result = isDeposit
         ? await callDeposit({ data: payload })
         : await callWithdrawal({ data: payload });
 
       if (!result.ok) {
-        toast.error(ERROR_LABEL[result.error] ?? "Operação recusada.");
+        const base = ERROR_LABEL[result.error] ?? "Operação recusada.";
+        toast.error(result.message ? `${base} (${result.message})` : base);
         return;
       }
 
@@ -165,11 +200,20 @@ function TransactionForm({
         window.location.assign(result.checkoutUrl);
         return;
       }
+      if (result.status === "paid") {
+        toast.success(
+          isDeposit
+            ? "Depósito confirmado — saldo atualizado no ledger."
+            : "Levantamento concluído pelo provedor.",
+        );
+        return;
+      }
       toast.success(
         isDeposit
-          ? "Cobrança enviada. Confirma no telemóvel (USSD push)."
+          ? "Cobrança enviada. Confirma no telemóvel com o teu PIN."
           : "Levantamento em processamento. O valor fica reservado até confirmação.",
       );
+      watchIntent(result.reference);
     } catch (err) {
       if (err instanceof Error && err.message.includes("Unauthorized")) {
         toast.error("Precisas de iniciar sessão para movimentar a carteira.");
@@ -214,7 +258,7 @@ function TransactionForm({
             <select
               id={`${direction}-method`}
               value={method}
-              onChange={(e) => setMethod(e.target.value)}
+              onChange={(e) => setMethod(e.target.value as typeof method)}
               disabled={!configured || busy}
               className="h-10 rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -237,7 +281,10 @@ function TransactionForm({
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={!configured || busy}
               />
-              <p className="text-xs text-muted-foreground">Taxa para o cliente: 0 MZN.</p>
+              <p className="text-xs text-muted-foreground">
+                Taxa para o cliente: 0 MZN
+                {isDeposit && selected ? ` · mínimo ${selected.minDeposit} MZN` : ""}.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor={`${direction}-identifier`}>
@@ -341,15 +388,20 @@ function PagamentosPage() {
         <header className="max-w-3xl space-y-4">
           <Badge variant="outline" className="gap-1.5">
             <ShieldCheck className="size-3.5" />
-            Netshop: {configured ? "Ativo (produção)" : "A configurar"}
+            Netshop:{" "}
+            {configured
+              ? status?.gatewayOnline
+                ? "Ativo (produção, gateway online)"
+                : "Ativo (gateway sem resposta)"
+              : "A configurar"}
           </Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             Gateway de pagamentos Netshop
           </h1>
           <p className="text-muted-foreground">
-            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh, cartão
-            Visa/Mastercard e transferência bancária. Sem taxas para o cliente — o saldo só muda
-            após confirmação assinada pelo gateway.
+            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh e cartão
+            Visa/Mastercard. Sem taxas para o cliente — o saldo só muda após confirmação assinada
+            pelo gateway ou reconciliação direta com a NetShop.
           </p>
         </header>
 
