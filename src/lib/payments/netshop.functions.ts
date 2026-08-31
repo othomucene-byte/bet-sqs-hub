@@ -5,9 +5,10 @@ import { z } from "zod";
 /**
  * Iniciação de pagamentos NetShop.
  *
- * O frontend nunca credita nem debita: estas funções apenas registam uma
- * intenção `pending` e devolvem a referência. O saldo só muda quando o webhook
- * assinado (`/api/public/webhooks/netshop`) confirma o pagamento.
+ * O frontend nunca credita nem debita: estas funções registam uma intenção
+ * `pending`, chamam a API NetShop (cobrança C2B / checkout de cartão / payout
+ * B2C) e devolvem a referência. O saldo só muda quando o webhook assinado
+ * (`/api/public/webhooks/netshop`) confirma o pagamento.
  *
  * Taxas: 0 MZN para o cliente em depósitos e levantamentos. A comissão do
  * agregador (atualmente 10% em cobranças C2B) é custo operacional da
@@ -21,8 +22,8 @@ const intentInput = z.object({
 });
 
 type IntentResult =
-  | { ok: false; error: "not_configured" | "no_wallet" | "insufficient_funds" | "failed" }
-  | { ok: true; reference: string; status: "pending" };
+  | { ok: false; error: "not_configured" | "no_wallet" | "insufficient_funds" | "identifier_required" | "failed" }
+  | { ok: true; reference: string; status: "pending"; checkoutUrl: string | null };
 
 function isConfigured(): boolean {
   return Boolean(
@@ -49,6 +50,11 @@ export const createDepositIntent = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<IntentResult> => {
     if (!isConfigured()) return { ok: false, error: "not_configured" };
 
+    // Mobile money exige o número do pagador; cartão usa checkout alojado.
+    if (data.method !== "card" && !data.payerIdentifier) {
+      return { ok: false, error: "identifier_required" };
+    }
+
     const { data: wallet } = await context.supabase
       .from("wallets")
       .select("id")
@@ -74,8 +80,33 @@ export const createDepositIntent = createServerFn({ method: "POST" })
       return { ok: false, error: "failed" };
     }
 
-    // TODO(integração): pedir o checkout à NetShop com esta `reference`.
-    return { ok: true, reference, status: "pending" };
+    const netshop = await import("@/lib/payments/netshop.server");
+    const charge =
+      data.method === "card"
+        ? await netshop.initiateCardCheckout({ amount: data.amount, reference })
+        : await netshop.initiateCharge({
+            method: data.method,
+            amount: data.amount,
+            reference,
+            payerIdentifier: data.payerIdentifier!,
+          });
+
+    if (!charge.ok) {
+      await supabaseAdmin
+        .from("payment_intents")
+        .update({ status: "failed" })
+        .eq("reference", reference);
+      return { ok: false, error: "failed" };
+    }
+
+    if (charge.transactionId) {
+      await supabaseAdmin
+        .from("payment_intents")
+        .update({ provider_transaction_id: charge.transactionId })
+        .eq("reference", reference);
+    }
+
+    return { ok: true, reference, status: "pending", checkoutUrl: charge.checkoutUrl };
   });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
@@ -83,6 +114,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
     if (!isConfigured()) return { ok: false, error: "not_configured" };
+    if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
 
     const { data: wallet } = await context.supabase
       .from("wallets")
@@ -117,12 +149,59 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       method: data.method,
       amount: data.amount,
       reference,
-      ...(data.payerIdentifier ? { payer_identifier: data.payerIdentifier } : {}),
+      payer_identifier: data.payerIdentifier,
     });
     if (error) {
       console.error("withdrawal intent error", error.message);
+      await refundHold(supabaseAdmin, wallet.id, data.amount, reference);
       return { ok: false, error: "failed" };
     }
 
-    return { ok: true, reference, status: "pending" };
+    const netshop = await import("@/lib/payments/netshop.server");
+    const payout = await netshop.initiatePayout({
+      method: data.method,
+      amount: data.amount,
+      reference,
+      payeeIdentifier: data.payerIdentifier,
+    });
+
+    if (!payout.ok) {
+      await supabaseAdmin
+        .from("payment_intents")
+        .update({ status: "failed" })
+        .eq("reference", reference);
+      await refundHold(supabaseAdmin, wallet.id, data.amount, reference);
+      return { ok: false, error: "failed" };
+    }
+
+    if (payout.transactionId) {
+      await supabaseAdmin
+        .from("payment_intents")
+        .update({ provider_transaction_id: payout.transactionId })
+        .eq("reference", reference);
+    }
+
+    return { ok: true, reference, status: "pending", checkoutUrl: null };
   });
+
+type AdminClient = Awaited<
+  typeof import("@/integrations/supabase/client.server")
+>["supabaseAdmin"];
+
+/** Reembolsa a reserva quando a intenção falha antes de chegar à NetShop. */
+async function refundHold(
+  admin: AdminClient,
+  walletId: string,
+  amount: number,
+  reference: string,
+): Promise<void> {
+  const { error } = await admin.rpc("wallet_apply", {
+    _wallet_id: walletId,
+    _type: "refund",
+    _amount: amount,
+    _reference: `netshop:${reference}:refund`,
+    _provider: "netshop",
+    _metadata: { reason: "initiation_failed" },
+  });
+  if (error) console.error("withdrawal refund error", error.message);
+}
