@@ -99,9 +99,13 @@ export const NETSHOP_METHODS: NetshopMethod[] = [
   },
 ];
 
-/** Secrets que o backend precisa antes de a integração poder ser ativada. */
+/**
+ * Secrets que o backend precisa antes de a integração poder ser ativada.
+ * A conta é identificada por Wallet ID (M-Pesa, mKesh, VISA) — não usamos
+ * Merchant ID.
+ */
 export const NETSHOP_REQUIRED_SECRETS = [
-  "NETSHOP_MERCHANT_ID",
+  "NETSHOP_WALLET_ID",
   "NETSHOP_API_KEY",
   "NETSHOP_WEBHOOK_SECRET",
 ] as const;
