@@ -50,12 +50,29 @@ type IntentResult =
       message?: string | null;
     };
 
-function isConfigured(): boolean {
+/** Wallet NetShop por método (Visa/cartão, M-Pesa, mKesh, e-Mola). */
+const WALLET_ENV: Record<Method, string> = {
+  card: "NETSHOP_WALLET_ID_CARD",
+  mpesa: "NETSHOP_WALLET_ID_MPESA",
+  emola: "NETSHOP_WALLET_ID_EMOLA",
+  mkesh: "NETSHOP_WALLET_ID_MKESH",
+};
+
+function walletIdFor(method: Method): string | null {
+  return process.env[WALLET_ENV[method]] || process.env["NETSHOP_WALLET_ID"] || null;
+}
+
+/** Método utilizável = wallet própria (ou fallback) + API key + webhook secret. */
+function isMethodConfigured(method: Method): boolean {
   return Boolean(
-    process.env["NETSHOP_WALLET_ID"] &&
+    walletIdFor(method) &&
       process.env["NETSHOP_API_KEY"] &&
       process.env["NETSHOP_WEBHOOK_SECRET"],
   );
+}
+
+function isConfigured(): boolean {
+  return METHODS.some(isMethodConfigured);
 }
 
 function makeReference(direction: "deposit" | "withdrawal"): string {
@@ -80,14 +97,27 @@ function normalizeMsisdn(method: Method, raw: string): string | null {
 
 /** Estado da integração, lido do servidor — nunca presumido no browser. */
 export const getPaymentsStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const methods = {
+    mpesa: isMethodConfigured("mpesa"),
+    emola: isMethodConfigured("emola"),
+    mkesh: isMethodConfigured("mkesh"),
+    card: isMethodConfigured("card"),
+  };
   const configured = isConfigured();
   if (!configured) {
-    return { configured: false, gatewayOnline: false, customerFeePercent: 0, currency: "MZN" as const };
+    return {
+      configured: false,
+      gatewayOnline: false,
+      methods,
+      customerFeePercent: 0,
+      currency: "MZN" as const,
+    };
   }
   const netshop = await import("@/lib/payments/netshop.server");
   const health = await netshop.ping();
   return {
     configured: true,
+    methods,
     gatewayOnline: health.ok && health.canonicalHost,
     customerFeePercent: 0,
     currency: "MZN" as const,
@@ -98,7 +128,7 @@ export const createDepositIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
-    if (!isConfigured()) return { ok: false, error: "not_configured" };
+    if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (data.amount < MIN_CHARGE[data.method]) return { ok: false, error: "amount_below_minimum" };
 
     let msisdn: string | null = null;
@@ -185,7 +215,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
-    if (!isConfigured()) return { ok: false, error: "not_configured" };
+    if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (!PAYOUT_METHODS.has(data.method)) return { ok: false, error: "method_unavailable" };
     if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
     const msisdn = normalizeMsisdn(data.method, data.payerIdentifier);
@@ -302,8 +332,8 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
       const netshop = await import("@/lib/payments/netshop.server");
       const remote =
         intent.direction === "deposit"
-          ? await netshop.getCharge(intent.reference as string)
-          : await netshop.getPayout(intent.reference as string);
+          ? await netshop.getCharge(intent.reference as string, intent.method as Method)
+          : await netshop.getPayout(intent.reference as string, intent.method as Method);
       if (!remote.ok) return { status: "pending" };
       if (remote.status === "pending") return { status: "pending", message: remote.message };
 
