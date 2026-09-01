@@ -14,10 +14,35 @@
 
 const API_BASE = "https://www.netshop.co.mz/api/v1";
 
+export type NetshopMethod = "card" | "mpesa" | "emola" | "mkesh";
+
 type NetshopCredentials = { walletId: string; apiKey: string };
 
-function credentials(): NetshopCredentials | null {
-  const walletId = process.env["NETSHOP_WALLET_ID"];
+/**
+ * Cada método tem a sua própria wallet NetShop (Visa/cartão, M-Pesa, mKesh).
+ * `NETSHOP_WALLET_ID` continua a servir de fallback (e-Mola ou instalações
+ * com uma única wallet).
+ */
+const WALLET_ENV: Record<NetshopMethod, string> = {
+  card: "NETSHOP_WALLET_ID_CARD",
+  mpesa: "NETSHOP_WALLET_ID_MPESA",
+  emola: "NETSHOP_WALLET_ID_EMOLA",
+  mkesh: "NETSHOP_WALLET_ID_MKESH",
+};
+
+export function walletIdFor(method: NetshopMethod): string | null {
+  return process.env[WALLET_ENV[method]] || process.env["NETSHOP_WALLET_ID"] || null;
+}
+
+/** Métodos com wallet + API key presentes no servidor. */
+export function configuredMethods(): Record<NetshopMethod, boolean> {
+  const apiKey = Boolean(process.env["NETSHOP_API_KEY"]);
+  const of = (m: NetshopMethod) => apiKey && Boolean(walletIdFor(m));
+  return { card: of("card"), mpesa: of("mpesa"), emola: of("emola"), mkesh: of("mkesh") };
+}
+
+function credentials(method: NetshopMethod): NetshopCredentials | null {
+  const walletId = walletIdFor(method);
   const apiKey = process.env["NETSHOP_API_KEY"];
   if (!walletId || !apiKey) return null;
   return { walletId, apiKey };
@@ -89,16 +114,16 @@ function parseOperation(data: Json): NetshopOperation {
 }
 
 async function request(
-  method: "GET" | "POST",
+  httpMethod: "GET" | "POST",
   path: string,
-  options: { body?: Json; idempotencyKey?: string } = {},
+  options: { body?: Json; idempotencyKey?: string; walletMethod: NetshopMethod },
 ): Promise<NetshopResult> {
-  const creds = credentials();
+  const creds = credentials(options.walletMethod);
   if (!creds) return { ok: false, httpStatus: 0, code: "not_configured", message: null };
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
-      method,
+      method: httpMethod,
       headers: {
         ...authHeaders(creds),
         ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -109,7 +134,7 @@ async function request(
 
     const data = (await res.json().catch(() => ({}))) as Json;
     if (!res.ok) {
-      console.error("netshop api error", method, path, res.status, JSON.stringify(data).slice(0, 300));
+      console.error("netshop api error", httpMethod, path, res.status, JSON.stringify(data).slice(0, 300));
       return {
         ok: false,
         httpStatus: res.status,
@@ -140,7 +165,7 @@ export async function ping(): Promise<{ ok: boolean; canonicalHost: boolean }> {
  * confirmam por PIN/USSD no telemóvel do pagador.
  */
 export async function createCharge(input: {
-  method: "card" | "mpesa" | "emola" | "mkesh";
+  method: NetshopMethod;
   amount: number;
   reference: string;
   msisdn?: string;
@@ -148,6 +173,7 @@ export async function createCharge(input: {
   metadata?: Json;
 }): Promise<NetshopResult> {
   return request("POST", "/charges", {
+    walletMethod: input.method,
     idempotencyKey: input.reference,
     body: {
       amount: input.amount,
@@ -170,6 +196,7 @@ export async function createPayout(input: {
   metadata?: Json;
 }): Promise<NetshopResult> {
   return request("POST", "/payouts", {
+    walletMethod: input.method,
     idempotencyKey: input.reference,
     body: {
       amount: input.amount,
@@ -183,11 +210,11 @@ export async function createPayout(input: {
 }
 
 /** Estado atual de uma cobrança — fonte de verdade para reconciliação. */
-export function getCharge(idOrReference: string): Promise<NetshopResult> {
-  return request("GET", `/charges/${encodeURIComponent(idOrReference)}`);
+export function getCharge(idOrReference: string, method: NetshopMethod): Promise<NetshopResult> {
+  return request("GET", `/charges/${encodeURIComponent(idOrReference)}`, { walletMethod: method });
 }
 
 /** Estado atual de um payout. */
-export function getPayout(idOrReference: string): Promise<NetshopResult> {
-  return request("GET", `/payouts/${encodeURIComponent(idOrReference)}`);
+export function getPayout(idOrReference: string, method: NetshopMethod): Promise<NetshopResult> {
+  return request("GET", `/payouts/${encodeURIComponent(idOrReference)}`, { walletMethod: method });
 }
