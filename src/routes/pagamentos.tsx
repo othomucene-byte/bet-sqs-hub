@@ -121,14 +121,16 @@ const ERROR_LABEL: Record<string, string> = {
 
 function TransactionForm({
   direction,
-  configured,
+  enabled,
 }: {
   direction: PaymentDirection;
-  configured: boolean;
+  enabled: Partial<Record<NetshopMethod["id"], boolean>>;
 }) {
   const isDeposit = direction === "deposit";
   const methods = NETSHOP_METHODS.filter((m) => m.directions.includes(direction));
-  const [method, setMethod] = useState(methods[0]?.id ?? "mpesa");
+  const [method, setMethod] = useState(
+    methods.find((m) => enabled[m.id])?.id ?? methods[0]?.id ?? "mpesa",
+  );
   const [amount, setAmount] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [busy, setBusy] = useState(false);
@@ -140,6 +142,8 @@ function TransactionForm({
 
   const selected = methods.find((m) => m.id === method) ?? methods[0];
   const needsIdentifier = selected?.kind !== "card";
+  // Cada método tem a sua wallet NetShop: só está ativo o que tem wallet no servidor.
+  const configured = Boolean(selected && enabled[selected.id]);
 
   /** Reconciliação: a NetShop é a fonte de verdade do estado. */
   function watchIntent(ref: string) {
@@ -259,12 +263,13 @@ function TransactionForm({
               id={`${direction}-method`}
               value={method}
               onChange={(e) => setMethod(e.target.value as typeof method)}
-              disabled={!configured || busy}
+              disabled={busy}
               className="h-10 rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               {methods.map((m) => (
-                <option key={m.id} value={m.id}>
+                <option key={m.id} value={m.id} disabled={!enabled[m.id]}>
                   {m.name} — {m.provider}
+                  {enabled[m.id] ? "" : " (wallet não configurada)"}
                 </option>
               ))}
             </select>
@@ -325,7 +330,8 @@ function TransactionForm({
 
           {!configured && (
             <p className="text-xs text-muted-foreground">
-              Formulário inativo: a integração Netshop está a ser ativada no servidor.{" "}
+              A wallet NetShop de {selected?.name ?? "este método"} ainda não está configurada no
+              servidor, por isso a operação está bloqueada.{" "}
               <Link to="/auth" className="font-medium text-primary underline-offset-4 hover:underline">
                 Inicia sessão
               </Link>{" "}
@@ -380,6 +386,8 @@ function PagamentosPage() {
     staleTime: 60_000,
   });
   const configured = status?.configured ?? false;
+  const methodStatus: Partial<Record<NetshopMethod["id"], boolean>> = status?.methods ?? {};
+  const activeCount = Object.values(methodStatus).filter(Boolean).length;
 
   return (
     <>
@@ -390,9 +398,7 @@ function PagamentosPage() {
             <ShieldCheck className="size-3.5" />
             Netshop:{" "}
             {configured
-              ? status?.gatewayOnline
-                ? "Ativo (produção, gateway online)"
-                : "Ativo (gateway sem resposta)"
+              ? `${activeCount} wallet(s) ativa(s)${status?.gatewayOnline ? ", gateway online" : ", gateway sem resposta"}`
               : "A configurar"}
           </Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -414,7 +420,7 @@ function PagamentosPage() {
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {NETSHOP_METHODS.map((m) => (
-              <MethodCard key={m.id} method={m} configured={configured} />
+              <MethodCard key={m.id} method={m} configured={Boolean(methodStatus[m.id])} />
             ))}
           </div>
         </section>
@@ -435,10 +441,10 @@ function PagamentosPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="deposit" className="mt-6">
-              <TransactionForm direction="deposit" configured={configured} />
+              <TransactionForm direction="deposit" enabled={methodStatus} />
             </TabsContent>
             <TabsContent value="withdrawal" className="mt-6">
-              <TransactionForm direction="withdrawal" configured={configured} />
+              <TransactionForm direction="withdrawal" enabled={methodStatus} />
             </TabsContent>
           </Tabs>
         </section>
