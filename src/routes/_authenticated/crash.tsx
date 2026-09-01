@@ -195,13 +195,13 @@ function CrashPage() {
     <div className="min-h-screen bg-background" onPointerDown={() => sound.ensureAudio()}>
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-6xl px-3 py-6 sm:px-4 sm:py-8">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <main className="mx-auto w-full max-w-6xl px-3 pb-10 pt-4 sm:px-4 sm:py-8">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
           <div>
-            <h1 className="font-display text-2xl font-semibold text-foreground sm:text-3xl">
+            <h1 className="font-display text-xl font-semibold text-foreground sm:text-3xl">
               Aviator Crash
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 hidden text-sm text-muted-foreground sm:block">
               O servidor é a autoridade sobre ronda, aposta, cash-out e saldo.
             </p>
           </div>
@@ -214,21 +214,21 @@ function CrashPage() {
             >
               {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
             </Button>
-            <div className="rounded-full border border-border/60 bg-card px-4 py-2">
+            <div className="rounded-full border border-border/60 bg-card px-3 py-1.5 sm:px-4 sm:py-2">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
                 Carteira de apostas
               </p>
-              <p className="font-display text-lg font-bold tabular-nums text-primary">
+              <p className="font-display text-base font-bold tabular-nums text-primary sm:text-lg">
                 {wallet ? MZN.format(wallet.balance) : "—"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border/60 shadow-card">
-              <div className="relative h-[240px] border-b-2 border-destructive/70 sm:h-[300px]">
+              <div className="relative h-[42vh] max-h-[320px] min-h-[210px] border-b-2 border-destructive/70 sm:h-[300px] sm:max-h-none">
                 <FlightCanvas
                   status={status}
                   multiplier={displayMultiplier}
@@ -253,12 +253,12 @@ function CrashPage() {
 
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                   <p
-                    className={`font-display text-5xl font-black tabular-nums drop-shadow-[0_0_25px_rgba(0,0,0,0.6)] transition-transform sm:text-6xl ${multiplierTone} ${
+                    className={`font-display text-4xl font-black tabular-nums drop-shadow-[0_0_25px_rgba(0,0,0,0.6)] transition-transform sm:text-6xl ${multiplierTone} ${
                       status === "RUNNING" ? "animate-pulse-soft" : ""
                     }`}
                   >
                     {displayMultiplier.toFixed(2)}
-                    <span className="text-3xl">x</span>
+                    <span className="text-2xl sm:text-3xl">x</span>
                   </p>
                   {status === "BETTING" && (
                     <div className="mt-4 flex flex-col items-center gap-2">

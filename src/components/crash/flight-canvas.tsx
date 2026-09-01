@@ -39,14 +39,16 @@ export function FlightCanvas({
     let lastStatus: FlightStatus = status;
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = canvas.clientWidth;
       height = canvas.clientHeight;
+      // Em ecrãs pequenos limitamos o DPR para manter 60fps em telemóveis modestos.
+      dpr = Math.min(window.devicePixelRatio || 1, width < 480 ? 1.5 : 2);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       stars.length = 0;
-      for (let i = 0; i < 70; i += 1) {
+      const starCount = width < 480 ? 36 : 70;
+      for (let i = 0; i < starCount; i += 1) {
         stars.push({
           x: Math.random() * width,
           y: Math.random() * height,
@@ -106,16 +108,17 @@ export function FlightCanvas({
       ctx.globalAlpha = 1;
 
       // Grelha em movimento
-      gridOffset = (gridOffset + (flying ? 0.8 + Math.min(mult, 10) * 0.25 : 0.25)) % 40;
+      const gridStep = width < 480 ? 28 : 40;
+      gridOffset = (gridOffset + (flying ? 0.8 + Math.min(mult, 10) * 0.25 : 0.25)) % gridStep;
       ctx.strokeStyle = "rgba(255,255,255,0.05)";
       ctx.lineWidth = 1;
-      for (let x = -gridOffset; x < width; x += 40) {
+      for (let x = -gridOffset; x < width; x += gridStep) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
-      for (let y = height + gridOffset; y > 0; y -= 40) {
+      for (let y = height + gridOffset; y > 0; y -= gridStep) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
@@ -125,12 +128,13 @@ export function FlightCanvas({
       if (flying || crashed) {
         if (crashed) crashProgress = Math.min(1, crashProgress + 0.02);
 
-        const startX = 26;
-        const startY = height - 22;
+        const scale = Math.max(0.62, Math.min(1, width / 520));
+        const startX = 26 * scale + 6;
+        const startY = height - 18 * scale - 6;
         const p = progressFor(crashed ? (crashAt ?? mult) : mult);
         const bob = flying ? Math.sin(time / 260) * 4 : 0;
-        const targetX = startX + (width - 90) * p;
-        const targetY = startY - (height - 62) * p + bob;
+        const targetX = startX + (width - startX - 46 * scale) * p;
+        const targetY = startY - (height - 46 * scale - 18) * p + bob;
         const cx = startX + (targetX - startX) * 0.55;
         const cy = startY;
 
@@ -157,7 +161,7 @@ export function FlightCanvas({
         ctx.moveTo(startX, startY);
         ctx.quadraticCurveTo(cx, cy, targetX, targetY);
         ctx.strokeStyle = line;
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 3.5 * scale;
         ctx.lineCap = "round";
         ctx.stroke();
         ctx.restore();
@@ -165,7 +169,7 @@ export function FlightCanvas({
         // Partículas de rasto
         if (flying && frame % 2 === 0) {
           particles.push({
-            x: targetX - 14,
+            x: targetX - 14 * scale,
             y: targetY + 4,
             vx: -1.4 - Math.random() * 1.6,
             vy: (Math.random() - 0.5) * 1.1,
@@ -184,7 +188,7 @@ export function FlightCanvas({
           ctx.globalAlpha = pt.life * 0.6;
           ctx.fillStyle = crashed ? "rgba(248,113,113,1)" : "rgba(167,243,208,1)";
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 2.4 * pt.life, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 2.4 * scale * pt.life, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -197,6 +201,7 @@ export function FlightCanvas({
           ctx.globalAlpha = crashed ? Math.max(0, 1 - crashProgress * 1.2) : 1;
           ctx.translate(planeX, planeY);
           ctx.rotate(crashed ? -0.5 : -0.22 + Math.sin(time / 300) * 0.03);
+          ctx.scale(scale, scale);
           drawPlane(ctx, time);
           ctx.restore();
         }
