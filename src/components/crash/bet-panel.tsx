@@ -59,7 +59,7 @@ export function BetPanel({
     onChange({ ...state, amount: String(Math.min(maxBet, Math.max(minBet, Math.round(value)))) });
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
+    <div className="rounded-2xl border border-border/60 bg-card p-3 sm:p-4">
       <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -98,7 +98,7 @@ export function BetPanel({
                 <Plus className="size-4" />
               </Button>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {CHIPS.map((chip) => (
                 <Button
                   key={chip}
@@ -144,13 +144,13 @@ export function BetPanel({
           </p>
         </div>
 
-        <div className="sm:w-44">
+        <div className="order-first sm:order-none sm:w-44">
           {canCashout || bet?.status === "active" ? (
             <Button
               type="button"
               size="lg"
               variant="secondary"
-              className="h-24 w-full flex-col gap-0.5 rounded-2xl bg-chart-3 text-base font-bold text-background hover:bg-chart-3/90"
+              className="h-16 w-full flex-col gap-0.5 rounded-2xl bg-chart-3 sm:h-24 text-base font-bold text-background hover:bg-chart-3/90"
               disabled={!canCashout || cashingOut}
               onClick={() => bet && onCashout(bet.id)}
             >
@@ -160,7 +160,7 @@ export function BetPanel({
               </span>
             </Button>
           ) : bet ? (
-            <div className="flex h-24 w-full flex-col items-center justify-center gap-0.5 rounded-2xl border border-border/60 bg-secondary/50 text-center">
+            <div className="flex h-16 w-full sm:h-24 flex-col items-center justify-center gap-0.5 rounded-2xl border border-border/60 bg-secondary/50 text-center">
               <span className="text-xs text-muted-foreground">
                 {bet.status === "cashed_out"
                   ? `Levantado a ${bet.cashoutMultiplier?.toFixed(2)}x`
@@ -176,7 +176,7 @@ export function BetPanel({
             <Button
               type="button"
               size="lg"
-              className="h-24 w-full flex-col gap-0.5 rounded-2xl text-base font-bold"
+              className="h-16 w-full flex-col gap-0.5 rounded-2xl text-base font-bold sm:h-24"
               disabled={!canBet || placing}
               onClick={onPlace}
             >

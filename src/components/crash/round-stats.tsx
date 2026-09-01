@@ -15,10 +15,10 @@ export type StatBet = {
 
 type Tab = "todas" | "minhas" | "ganhos";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "todas", label: "Todas as apostas" },
-  { id: "minhas", label: "As minhas apostas" },
-  { id: "ganhos", label: "Maiores ganhos" },
+const TABS: { id: Tab; label: string; short: string }[] = [
+  { id: "todas", label: "Todas as apostas", short: "Todas" },
+  { id: "minhas", label: "As minhas apostas", short: "Minhas" },
+  { id: "ganhos", label: "Maiores ganhos", short: "Ganhos" },
 ];
 
 /** Painel de estatísticas — só mostra dados vindos do servidor. */
@@ -47,13 +47,14 @@ export function RoundStats({
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`flex-1 rounded-full px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+              className={`flex-1 whitespace-nowrap rounded-full px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                 tab === t.id
                   ? "bg-card text-foreground shadow-card"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.label}
+              <span className="sm:hidden">{t.short}</span>
+              <span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
