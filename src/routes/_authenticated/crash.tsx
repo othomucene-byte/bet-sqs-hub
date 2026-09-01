@@ -253,7 +253,7 @@ function CrashPage() {
 
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                   <p
-                    className={`font-display text-4xl font-black tabular-nums sm:text-5xl drop-shadow-[0_0_25px_rgba(0,0,0,0.6)] transition-transform sm:text-6xl ${multiplierTone} ${
+                    className={`font-display text-4xl font-black tabular-nums drop-shadow-[0_0_25px_rgba(0,0,0,0.6)] transition-transform sm:text-6xl ${multiplierTone} ${
                       status === "RUNNING" ? "animate-pulse-soft" : ""
                     }`}
                   >
