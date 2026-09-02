@@ -1,12 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { requireSupabaseAuth as Middleware } from "@/integrations/supabase/auth-middleware";
 
-type AuthedContext = {
-  supabase: Awaited<ReturnType<typeof Middleware>> extends never ? never : any;
-  userId: string;
-};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type AuthedContext = { supabase: any; userId: string };
+
 
 /** Confirma no servidor que o utilizador tem papel de admin antes de qualquer leitura privilegiada. */
 async function assertAdmin(context: { supabase: any; userId: string }) {
