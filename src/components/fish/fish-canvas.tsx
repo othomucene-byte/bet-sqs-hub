@@ -54,9 +54,13 @@ export function FishCanvas({
       drift: Math.random() * Math.PI * 2,
     }));
 
+    const sprite = new Image();
+    sprite.src = fishSprite.url;
+
     let raf = 0;
     let time = 0;
     let crashT = 0;
+
 
     const draw = () => {
       const { status: st, multiplier: m } = stateRef.current;
