@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck, Volume2, VolumeX } from "lucide-react";
 
+import aviatorBanner from "@/assets/aviator-banner.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
