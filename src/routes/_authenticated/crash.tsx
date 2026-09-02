@@ -232,10 +232,11 @@ function CrashPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.6fr_1fr]">
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-2xl border border-border/60 shadow-card">
-              <div className="relative h-[46dvh] max-h-[340px] min-h-[230px] border-b-2 border-destructive/70 sm:h-[330px] sm:max-h-none">
+        <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="min-w-0 space-y-4">
+            <div className="min-w-0 overflow-hidden rounded-2xl border border-border/60 shadow-card">
+              <div className="relative h-[46dvh] max-h-[340px] min-h-[230px] w-full border-b-2 border-destructive/70 sm:h-[330px] sm:max-h-none">
+
                 <FlightCanvas
                   status={status}
                   multiplier={displayMultiplier}
