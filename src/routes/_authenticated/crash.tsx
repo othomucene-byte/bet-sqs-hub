@@ -235,12 +235,13 @@ function CrashPage() {
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border/60 shadow-card">
-              <div className="relative h-[42vh] max-h-[320px] min-h-[210px] border-b-2 border-destructive/70 sm:h-[300px] sm:max-h-none">
+              <div className="relative h-[46dvh] max-h-[340px] min-h-[230px] border-b-2 border-destructive/70 sm:h-[330px] sm:max-h-none">
                 <FlightCanvas
                   status={status}
                   multiplier={displayMultiplier}
                   crashMultiplier={round?.crashMultiplier ?? null}
                 />
+
 
                 <div className="pointer-events-none absolute inset-x-0 top-3 flex items-start justify-between px-3">
                   <Badge variant="outline" className="border-white/20 bg-black/40 text-white">
