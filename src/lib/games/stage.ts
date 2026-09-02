@@ -372,7 +372,7 @@ export function startStage(
     time: number,
     scale: number,
   ) => {
-    const head = pointAt(Math.max(0.015, p));
+    const head = pointAt(Math.max(0.045, p));
     const ahead = pointAt(Math.min(1, Math.max(0.05, p) + 0.045));
     const angle = Math.atan2(ahead.y - head.y, ahead.x - head.x);
     const idle = state.status === "RUNNING" ? 1 : 0.35;
