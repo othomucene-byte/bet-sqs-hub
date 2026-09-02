@@ -21,6 +21,7 @@ import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/f
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
+import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -84,6 +85,12 @@ const AuthenticatedInvestidorOrdensRoute =
     path: '/investidor/ordens',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInvestidorRendimentosRoute =
+  AuthenticatedInvestidorRendimentosRouteImport.update({
+    id: '/investidor/rendimentos',
+    path: '/investidor/rendimentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -132,6 +141,7 @@ export interface FileRoutesById {
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/fish'
     | '/kyc'
     | '/investidor/ordens'
+    | '/investidor/rendimentos'
     | '/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/fish'
     | '/kyc'
     | '/investidor/ordens'
+    | '/investidor/rendimentos'
     | '/investidor'
     | '/api/public/webhooks/netshop'
   id:
@@ -177,6 +189,7 @@ export interface FileRouteTypes {
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
     | '/_authenticated/investidor/ordens'
+    | '/_authenticated/investidor/rendimentos'
     | '/_authenticated/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestidorOrdensRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/investidor/rendimentos': {
+      id: '/_authenticated/investidor/rendimentos'
+      path: '/investidor/rendimentos'
+      fullPath: '/investidor/rendimentos'
+      preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -293,6 +313,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
+  AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
   AuthenticatedInvestidorIndexRoute: typeof AuthenticatedInvestidorIndexRoute
 }
 
@@ -302,6 +323,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
+  AuthenticatedInvestidorRendimentosRoute:
+    AuthenticatedInvestidorRendimentosRoute,
   AuthenticatedInvestidorIndexRoute: AuthenticatedInvestidorIndexRoute,
 }
 
