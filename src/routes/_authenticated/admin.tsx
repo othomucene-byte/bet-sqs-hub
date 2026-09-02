@@ -58,7 +58,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AdminPage;
+  component: AdminPage,
 });
 
 const MZN = new Intl.NumberFormat("pt-PT", { style: "currency", currency: "MZN" });
