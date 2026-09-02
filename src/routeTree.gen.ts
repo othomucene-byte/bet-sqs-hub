@@ -19,6 +19,7 @@ import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
@@ -74,6 +75,12 @@ const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificacoesRoute =
+  AuthenticatedNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvestidorIndexRoute =
   AuthenticatedInvestidorIndexRouteImport.update({
     id: '/investidor/',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -131,6 +139,7 @@ export interface FileRoutesByTo {
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -149,6 +158,7 @@ export interface FileRoutesById {
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
+  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/fish'
     | '/kyc'
+    | '/notificacoes'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/fish'
     | '/kyc'
+    | '/notificacoes'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -200,6 +212,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crash'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
+    | '/_authenticated/notificacoes'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKycRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notificacoes': {
+      id: '/_authenticated/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/investidor/': {
       id: '/_authenticated/investidor/'
       path: '/investidor'
@@ -332,6 +352,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
+  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
   AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
@@ -343,6 +364,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
+  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
   AuthenticatedInvestidorRendimentosRoute:
