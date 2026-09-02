@@ -6,14 +6,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   { href: "/investimentos", label: "Investimentos" },
+  { href: "/investidor", label: "Investidor" },
   { href: "/empresas", label: "Empresas" },
   { href: "/crash", label: "Crash" },
   { href: "/fish", label: "Fish Crash" },
-
   { href: "/carteira", label: "Carteira" },
+  { href: "/kyc", label: "KYC" },
   { href: "/pagamentos", label: "Pagamentos" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/notificacoes", label: "Notificações" },
 ];
+
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
