@@ -136,7 +136,16 @@ export function FishCanvas({
       ctx.translate(head.x + flee, head.y + bob - flee * 0.35);
       ctx.rotate(st === "CRASHED" ? angle - 0.5 : angle - 0.35);
       ctx.scale(scale, scale);
-      drawFish(ctx, time);
+      if (sprite.complete && sprite.naturalWidth > 0) {
+        const w = 190;
+        const h = (sprite.naturalHeight / sprite.naturalWidth) * w;
+        ctx.shadowColor = "rgba(39,229,138,0.55)";
+        ctx.shadowBlur = 20;
+        ctx.drawImage(sprite, -w * 0.62, -h * 0.55, w, h);
+        ctx.shadowBlur = 0;
+      } else {
+        drawFish(ctx, time);
+      }
       ctx.restore();
 
       raf = requestAnimationFrame(draw);
