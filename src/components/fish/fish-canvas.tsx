@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import fishSprite from "@/assets/fish-sprite.png.asset.json";
+
 export type FishStatus = "WAITING" | "BETTING" | "RUNNING" | "CRASHED" | "SETTLED";
 
 const GREEN = "#27e58a";
@@ -52,9 +54,13 @@ export function FishCanvas({
       drift: Math.random() * Math.PI * 2,
     }));
 
+    const sprite = new Image();
+    sprite.src = fishSprite.url;
+
     let raf = 0;
     let time = 0;
     let crashT = 0;
+
 
     const draw = () => {
       const { status: st, multiplier: m } = stateRef.current;
@@ -130,7 +136,16 @@ export function FishCanvas({
       ctx.translate(head.x + flee, head.y + bob - flee * 0.35);
       ctx.rotate(st === "CRASHED" ? angle - 0.5 : angle - 0.35);
       ctx.scale(scale, scale);
-      drawFish(ctx, time);
+      if (sprite.complete && sprite.naturalWidth > 0) {
+        const w = 190;
+        const h = (sprite.naturalHeight / sprite.naturalWidth) * w;
+        ctx.shadowColor = "rgba(39,229,138,0.55)";
+        ctx.shadowBlur = 20;
+        ctx.drawImage(sprite, -w * 0.62, -h * 0.55, w, h);
+        ctx.shadowBlur = 0;
+      } else {
+        drawFish(ctx, time);
+      }
       ctx.restore();
 
       raf = requestAnimationFrame(draw);

@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import fishScene from "@/assets/fish-scene.jpg.asset.json";
+import fishSprite from "@/assets/fish-sprite.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
 import { multiplierAt } from "@/lib/crash/fair";
@@ -126,10 +128,15 @@ function FishPage() {
     <div className="min-h-screen bg-fish-bg text-fish-foreground" onPointerDown={() => sound.ensureAudio()}>
       <SiteHeader />
 
-      <div className="mx-auto w-full max-w-[1100px] p-2.5">
+      <div className="mx-auto w-full max-w-[1100px] p-2.5 pb-16">
         {/* HEADER DO JOGO */}
-        <div className="mb-2.5 flex h-[55px] items-center justify-between border-b border-fish-line bg-fish-panel px-4">
-          <span className="font-display text-xl font-black text-fish-amber">🐟 FISH CRASH</span>
+        <div className="mb-2.5 flex h-[55px] items-center justify-between gap-2 border-b border-fish-line bg-fish-panel px-4">
+          <span className="flex min-w-0 items-center gap-2">
+            <img src={fishSprite.url} alt="" className="h-8 w-10 shrink-0 object-contain" />
+            <span className="truncate font-display text-lg font-black text-fish-amber sm:text-xl">
+              FISH CRASH
+            </span>
+          </span>
           <div className="rounded-lg border border-fish-input-border bg-fish-input px-3 py-2 text-sm font-bold">
             Saldo:{" "}
             <span className="text-fish-green tabular-nums">
@@ -140,13 +147,20 @@ function FishPage() {
 
         {/* PALCO */}
         <div
-          className="relative h-[380px] overflow-hidden rounded-xl border border-[#193b50] sm:h-[430px]"
+          className="relative h-[46vh] min-h-[300px] overflow-hidden rounded-xl border border-[#193b50] sm:h-[430px]"
           style={{
             background:
               "radial-gradient(circle at 20% 50%, #0b3752 0, #052034 40%, #031422 75%, #020d17 100%)",
             boxShadow: "inset 0 0 50px rgba(0,0,0,0.8)",
           }}
         >
+          {/* Cenário submarino real */}
+          <img
+            src={fishScene.url}
+            alt="Cenário submarino do Fish Crash"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-30"
+          />
+
           {/* Silhuetas de algas */}
           <div
             className="pointer-events-none absolute inset-0 z-[1] opacity-40"
