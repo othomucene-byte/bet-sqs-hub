@@ -294,7 +294,7 @@ function CrashPage() {
                 </div>
               </div>
 
-              <div className="bg-card px-3 py-2">
+              <div className="min-w-0 bg-card px-3 py-2">
                 <HistoryBar
                   items={roundQuery.data?.history ?? []}
                   onSelect={(n) => setVerifyTarget(String(n))}
@@ -325,7 +325,7 @@ function CrashPage() {
             />
           </div>
 
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             <FairnessCard
               roundNumber={round?.roundNumber ?? null}
               serverSeedHash={round?.serverSeedHash ?? null}
