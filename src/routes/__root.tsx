@@ -155,6 +155,7 @@ function RootComponent() {
       <AuthBridge />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <AssistantWidget />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
