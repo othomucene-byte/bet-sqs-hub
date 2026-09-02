@@ -61,11 +61,27 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-hero-foreground: var(--hero-foreground);
   --color-hero-muted: var(--hero-muted);
+  --color-fish-bg: var(--fish-bg);
+  --color-fish-panel: var(--fish-panel);
+  --color-fish-line: var(--fish-line);
+  --color-fish-input: var(--fish-input);
+  --color-fish-input-border: var(--fish-input-border);
+  --color-fish-step: var(--fish-step);
+  --color-fish-quick: var(--fish-quick);
+  --color-fish-quick-foreground: var(--fish-quick-foreground);
+  --color-fish-green: var(--fish-green);
+  --color-fish-amber: var(--fish-amber);
+  --color-fish-ink: var(--fish-ink);
+  --color-fish-muted: var(--fish-muted);
+  --color-fish-chip: var(--fish-chip);
+  --color-fish-chip-foreground: var(--fish-chip-foreground);
+  --color-fish-foreground: var(--fish-foreground);
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --shadow-card: var(--shadow-card);
   --shadow-glow: var(--shadow-glow);
 }
+
 
 :root {
   --radius: 0.75rem;
