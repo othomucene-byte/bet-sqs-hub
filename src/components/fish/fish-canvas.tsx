@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import fishSprite from "@/assets/fish-sprite.png.asset.json";
+
 export type FishStatus = "WAITING" | "BETTING" | "RUNNING" | "CRASHED" | "SETTLED";
 
 const GREEN = "#27e58a";
