@@ -19,6 +19,7 @@ import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
+import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -70,6 +71,12 @@ const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInvestidorIndexRoute =
+  AuthenticatedInvestidorIndexRouteImport.update({
+    id: '/investidor/',
+    path: '/investidor/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
@@ -99,6 +107,7 @@ export interface FileRoutesByTo {
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesById {
@@ -113,6 +122,7 @@ export interface FileRoutesById {
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
+  '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/fish'
     | '/kyc'
+    | '/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/fish'
     | '/kyc'
+    | '/investidor'
     | '/api/public/webhooks/netshop'
   id:
     | '__root__'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crash'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
+    | '/_authenticated/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
 }
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKycRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/investidor/': {
+      id: '/_authenticated/investidor/'
+      path: '/investidor'
+      fullPath: '/investidor/'
+      preLoaderRoute: typeof AuthenticatedInvestidorIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -252,6 +272,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
+  AuthenticatedInvestidorIndexRoute: typeof AuthenticatedInvestidorIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -259,6 +280,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
+  AuthenticatedInvestidorIndexRoute: AuthenticatedInvestidorIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
