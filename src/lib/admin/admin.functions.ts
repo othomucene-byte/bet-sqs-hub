@@ -231,10 +231,11 @@ export const postReturn = createServerFn({ method: "POST" })
       _kind: data.kind,
       _amount: data.amount,
       _reference: data.reference,
-      _period_start: data.periodStart ?? undefined,
-      _period_end: data.periodEnd ?? undefined,
+      ...(data.periodStart ? { _period_start: data.periodStart } : {}),
+      ...(data.periodEnd ? { _period_end: data.periodEnd } : {}),
       _settle: data.settle,
     });
+
     if (error) throw new Error(error.message);
     return { id: (row as { id: string }).id };
   });
