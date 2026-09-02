@@ -105,9 +105,13 @@ export const submitCompanyApplication = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => applicationSchema.parse(input))
   .handler(async ({ data }) => {
     const { publicClient } = await import("./public-client.server");
-    const { error, data: row } = await publicClient()
+    // O id é gerado no servidor: a chave pública pode inserir, mas não ler
+    // candidaturas (RETURNING seria bloqueado pelas políticas de leitura).
+    const id = crypto.randomUUID();
+    const { error } = await publicClient()
       .from("company_applications")
       .insert({
+        id,
         company_name: data.companyName,
         nuit: data.nuit || null,
         sector: data.sector,
@@ -117,16 +121,10 @@ export const submitCompanyApplication = createServerFn({ method: "POST" })
         website: data.website || null,
         funding_goal: data.fundingGoal ?? null,
         description: data.description,
-      })
-      .select("id, status, created_at")
-      .single();
+      });
 
     if (error) throw new Error(error.message);
-    return {
-      id: row.id as string,
-      status: row.status as string,
-      createdAt: row.created_at as string,
-    };
+    return { id, status: "submitted", createdAt: new Date().toISOString() };
   });
 
 export type PortfolioInvestment = {
