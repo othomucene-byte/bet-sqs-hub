@@ -136,9 +136,10 @@ export function startStage(
   };
 
   const geometry = () => {
-    const padX = Math.max(18, width * 0.055);
-    const padTop = Math.max(26, height * 0.16);
-    const baseY = height - Math.max(14, height * 0.08);
+    const padX = Math.max(52, width * 0.09);
+    const padTop = Math.max(30, height * 0.17);
+    const baseY = height - Math.max(46, height * 0.14);
+
     return {
       x0: padX,
       y0: baseY,
@@ -371,9 +372,12 @@ export function startStage(
     time: number,
     scale: number,
   ) => {
-    const head = pointAt(Math.max(0.015, p));
+    const head = pointAt(Math.max(0.045, p));
     const ahead = pointAt(Math.min(1, Math.max(0.05, p) + 0.045));
-    const angle = Math.atan2(ahead.y - head.y, ahead.x - head.x);
+    const rawAngle = Math.atan2(ahead.y - head.y, ahead.x - head.x);
+    // Limitamos a inclinação para o movimento parecer natural em ecrãs estreitos.
+    const angle = Math.max(-0.4, Math.min(0.25, rawAngle * 0.55));
+
     const idle = state.status === "RUNNING" ? 1 : 0.35;
     const bob = Math.sin(time / (theme.medium === "water" ? 520 : 380)) * 6 * idle;
     const roll = Math.sin(time / 900) * 0.035 * idle;
@@ -417,26 +421,30 @@ export function startStage(
       ctx.shadowOffsetY = 0;
 
       if (theme.medium === "air" && state.status === "RUNNING") {
-        // Disco da hélice: blur translúcido à frente do nariz
-        const cx = w * 0.44;
+        // Disco da hélice: blur circular translúcido, sem lâminas visíveis
+        const r = h * 0.29;
         ctx.save();
-        ctx.translate(cx, -h * 0.03);
-        ctx.rotate(time / 26);
-        for (let i = 0; i < 5; i += 1) {
-          ctx.globalAlpha = 0.1 + (i % 2) * 0.06;
-          ctx.fillStyle = "rgba(226,232,240,0.9)";
-          ctx.beginPath();
-          ctx.ellipse(0, 0, w * 0.045, h * 0.3, (Math.PI / 5) * i, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 0.16;
-        ctx.strokeStyle = "rgba(255,255,255,0.7)";
-        ctx.lineWidth = 1.4;
+        ctx.translate(w * 0.42, -h * 0.02);
+        ctx.rotate(time / 40);
+        const disc = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
+        disc.addColorStop(0, "rgba(255,255,255,0.16)");
+        disc.addColorStop(0.62, "rgba(226,232,240,0.09)");
+        disc.addColorStop(1, "rgba(226,232,240,0)");
+        ctx.fillStyle = disc;
         ctx.beginPath();
-        ctx.arc(0, 0, h * 0.3, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.12;
+        ctx.strokeStyle = "rgba(255,255,255,0.65)";
+        for (let i = 0; i < 3; i += 1) {
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 0, r * (0.55 + i * 0.18), i * 1.6, i * 1.6 + 2.4);
+          ctx.stroke();
+        }
         ctx.restore();
       }
+
     }
     ctx.restore();
   };
