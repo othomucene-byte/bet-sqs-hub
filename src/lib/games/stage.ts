@@ -376,7 +376,7 @@ export function startStage(
     const ahead = pointAt(Math.min(1, Math.max(0.05, p) + 0.045));
     const rawAngle = Math.atan2(ahead.y - head.y, ahead.x - head.x);
     // Limitamos a inclinação para o movimento parecer natural em ecrãs estreitos.
-    const angle = Math.max(-0.62, Math.min(0.35, rawAngle * 0.72));
+    const angle = Math.max(-0.4, Math.min(0.25, rawAngle * 0.55));
 
     const idle = state.status === "RUNNING" ? 1 : 0.35;
     const bob = Math.sin(time / (theme.medium === "water" ? 520 : 380)) * 6 * idle;
