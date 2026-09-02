@@ -130,7 +130,6 @@ function FishPage() {
         {/* HEADER DO JOGO */}
         <div className="mb-2.5 flex h-[55px] items-center justify-between gap-2 border-b border-fish-line bg-fish-panel px-4">
           <span className="flex min-w-0 items-center gap-2">
-            <img src={fishSprite.url} alt="" className="h-8 w-10 shrink-0 object-contain" />
             <span className="truncate font-display text-lg font-black text-fish-amber sm:text-xl">
               FISH CRASH
             </span>
@@ -144,56 +143,35 @@ function FishPage() {
         </div>
 
         {/* PALCO */}
-        <div
-          className="relative h-[46vh] min-h-[300px] overflow-hidden rounded-xl border border-[#193b50] sm:h-[430px]"
-          style={{
-            background:
-              "radial-gradient(circle at 20% 50%, #0b3752 0, #052034 40%, #031422 75%, #020d17 100%)",
-            boxShadow: "inset 0 0 50px rgba(0,0,0,0.8)",
-          }}
-        >
-          {/* Cenário submarino real */}
-          <img
-            src={fishScene.url}
-            alt="Cenário submarino do Fish Crash"
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-30"
-          />
-
-          {/* Silhuetas de algas */}
-          <div
-            className="pointer-events-none absolute inset-0 z-[1] opacity-40"
-            style={{
-              background:
-                "radial-gradient(circle at 90% 80%, #02121f 20%, transparent 40%), radial-gradient(circle at 80% 90%, #02121f 20%, transparent 40%), linear-gradient(to top, #02121f 0%, transparent 30%)",
-            }}
-          />
-
+        <div className="relative h-[48dvh] min-h-[300px] overflow-hidden rounded-xl border border-[#193b50] bg-[#03111b] shadow-[inset_0_0_60px_rgba(0,0,0,0.75)] sm:h-[430px]">
           <FishCanvas status={status} multiplier={multiplier} />
 
           {/* Estado no topo */}
           <div
-            className="absolute left-1/2 top-[15px] z-10 -translate-x-1/2 rounded-[20px] border border-fish-green px-5 py-2 text-[13px] font-black tracking-widest"
-            style={{ background: "rgba(3, 24, 38, 0.9)", color: "#00ffaa", boxShadow: "0 0 10px rgba(39,229,138,0.3)" }}
+            className="absolute left-1/2 top-[15px] z-10 -translate-x-1/2 rounded-[20px] border border-fish-green px-4 py-1.5 text-[11px] font-black tracking-widest backdrop-blur-sm sm:px-5 sm:py-2 sm:text-[13px]"
+            style={{ background: "rgba(3, 24, 38, 0.75)", color: "#00ffaa", boxShadow: "0 0 14px rgba(39,229,138,0.35)" }}
           >
             {status === "BETTING" ? `PRÓXIMA RODADA · ${countdown}s` : statusText[status]}
           </div>
 
           {/* Caixa do multiplicador */}
           <div
-            className="pointer-events-none absolute right-[3%] top-[55%] z-[5] -translate-y-1/2 rounded-[15px] border-2 border-fish-green px-4 py-2 text-center sm:right-[8%] sm:border-[3px] sm:px-5 sm:py-3"
+            className="pointer-events-none absolute right-[4%] top-[52%] z-[5] -translate-y-1/2 rounded-[15px] border-2 border-fish-green px-4 py-2 text-center backdrop-blur-md transition-transform duration-300 sm:right-[7%] sm:px-5 sm:py-3"
             style={{
-              background: "rgba(3, 24, 38, 0.85)",
-              boxShadow: "0 0 15px rgba(39,229,138,0.5), inset 0 0 10px rgba(0,0,0,0.5)",
+              background: "rgba(3, 24, 38, 0.72)",
+              boxShadow: "0 0 22px rgba(39,229,138,0.45), inset 0 0 14px rgba(0,0,0,0.55)",
+              transform: `translateY(-50%) scale(${status === "RUNNING" ? 1 + Math.min(0.12, multiplier * 0.012) : 1})`,
             }}
           >
             <span
-              className="font-display text-[30px] font-black tabular-nums tracking-tight text-fish-green sm:text-[38px]"
-              style={{ textShadow: "0 0 10px #27e58a, 0 0 20px rgba(39,229,138,0.5)" }}
+              className="font-display text-[30px] font-black tabular-nums tracking-tight text-fish-green sm:text-[40px]"
+              style={{ textShadow: "0 0 12px #27e58a, 0 0 26px rgba(39,229,138,0.55)" }}
             >
               {multiplier.toFixed(2)}x
             </span>
           </div>
         </div>
+
 
         {/* APOSTAS */}
         <div className="mt-2.5 grid grid-cols-1 gap-2.5 md:grid-cols-3">
