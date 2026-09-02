@@ -196,6 +196,12 @@ function CrashPage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-6xl px-3 pb-10 pt-4 sm:px-4 sm:py-8">
+        <img
+          src={aviatorBanner.url}
+          alt="Aviator BETFCOM SQs"
+          className="mb-4 h-28 w-full rounded-2xl border border-border/60 object-cover shadow-card sm:h-40"
+        />
+
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
           <div>
             <h1 className="font-display text-xl font-semibold text-foreground sm:text-3xl">
