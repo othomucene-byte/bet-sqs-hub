@@ -140,13 +140,20 @@ function FishPage() {
 
         {/* PALCO */}
         <div
-          className="relative h-[380px] overflow-hidden rounded-xl border border-[#193b50] sm:h-[430px]"
+          className="relative h-[46vh] min-h-[300px] overflow-hidden rounded-xl border border-[#193b50] sm:h-[430px]"
           style={{
             background:
               "radial-gradient(circle at 20% 50%, #0b3752 0, #052034 40%, #031422 75%, #020d17 100%)",
             boxShadow: "inset 0 0 50px rgba(0,0,0,0.8)",
           }}
         >
+          {/* Cenário submarino real */}
+          <img
+            src={fishScene.url}
+            alt="Cenário submarino do Fish Crash"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-30"
+          />
+
           {/* Silhuetas de algas */}
           <div
             className="pointer-events-none absolute inset-0 z-[1] opacity-40"
