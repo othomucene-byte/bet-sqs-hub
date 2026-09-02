@@ -230,7 +230,7 @@ function TransactionForm({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <Card className="card-elevated">
         <CardHeader>
           <CardTitle className="text-lg">
@@ -248,7 +248,7 @@ function TransactionForm({
             <select
               id={`${direction}-wallet`}
               disabled
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 w-full min-w-0 truncate rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option>Betting Wallet (MZN)</option>
             </select>
@@ -264,7 +264,7 @@ function TransactionForm({
               value={method}
               onChange={(e) => setMethod(e.target.value as typeof method)}
               disabled={busy}
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 w-full min-w-0 truncate rounded-lg border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               {methods.map((m) => (
                 <option key={m.id} value={m.id} disabled={!enabled[m.id]}>
