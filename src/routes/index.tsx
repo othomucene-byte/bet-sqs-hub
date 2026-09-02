@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   BadgeCheck,
@@ -22,7 +24,20 @@ import {
 } from "@/components/ui/accordion";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { getPaymentsStatus } from "@/lib/payments/netshop.functions";
 import heroImage from "@/assets/hero.jpg";
+import logoCard from "@/assets/logo-card.png.asset.json";
+import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
+import logoEmola from "@/assets/logo-emola.png.asset.json";
+import logoMkesh from "@/assets/logo-mkesh.png.asset.json";
+
+const payLogos = [
+  { src: logoMpesa.url, alt: "M-Pesa" },
+  { src: logoEmola.url, alt: "e-Mola" },
+  { src: logoMkesh.url, alt: "mKesh" },
+  { src: logoCard.url, alt: "Visa e Mastercard" },
+];
+
 
 const title = "BETFCOM SQs — Investimentos e Apostas numa só plataforma";
 const description =
@@ -90,12 +105,12 @@ const passos = [
 ];
 
 const seguranca = [
-  "RLS e RBAC em toda a base de dados",
-  "Validação server-side e idempotência nas transações",
-  "Rate limiting e audit logs",
-  "Separação entre dados financeiros e dados públicos",
-  "Pagamentos confirmados apenas pelo backend",
-  "Secrets nunca expostos no frontend",
+  "Acesso aos dados restrito ao próprio titular",
+  "Todas as operações validadas e confirmadas no servidor",
+  "Cada movimento registado com data, valor e saldo",
+  "Limites e revisão manual em operações sensíveis",
+  "Pagamentos confirmados apenas pelo provedor e pelo servidor",
+  "Verificação de identidade obrigatória antes de operar",
 ];
 
 const faq = [
@@ -105,12 +120,13 @@ const faq = [
   },
   {
     q: "As carteiras de investimento e de apostas são a mesma?",
-    a: "Não. A Betting Wallet é separada contabilisticamente da carteira de investimentos, ainda que ambas pertençam ao mesmo perfil verificado.",
+    a: "Não. A carteira de apostas é separada contabilisticamente da carteira de investimentos, ainda que ambas pertençam ao mesmo perfil verificado.",
   },
   {
-    q: "Já é possível depositar dinheiro real?",
-    a: "Não. Os provedores de pagamento estão preparados para integração, mas o estado atual é não configurado. Nenhum saldo, odd ou rendimento é simulado como real.",
+    q: "Como deposito e levanto dinheiro?",
+    a: "Em meticais, através dos métodos disponíveis na página de pagamentos: M-Pesa, e-Mola, mKesh e cartão Visa/Mastercard. Cada depósito ou levantamento é confirmado pelo provedor e registado no seu extrato.",
   },
+
   {
     q: "Como funciona a candidatura de empresas?",
     a: "Empresa → candidatura → KYC/KYB → análise → aprovação → publicação. Só após conformidade legal os projetos podem receber investimento.",
@@ -118,7 +134,17 @@ const faq = [
 ];
 
 function Landing() {
+  const fetchStatus = useServerFn(getPaymentsStatus);
+  const status = useQuery({ queryKey: ["payments-status"], queryFn: () => fetchStatus() });
+  const active = Object.entries(status.data?.methods ?? {}).filter(([, on]) => on).length;
+  const paymentsBadge = status.isLoading
+    ? "A verificar métodos de pagamento…"
+    : active > 0
+      ? `${active} métodos de pagamento activos em MZN`
+      : "Métodos de pagamento em configuração";
+
   return (
+
     <div className="min-h-screen">
       <SiteHeader />
 
@@ -131,40 +157,43 @@ function Landing() {
             alt="Visualização de desempenho financeiro sob luzes de estádio"
             width={1600}
             height={1008}
-            className="absolute inset-0 size-full object-cover opacity-35 mix-blend-screen"
+            className="absolute inset-0 size-full object-cover opacity-25 mix-blend-screen"
           />
           <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:py-28">
             <Badge variant="secondary" className="mb-5">
-              Integrações de pagamento: não configuradas
+              {paymentsBadge}
             </Badge>
-            <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] text-hero-foreground sm:text-6xl">
-              Investimentos e apostas, numa arquitetura feita para confiança.
+            <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-hero-foreground sm:text-6xl">
+              Investir e apostar, com a mesma exigência de confiança.
             </h1>
             <p className="mt-5 max-w-xl text-base text-hero-muted sm:text-lg">
-              Dois produtos independentes — SQs Investimentos e SQs Apostas — sobre uma Core
-              Platform com auth, wallet, KYC, ledger, risco e backoffice.
+              Duas áreas independentes — SQs Investimentos e SQs Apostas — sob uma única identidade
+              verificada, com carteiras separadas e histórico completo de cada movimento.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <a href="#produtos">
-                  Investir <ArrowRight className="ml-1.5 size-4" />
+                <a href="/investimentos">
+                  Ver produtos de investimento <ArrowRight className="ml-1.5 size-4" />
                 </a>
               </Button>
               <Button size="lg" variant="secondary" asChild>
-                <a href="#produtos">Apostas</a>
+                <a href="/auth">Criar conta</a>
               </Button>
             </div>
 
-            <dl className="mt-14 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4">
+            <dl className="mt-14 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
               {[
-                ["Módulos", "3"],
-                ["Carteiras", "2"],
-                ["Idiomas previstos", "PT · EN · FR"],
-                ["Ledger", "Imutável"],
+                ["Moeda", "Metical (MZN)"],
+                ["Carteiras", "Investimentos · Apostas"],
+                ["Depósitos", "Móveis e cartão"],
+                ["Histórico", "Extrato completo"],
               ].map(([k, v]) => (
-                <div key={k} className="rounded-xl border border-hero-foreground/15 bg-hero-foreground/5 p-3">
+                <div
+                  key={k}
+                  className="min-w-0 rounded-xl border border-hero-foreground/15 bg-hero-foreground/5 p-3"
+                >
                   <dt className="text-xs text-hero-muted">{k}</dt>
-                  <dd className="mt-1 font-display text-lg font-semibold text-hero-foreground">
+                  <dd className="mt-1 font-display text-sm font-semibold text-hero-foreground sm:text-base">
                     {v}
                   </dd>
                 </div>
@@ -172,6 +201,29 @@ function Landing() {
             </dl>
           </div>
         </section>
+
+        {/* Métodos de pagamento */}
+        <section className="border-b border-border/60 bg-card/40">
+          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-8 sm:flex-row sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Depósitos e levantamentos em meticais, confirmados no servidor.
+            </p>
+            <ul className="flex flex-wrap items-center justify-center gap-6">
+              {payLogos.map((logo) => (
+                <li key={logo.alt}>
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    loading="lazy"
+                    className="h-7 w-auto object-contain opacity-80"
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+
 
         {/* Produtos */}
         <section id="produtos" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
