@@ -3,18 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Volume2, VolumeX } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
-import aviatorBanner from "@/assets/aviator-banner.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SiteHeader } from "@/components/site-header";
 import { FlightCanvas, type FlightStatus } from "@/components/crash/flight-canvas";
-import { HistoryBar } from "@/components/crash/history-bar";
-import { BetPanel, type BetState } from "@/components/crash/bet-panel";
-import { RoundStats, type StatBet } from "@/components/crash/round-stats";
+import { BetPad } from "@/components/games/bet-pad";
+import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt, sha256Hex, crashResult } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
 import {
@@ -25,7 +21,7 @@ import {
   placeBet,
   revealRound,
 } from "@/lib/crash/crash.functions";
-import { getTransactions, getWallet } from "@/lib/wallet/wallet.functions";
+import { getWallet } from "@/lib/wallet/wallet.functions";
 
 export const Route = createFileRoute("/_authenticated/crash")({
   head: () => ({
@@ -49,22 +45,13 @@ export const Route = createFileRoute("/_authenticated/crash")({
   component: CrashPage,
 });
 
-const MZN = new Intl.NumberFormat("pt-PT", { style: "currency", currency: "MZN" });
-
-const statusLabel: Record<string, string> = {
-  WAITING: "A preparar",
-  BETTING: "Apostas abertas",
-  RUNNING: "Em voo",
-  CRASHED: "Voou!",
-  SETTLED: "Liquidada",
-};
+const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function CrashPage() {
   const queryClient = useQueryClient();
   const fetchRound = useServerFn(getCurrentRound);
   const fetchWallet = useServerFn(getWallet);
   const fetchBet = useServerFn(getMyBet);
-  const fetchLedger = useServerFn(getTransactions);
   const fetchStats = useServerFn(getRoundStats);
   const submitBet = useServerFn(placeBet);
   const submitCashout = useServerFn(cashout);
@@ -80,10 +67,6 @@ function CrashPage() {
   const status = (round?.status ?? "WAITING") as FlightStatus;
 
   const walletQuery = useQuery({ queryKey: ["wallet"], queryFn: () => fetchWallet() });
-  const ledgerQuery = useQuery({
-    queryKey: ["wallet", "ledger"],
-    queryFn: () => fetchLedger({ data: { limit: 8 } }),
-  });
   const betQuery = useQuery({
     queryKey: ["crash", "bet", round?.id],
     queryFn: () => fetchBet({ data: { roundId: round!.id } }),
@@ -96,13 +79,12 @@ function CrashPage() {
     refetchInterval: 3000,
   });
 
-  const [bet, setBet] = useState<BetState>({
-    amount: "50",
-    autoEnabled: true,
-    autoValue: "2.00",
-  });
+  const [amount, setAmount] = useState("50");
+  const [auto, setAuto] = useState("2.00");
+  const [autoEnabled, setAutoEnabled] = useState(false);
   const [muted, setMutedState] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState("");
+  const clock = useClock();
 
   useEffect(() => {
     setMutedState(sound.loadMutePreference());
@@ -120,8 +102,8 @@ function CrashPage() {
       submitBet({
         data: {
           roundId: round!.id,
-          amount: Number(bet.amount),
-          autoCashout: bet.autoEnabled && Number(bet.autoValue) > 1 ? Number(bet.autoValue) : null,
+          amount: Number(amount),
+          autoCashout: autoEnabled && Number(auto) > 1 ? Number(auto) : null,
         },
       }),
     onSuccess: (result) => {
@@ -130,7 +112,6 @@ function CrashPage() {
         return;
       }
       sound.playBet();
-      toast.success("Aposta registada pelo servidor.");
       void queryClient.invalidateQueries({ queryKey: ["wallet"] });
       void betQuery.refetch();
       void statsQuery.refetch();
@@ -146,7 +127,6 @@ function CrashPage() {
         return;
       }
       sound.playCashout();
-      toast.success("Cash-out confirmado pelo servidor.");
       void queryClient.invalidateQueries({ queryKey: ["wallet"] });
       void betQuery.refetch();
       void statsQuery.refetch();
@@ -154,7 +134,7 @@ function CrashPage() {
     onError: () => toast.error("Não foi possível fazer cash-out."),
   });
 
-  // Interpolação local só para a leitura do multiplicador; o valor pago é o do servidor.
+  // Interpolação local só para leitura; o valor pago é sempre o do servidor.
   const displayMultiplier = useLiveMultiplier(
     status,
     round?.startedAt ?? null,
@@ -166,166 +146,145 @@ function CrashPage() {
   useCrashAudio(status, displayMultiplier, round?.phaseMsRemaining ?? 0);
 
   const myBet = betQuery.data;
-  const wallet = walletQuery.data;
   const config = roundQuery.data?.config;
+  const minBet = config?.minBet ?? 10;
+  const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
+  const active = myBet?.status === "active";
 
-  const myBets: StatBet[] = myBet
-    ? [
-        {
-          id: myBet.id,
-          player: "Você",
-          amount: myBet.amount,
-          multiplier: myBet.cashoutMultiplier,
-          payout: myBet.payout,
-          status: myBet.status,
-        },
-      ]
-    : [];
-
-  const multiplierTone =
-    status === "CRASHED"
-      ? "text-destructive"
-      : displayMultiplier >= 5
-        ? "text-chart-3"
-        : displayMultiplier >= 2
-          ? "text-primary"
-          : "text-hero-foreground";
+  const stateLabel = active
+    ? "Em jogo"
+    : myBet?.status === "cashed_out"
+      ? `Levantado ${myBet.cashoutMultiplier?.toFixed(2)}x`
+      : myBet?.status === "lost"
+        ? "Perdida"
+        : status === "BETTING"
+          ? `Fecha em ${countdown}s`
+          : "A aguardar ronda";
 
   return (
-    <div className="min-h-screen bg-background" onPointerDown={() => sound.ensureAudio()}>
-      <SiteHeader />
+    <div
+      className="flex min-h-[100dvh] flex-col bg-fish-bg text-fish-foreground"
+      onPointerDown={() => sound.ensureAudio()}
+    >
+      <GameTopBar
+        title="Aviator"
+        accent="#ff3b47"
+        balance={walletQuery.data?.balance ?? null}
+        clock={clock}
+        muted={muted}
+        onToggleMute={toggleMute}
+      />
+      <HistoryStrip
+        items={roundQuery.data?.history ?? []}
+        onSelect={(n) => setVerifyTarget(String(n))}
+      />
 
-      <main className="mx-auto w-full max-w-6xl px-3 pb-10 pt-4 sm:px-4 sm:py-8">
-        <img
-          src={aviatorBanner.url}
-          alt="Aviator BETFCOM SQs"
-          className="mb-4 h-28 w-full rounded-2xl border border-border/60 object-cover shadow-card sm:h-40"
-        />
+      <main className="mx-auto w-full max-w-[820px] flex-1 px-2.5 pb-4">
+        {/* PALCO */}
+        <section className="relative mt-2.5 h-[42dvh] min-h-[240px] overflow-hidden rounded-2xl border border-fish-line/70 bg-[#050e19] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)] sm:h-[360px]">
+          <FlightCanvas
+            status={status}
+            multiplier={displayMultiplier}
+            crashMultiplier={round?.crashMultiplier ?? null}
+          />
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
-          <div>
-            <h1 className="font-display text-xl font-semibold text-foreground sm:text-3xl">
-              Aviator Crash
-            </h1>
-            <p className="mt-1 hidden text-sm text-muted-foreground sm:block">
-              O servidor é a autoridade sobre ronda, aposta, cash-out e saldo.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleMute}
-              aria-label={muted ? "Ligar som" : "Desligar som"}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+            {status === "CRASHED" && (
+              <p className="font-display text-lg font-bold tracking-wide text-fish-foreground/90 sm:text-2xl">
+                O AVIÃO PARTIU!
+              </p>
+            )}
+            <p
+              className={`font-display text-[52px] font-black leading-none tabular-nums sm:text-[76px] ${
+                status === "CRASHED" ? "text-[#e0333f]" : "text-fish-foreground"
+              }`}
+              style={{ textShadow: "0 6px 30px rgba(0,0,0,0.65)" }}
             >
-              {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-            </Button>
-            <div className="rounded-full border border-border/60 bg-card px-3 py-1.5 sm:px-4 sm:py-2">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Carteira de apostas
-              </p>
-              <p className="font-display text-base font-bold tabular-nums text-primary sm:text-lg">
-                {wallet ? MZN.format(wallet.balance) : "—"}
-              </p>
-            </div>
+              {displayMultiplier.toFixed(2)}
+              <span className="text-[0.6em]">x</span>
+            </p>
+
+            {status === "BETTING" && (
+              <div className="mt-4 w-[min(320px,80%)] rounded-2xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-sm">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-fish-muted">
+                  A aguardar pela próxima ronda
+                </p>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
+                  <div
+                    className="h-full rounded-full bg-[#ff3b47] transition-[width] duration-1000 ease-linear"
+                    style={{ width: `${Math.min(100, (countdown / 8) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
+
+          <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-fish-muted">
+            Ronda #{round?.roundNumber ?? "—"}
+          </span>
+        </section>
+
+        {/* APOSTAS */}
+        <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
+          <BetPad
+            value={amount}
+            onValue={setAmount}
+            minBet={minBet}
+            maxBet={maxBet}
+            disabled={Boolean(myBet) || status !== "BETTING"}
+            mode={active ? "cashout" : "bet"}
+            stateLabel={stateLabel}
+            cashoutValue={(myBet?.amount ?? 0) * displayMultiplier}
+            busy={placeMutation.isPending || cashoutMutation.isPending}
+            onPlace={() => placeMutation.mutate()}
+            onCashout={() => myBet && cashoutMutation.mutate(myBet.id)}
+            footer={
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setAutoEnabled((v) => !v)}
+                  className={`flex-1 rounded-full py-2 text-xs font-bold transition ${
+                    autoEnabled
+                      ? "bg-fish-green text-fish-ink"
+                      : "bg-fish-step text-fish-quick-foreground"
+                  }`}
+                >
+                  Levantamento automático
+                </button>
+                <input
+                  inputMode="decimal"
+                  aria-label="Multiplicador de levantamento automático"
+                  value={auto}
+                  onChange={(event) => setAuto(event.target.value)}
+                  className="w-[72px] rounded-full bg-fish-input py-2 text-center text-xs font-bold tabular-nums text-fish-foreground outline-none"
+                />
+              </div>
+            }
+          />
+
+          <BetPad
+            value="50"
+            onValue={() => {}}
+            minBet={minBet}
+            maxBet={maxBet}
+            disabled
+            mode="locked"
+            stateLabel="1 aposta por ronda"
+          />
         </div>
 
-        <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          <div className="min-w-0 space-y-4">
-            <div className="min-w-0 overflow-hidden rounded-2xl border border-border/60 shadow-card">
-              <div className="relative h-[46dvh] max-h-[340px] min-h-[230px] w-full border-b-2 border-destructive/70 sm:h-[330px] sm:max-h-none">
+        <TotalsBar
+          staked={statsQuery.data?.totalStaked ?? 0}
+          paid={statsQuery.data?.totalPaid ?? 0}
+        />
 
-                <FlightCanvas
-                  status={status}
-                  multiplier={displayMultiplier}
-                  crashMultiplier={round?.crashMultiplier ?? null}
-                />
-
-
-                <div className="pointer-events-none absolute inset-x-0 top-3 flex items-start justify-between px-3">
-                  <Badge variant="outline" className="border-white/20 bg-black/40 text-white">
-                    Ronda #{round?.roundNumber ?? "—"}
-                  </Badge>
-                  <Badge
-                    variant={status === "CRASHED" ? "destructive" : "outline"}
-                    className={
-                      status === "CRASHED"
-                        ? ""
-                        : "border-white/20 bg-black/40 text-white"
-                    }
-                  >
-                    {statusLabel[status]}
-                  </Badge>
-                </div>
-
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                  <p
-                    className={`font-display text-4xl font-black tabular-nums drop-shadow-[0_0_25px_rgba(0,0,0,0.6)] transition-transform sm:text-6xl ${multiplierTone} ${
-                      status === "RUNNING" ? "animate-pulse-soft" : ""
-                    }`}
-                  >
-                    {displayMultiplier.toFixed(2)}
-                    <span className="text-2xl sm:text-3xl">x</span>
-                  </p>
-                  {status === "BETTING" && (
-                    <div className="mt-4 flex flex-col items-center gap-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
-                        Apostas fecham em {countdown}s
-                      </p>
-                      <div className="h-1.5 w-40 overflow-hidden rounded-full bg-white/15">
-                        <div
-                          className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear"
-                          style={{ width: `${Math.min(100, (countdown / 8) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {status !== "BETTING" && (
-                    <p className="mt-3 rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/70">
-                      {status === "RUNNING"
-                        ? "Faça cash-out antes do crash"
-                        : status === "CRASHED"
-                          ? "O avião voou"
-                          : "A preparar a próxima ronda"}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="min-w-0 bg-card px-3 py-2">
-                <HistoryBar
-                  items={roundQuery.data?.history ?? []}
-                  onSelect={(n) => setVerifyTarget(String(n))}
-                />
-              </div>
-            </div>
-
-            <BetPanel
-              state={bet}
-              onChange={setBet}
-              status={status}
-              bet={myBet ?? null}
-              liveMultiplier={displayMultiplier}
-              minBet={config?.minBet ?? 10}
-              maxBet={config?.maxBet ?? 25000}
-              onPlace={() => placeMutation.mutate()}
-              onCashout={(id) => cashoutMutation.mutate(id)}
-              placing={placeMutation.isPending}
-              cashingOut={cashoutMutation.isPending}
-            />
-
-            <RoundStats
-              bets={statsQuery.data?.bets ?? []}
-              top={statsQuery.data?.top ?? []}
-              myBets={myBets}
-              totalStaked={statsQuery.data?.totalStaked ?? 0}
-              totalPaid={statsQuery.data?.totalPaid ?? 0}
-            />
-          </div>
-
-          <div className="min-w-0 space-y-5">
+        <details className="mt-2.5 rounded-2xl border border-fish-line/70 bg-fish-panel">
+          <summary className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-bold">
+            <ShieldCheck className="size-4 text-fish-green" />
+            Provably fair e regras da ronda
+          </summary>
+          <div className="border-t border-fish-line/70 p-3">
             <FairnessCard
               roundNumber={round?.roundNumber ?? null}
               serverSeedHash={round?.serverSeedHash ?? null}
@@ -335,36 +294,12 @@ function CrashPage() {
               target={verifyTarget}
               onTargetChange={setVerifyTarget}
             />
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Movimentos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {(ledgerQuery.data ?? []).length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Ainda sem movimentos. Um depósito confirmado cria a primeira entrada.
-                  </p>
-                )}
-                {(ledgerQuery.data ?? []).map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between border-b border-border/40 pb-2 text-sm last:border-0"
-                  >
-                    <span className="text-muted-foreground">{tx.type}</span>
-                    <span
-                      className={
-                        tx.amount >= 0 ? "font-medium text-primary" : "font-medium text-foreground"
-                      }
-                    >
-                      {MZN.format(tx.amount)}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <p className="mt-3 text-[11px] text-fish-muted">
+              Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é
+              a autoridade sobre ronda, aposta, cash-out e saldo. Jogue com responsabilidade.
+            </p>
           </div>
-        </div>
+        </details>
       </main>
     </div>
   );
@@ -480,47 +415,41 @@ function FairnessCard({
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center gap-2">
-        <ShieldCheck className="size-4 text-primary" />
-        <CardTitle className="text-base">Provably fair</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <p className="text-muted-foreground">
-          O compromisso da ronda é publicado antes de as apostas abrirem. A semente do
-          servidor só é revelada após o crash.
-        </p>
-        <dl className="space-y-1 text-xs">
-          <div className="flex justify-between gap-2">
-            <dt className="text-muted-foreground">Hash</dt>
-            <dd className="truncate font-mono text-foreground">{serverSeedHash ?? "—"}</dd>
-          </div>
-          <div className="flex justify-between gap-2">
-            <dt className="text-muted-foreground">Client seed</dt>
-            <dd className="font-mono text-foreground">{clientSeed ?? "—"}</dd>
-          </div>
-          <div className="flex justify-between gap-2">
-            <dt className="text-muted-foreground">Nonce</dt>
-            <dd className="font-mono text-foreground">{nonce ?? "—"}</dd>
-          </div>
-          <div className="flex justify-between gap-2">
-            <dt className="text-muted-foreground">Vantagem da casa</dt>
-            <dd className="font-mono text-foreground">{(houseEdge * 100).toFixed(1)}%</dd>
-          </div>
-        </dl>
-        <div className="flex gap-2">
-          <Input
-            value={target}
-            onChange={(e) => onTargetChange(e.target.value)}
-            placeholder={roundNumber ? String(roundNumber - 1) : "N.º da ronda"}
-            inputMode="numeric"
-          />
-          <Button variant="outline" onClick={verify} disabled={busy}>
-            Verificar
-          </Button>
+    <div className="space-y-3 text-sm">
+      <p className="text-fish-muted">
+        O compromisso da ronda é publicado antes de as apostas abrirem. A semente do servidor só é
+        revelada após o crash.
+      </p>
+      <dl className="space-y-1 text-xs">
+        <div className="flex justify-between gap-2">
+          <dt className="text-fish-muted">Hash</dt>
+          <dd className="truncate font-mono">{serverSeedHash ?? "—"}</dd>
         </div>
-        {result && <p className="text-xs text-foreground">{result}</p>}
-      </CardContent>
-    </Card>
+        <div className="flex justify-between gap-2">
+          <dt className="text-fish-muted">Client seed</dt>
+          <dd className="font-mono">{clientSeed ?? "—"}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-fish-muted">Nonce</dt>
+          <dd className="font-mono">{nonce ?? "—"}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-fish-muted">Vantagem da casa</dt>
+          <dd className="font-mono">{(houseEdge * 100).toFixed(1)}%</dd>
+        </div>
+      </dl>
+      <div className="flex gap-2">
+        <Input
+          value={target}
+          onChange={(e) => onTargetChange(e.target.value)}
+          placeholder={roundNumber ? String(roundNumber - 1) : "N.º da ronda"}
+          inputMode="numeric"
+        />
+        <Button variant="outline" onClick={verify} disabled={busy}>
+          Verificar
+        </Button>
+      </div>
+      {result && <p className="text-xs">{result}</p>}
+    </div>
   );
 }
