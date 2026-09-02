@@ -133,7 +133,17 @@ const faq = [
 ];
 
 function Landing() {
+  const fetchStatus = useServerFn(getPaymentsStatus);
+  const status = useQuery({ queryKey: ["payments-status"], queryFn: () => fetchStatus() });
+  const active = Object.entries(status.data?.methods ?? {}).filter(([, on]) => on).length;
+  const paymentsBadge = status.isLoading
+    ? "A verificar métodos de pagamento…"
+    : active > 0
+      ? `${active} métodos de pagamento activos em MZN`
+      : "Métodos de pagamento em configuração";
+
   return (
+
     <div className="min-h-screen">
       <SiteHeader />
 
