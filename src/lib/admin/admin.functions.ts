@@ -102,7 +102,7 @@ export const listKycQueue = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
-    return (rows ?? []).map((row: Record<string, unknown>) => ({
+    return (rows ?? []).map((row: any) => ({
       id: row.id as string,
       userId: row.user_id as string,
       fullName: row.full_name as string,
@@ -169,7 +169,7 @@ export const listAllOrders = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row: Record<string, any>) => ({
+    return (data ?? []).map((row: any) => ({
       id: row.id as string,
       userId: row.user_id as string,
       side: row.side as string,
@@ -195,7 +195,7 @@ export const listAllInvestments = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row: Record<string, any>) => ({
+    return (data ?? []).map((row: any) => ({
       id: row.id as string,
       userId: row.user_id as string,
       amount: Number(row.amount),
@@ -231,8 +231,8 @@ export const postReturn = createServerFn({ method: "POST" })
       _kind: data.kind,
       _amount: data.amount,
       _reference: data.reference,
-      _period_start: data.periodStart || null,
-      _period_end: data.periodEnd || null,
+      _period_start: data.periodStart ?? undefined,
+      _period_end: data.periodEnd ?? undefined,
       _settle: data.settle,
     });
     if (error) throw new Error(error.message);
@@ -252,7 +252,7 @@ export const listPayments = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row: Record<string, unknown>) => ({
+    return (data ?? []).map((row: any) => ({
       id: row.id as string,
       userId: row.user_id as string,
       direction: row.direction as string,
@@ -280,7 +280,7 @@ export const listRiskSignals = createServerFn({ method: "GET" })
       .limit(200);
     if (error) throw new Error(error.message);
     return (data ?? [])
-      .map((row: Record<string, unknown>) => ({
+      .map((row: any) => ({
         id: row.id as string,
         walletId: row.wallet_id as string,
         type: row.type as string,
@@ -305,7 +305,7 @@ export const listApplications = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row: Record<string, unknown>) => ({
+    return (data ?? []).map((row: any) => ({
       id: row.id as string,
       companyName: row.company_name as string,
       sector: row.sector as string,
