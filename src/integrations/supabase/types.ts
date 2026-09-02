@@ -217,6 +217,201 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_documents: {
+        Row: {
+          content: string | null
+          created_at: string
+          doc_type: string
+          id: string
+          product_id: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          doc_type?: string
+          id?: string
+          product_id: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          doc_type?: string
+          id?: string
+          product_id?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_documents_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "investment_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_order_events: {
+        Row: {
+          created_at: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          note: string | null
+          order_id: string
+          to_status: string
+        }
+        Insert: {
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          order_id: string
+          to_status: string
+        }
+        Update: {
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          order_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "investment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_orders: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          executed_amount: number
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          investment_id: string | null
+          metadata: Json
+          product_id: string | null
+          reference: string
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          executed_amount?: number
+          failure_reason?: string | null
+          id?: string
+          idempotency_key: string
+          investment_id?: string | null
+          metadata?: Json
+          product_id?: string | null
+          reference: string
+          side: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          executed_amount?: number
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string
+          investment_id?: string | null
+          metadata?: Json
+          product_id?: string | null
+          reference?: string
+          side?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_orders_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "investment_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_positions: {
+        Row: {
+          created_at: string
+          currency: string
+          current_value: number
+          id: string
+          invested_amount: number
+          product_id: string
+          realized_result: number
+          unrealized_result: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          current_value?: number
+          id?: string
+          invested_amount?: number
+          product_id: string
+          realized_result?: number
+          unrealized_result?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          current_value?: number
+          id?: string
+          invested_amount?: number
+          product_id?: string
+          realized_result?: number
+          unrealized_result?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_positions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "investment_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_products: {
         Row: {
           capacity: number
@@ -225,15 +420,18 @@ export type Database = {
           currency: string
           description: string
           id: string
+          max_amount: number | null
           min_amount: number
           name: string
           raised: number
           risk_level: string
+          rules: Json
           slug: string
           status: string
           target_rate_annual: number
           term_months: number
           updated_at: string
+          variable_return: boolean
         }
         Insert: {
           capacity?: number
@@ -242,15 +440,18 @@ export type Database = {
           currency?: string
           description: string
           id?: string
+          max_amount?: number | null
           min_amount?: number
           name: string
           raised?: number
           risk_level?: string
+          rules?: Json
           slug: string
           status?: string
           target_rate_annual: number
           term_months: number
           updated_at?: string
+          variable_return?: boolean
         }
         Update: {
           capacity?: number
@@ -259,15 +460,18 @@ export type Database = {
           currency?: string
           description?: string
           id?: string
+          max_amount?: number | null
           min_amount?: number
           name?: string
           raised?: number
           risk_level?: string
+          rules?: Json
           slug?: string
           status?: string
           target_rate_annual?: number
           term_months?: number
           updated_at?: string
+          variable_return?: boolean
         }
         Relationships: [
           {
@@ -279,14 +483,135 @@ export type Database = {
           },
         ]
       }
+      investment_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          investment_id: string
+          order_id: string | null
+          principal: number
+          reference: string
+          return_amount: number
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          investment_id: string
+          order_id?: string | null
+          principal?: number
+          reference: string
+          return_amount?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          investment_id?: string
+          order_id?: string | null
+          principal?: number
+          reference?: string
+          return_amount?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_redemptions_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "investment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_returns: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          investment_id: string
+          kind: string
+          metadata: Json
+          period_end: string | null
+          period_start: string | null
+          product_id: string | null
+          reference: string
+          settled: boolean
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          investment_id: string
+          kind: string
+          metadata?: Json
+          period_end?: string | null
+          period_start?: string | null
+          product_id?: string | null
+          reference: string
+          settled?: boolean
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          investment_id?: string
+          kind?: string
+          metadata?: Json
+          period_end?: string | null
+          period_start?: string | null
+          product_id?: string | null
+          reference?: string
+          settled?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_returns_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_returns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "investment_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
+          accrued_return: number
           amount: number
           cancelled_at: string | null
           created_at: string
           id: string
           matures_at: string
+          order_id: string | null
+          principal: number | null
           product_id: string
+          redeemed_at: string | null
           reference: string
           status: string
           target_rate_annual: number
@@ -294,12 +619,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accrued_return?: number
           amount: number
           cancelled_at?: string | null
           created_at?: string
           id?: string
           matures_at: string
+          order_id?: string | null
+          principal?: number | null
           product_id: string
+          redeemed_at?: string | null
           reference: string
           status?: string
           target_rate_annual: number
@@ -307,12 +636,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accrued_return?: number
           amount?: number
           cancelled_at?: string | null
           created_at?: string
           id?: string
           matures_at?: string
+          order_id?: string | null
+          principal?: number | null
           product_id?: string
+          redeemed_at?: string | null
           reference?: string
           status?: string
           target_rate_annual?: number
@@ -328,6 +661,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          id: string
+          kyc_profile_id: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          id?: string
+          kyc_profile_id?: string | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          id?: string
+          kyc_profile_id?: string | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_kyc_profile_id_fkey"
+            columns: ["kyc_profile_id"]
+            isOneToOne: false
+            referencedRelation: "kyc_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          document_number: string
+          document_type: string
+          full_name: string
+          id: string
+          nationality: string
+          province: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          risk_profile: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          document_number: string
+          document_type?: string
+          full_name: string
+          id?: string
+          nationality?: string
+          province?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          risk_profile?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          document_number?: string
+          document_type?: string
+          full_name?: string
+          id?: string
+          nationality?: string
+          province?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          risk_profile?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          category: string
+          created_at: string
+          id: string
+          metadata: Json
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       payment_intents: {
         Row: {
@@ -533,12 +994,16 @@ export type Database = {
       cancel_investment: {
         Args: { _investment_id: string; _user_id: string }
         Returns: {
+          accrued_return: number
           amount: number
           cancelled_at: string | null
           created_at: string
           id: string
           matures_at: string
+          order_id: string | null
+          principal: number | null
           product_id: string
+          redeemed_at: string | null
           reference: string
           status: string
           target_rate_annual: number
@@ -626,12 +1091,16 @@ export type Database = {
       place_investment: {
         Args: { _amount: number; _product_id: string; _user_id: string }
         Returns: {
+          accrued_return: number
           amount: number
           cancelled_at: string | null
           created_at: string
           id: string
           matures_at: string
+          order_id: string | null
+          principal: number | null
           product_id: string
+          redeemed_at: string | null
           reference: string
           status: string
           target_rate_annual: number
@@ -641,6 +1110,102 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "investments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      place_investment_order: {
+        Args: {
+          _amount: number
+          _idempotency_key: string
+          _product_id: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          executed_amount: number
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          investment_id: string | null
+          metadata: Json
+          product_id: string | null
+          reference: string
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investment_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      post_investment_return: {
+        Args: {
+          _amount: number
+          _investment_id: string
+          _kind: string
+          _period_end?: string
+          _period_start?: string
+          _reference: string
+          _settle?: boolean
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          investment_id: string
+          kind: string
+          metadata: Json
+          period_end: string | null
+          period_start: string | null
+          product_id: string | null
+          reference: string
+          settled: boolean
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investment_returns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      recalc_investment_position: {
+        Args: { _product_id: string; _user_id: string }
+        Returns: undefined
+      }
+      redeem_investment: {
+        Args: {
+          _idempotency_key: string
+          _investment_id: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          executed_amount: number
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          investment_id: string | null
+          metadata: Json
+          product_id: string | null
+          reference: string
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investment_orders"
           isOneToOne: true
           isSetofReturn: false
         }

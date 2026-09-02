@@ -18,6 +18,12 @@ import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
+import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
+import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
+import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
+import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
+import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +70,41 @@ const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
   path: '/fish',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificacoesRoute =
+  AuthenticatedNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvestidorIndexRoute =
+  AuthenticatedInvestidorIndexRouteImport.update({
+    id: '/investidor/',
+    path: '/investidor/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvestidorExtratoRoute =
+  AuthenticatedInvestidorExtratoRouteImport.update({
+    id: '/investidor/extrato',
+    path: '/investidor/extrato',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvestidorOrdensRoute =
+  AuthenticatedInvestidorOrdensRouteImport.update({
+    id: '/investidor/ordens',
+    path: '/investidor/ordens',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvestidorRendimentosRoute =
+  AuthenticatedInvestidorRendimentosRouteImport.update({
+    id: '/investidor/rendimentos',
+    path: '/investidor/rendimentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -80,6 +121,12 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/kyc': typeof AuthenticatedKycRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
+  '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
@@ -91,6 +138,12 @@ export interface FileRoutesByTo {
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/kyc': typeof AuthenticatedKycRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
+  '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesById {
@@ -104,6 +157,12 @@ export interface FileRoutesById {
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
+  '/_authenticated/kyc': typeof AuthenticatedKycRoute
+  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
+  '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
+  '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
@@ -117,6 +176,12 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/crash'
     | '/fish'
+    | '/kyc'
+    | '/notificacoes'
+    | '/investidor/extrato'
+    | '/investidor/ordens'
+    | '/investidor/rendimentos'
+    | '/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -128,6 +193,12 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/crash'
     | '/fish'
+    | '/kyc'
+    | '/notificacoes'
+    | '/investidor/extrato'
+    | '/investidor/ordens'
+    | '/investidor/rendimentos'
+    | '/investidor'
     | '/api/public/webhooks/netshop'
   id:
     | '__root__'
@@ -140,6 +211,12 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
     | '/_authenticated/fish'
+    | '/_authenticated/kyc'
+    | '/_authenticated/notificacoes'
+    | '/_authenticated/investidor/extrato'
+    | '/_authenticated/investidor/ordens'
+    | '/_authenticated/investidor/rendimentos'
+    | '/_authenticated/investidor/'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
 }
@@ -218,6 +295,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFishRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/kyc': {
+      id: '/_authenticated/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof AuthenticatedKycRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notificacoes': {
+      id: '/_authenticated/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investidor/': {
+      id: '/_authenticated/investidor/'
+      path: '/investidor'
+      fullPath: '/investidor/'
+      preLoaderRoute: typeof AuthenticatedInvestidorIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investidor/extrato': {
+      id: '/_authenticated/investidor/extrato'
+      path: '/investidor/extrato'
+      fullPath: '/investidor/extrato'
+      preLoaderRoute: typeof AuthenticatedInvestidorExtratoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investidor/ordens': {
+      id: '/_authenticated/investidor/ordens'
+      path: '/investidor/ordens'
+      fullPath: '/investidor/ordens'
+      preLoaderRoute: typeof AuthenticatedInvestidorOrdensRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investidor/rendimentos': {
+      id: '/_authenticated/investidor/rendimentos'
+      path: '/investidor/rendimentos'
+      fullPath: '/investidor/rendimentos'
+      preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -232,12 +351,25 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
+  AuthenticatedKycRoute: typeof AuthenticatedKycRoute
+  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
+  AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
+  AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
+  AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
+  AuthenticatedInvestidorIndexRoute: typeof AuthenticatedInvestidorIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
+  AuthenticatedKycRoute: AuthenticatedKycRoute,
+  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
+  AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
+  AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
+  AuthenticatedInvestidorRendimentosRoute:
+    AuthenticatedInvestidorRendimentosRoute,
+  AuthenticatedInvestidorIndexRoute: AuthenticatedInvestidorIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
