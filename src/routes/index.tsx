@@ -105,12 +105,12 @@ const passos = [
 ];
 
 const seguranca = [
-  "RLS e RBAC em toda a base de dados",
-  "Validação server-side e idempotência nas transações",
-  "Rate limiting e audit logs",
-  "Separação entre dados financeiros e dados públicos",
-  "Pagamentos confirmados apenas pelo backend",
-  "Secrets nunca expostos no frontend",
+  "Acesso aos dados restrito ao próprio titular",
+  "Todas as operações validadas e confirmadas no servidor",
+  "Cada movimento registado com data, valor e saldo",
+  "Limites e revisão manual em operações sensíveis",
+  "Pagamentos confirmados apenas pelo provedor e pelo servidor",
+  "Verificação de identidade obrigatória antes de operar",
 ];
 
 const faq = [
@@ -120,12 +120,13 @@ const faq = [
   },
   {
     q: "As carteiras de investimento e de apostas são a mesma?",
-    a: "Não. A Betting Wallet é separada contabilisticamente da carteira de investimentos, ainda que ambas pertençam ao mesmo perfil verificado.",
+    a: "Não. A carteira de apostas é separada contabilisticamente da carteira de investimentos, ainda que ambas pertençam ao mesmo perfil verificado.",
   },
   {
-    q: "Já é possível depositar dinheiro real?",
-    a: "Não. Os provedores de pagamento estão preparados para integração, mas o estado atual é não configurado. Nenhum saldo, odd ou rendimento é simulado como real.",
+    q: "Como deposito e levanto dinheiro?",
+    a: "Em meticais, através dos métodos disponíveis na página de pagamentos: M-Pesa, e-Mola, mKesh e cartão Visa/Mastercard. Cada depósito ou levantamento é confirmado pelo provedor e registado no seu extrato.",
   },
+
   {
     q: "Como funciona a candidatura de empresas?",
     a: "Empresa → candidatura → KYC/KYB → análise → aprovação → publicação. Só após conformidade legal os projetos podem receber investimento.",
