@@ -18,6 +18,7 @@ import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
+import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
   path: '/fish',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/kyc': typeof AuthenticatedKycRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/kyc': typeof AuthenticatedKycRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesById {
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
+  '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/crash'
     | '/fish'
+    | '/kyc'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/crash'
     | '/fish'
+    | '/kyc'
     | '/api/public/webhooks/netshop'
   id:
     | '__root__'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
     | '/_authenticated/fish'
+    | '/_authenticated/kyc'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
 }
@@ -218,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFishRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/kyc': {
+      id: '/_authenticated/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof AuthenticatedKycRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -232,12 +251,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
+  AuthenticatedKycRoute: typeof AuthenticatedKycRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
+  AuthenticatedKycRoute: AuthenticatedKycRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
