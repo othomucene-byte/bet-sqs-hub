@@ -4,8 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import fishScene from "@/assets/fish-scene.jpg.asset.json";
-import fishSprite from "@/assets/fish-sprite.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
 import { multiplierAt } from "@/lib/crash/fair";
