@@ -127,10 +127,15 @@ function FishPage() {
     <div className="min-h-screen bg-fish-bg text-fish-foreground" onPointerDown={() => sound.ensureAudio()}>
       <SiteHeader />
 
-      <div className="mx-auto w-full max-w-[1100px] p-2.5">
+      <div className="mx-auto w-full max-w-[1100px] p-2.5 pb-16">
         {/* HEADER DO JOGO */}
-        <div className="mb-2.5 flex h-[55px] items-center justify-between border-b border-fish-line bg-fish-panel px-4">
-          <span className="font-display text-xl font-black text-fish-amber">🐟 FISH CRASH</span>
+        <div className="mb-2.5 flex h-[55px] items-center justify-between gap-2 border-b border-fish-line bg-fish-panel px-4">
+          <span className="flex min-w-0 items-center gap-2">
+            <img src={fishSprite.url} alt="" className="h-8 w-10 shrink-0 object-contain" />
+            <span className="truncate font-display text-lg font-black text-fish-amber sm:text-xl">
+              FISH CRASH
+            </span>
+          </span>
           <div className="rounded-lg border border-fish-input-border bg-fish-input px-3 py-2 text-sm font-bold">
             Saldo:{" "}
             <span className="text-fish-green tabular-nums">
