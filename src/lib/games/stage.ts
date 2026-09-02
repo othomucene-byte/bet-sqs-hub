@@ -136,9 +136,10 @@ export function startStage(
   };
 
   const geometry = () => {
-    const padX = Math.max(18, width * 0.055);
-    const padTop = Math.max(26, height * 0.16);
-    const baseY = height - Math.max(14, height * 0.08);
+    const padX = Math.max(52, width * 0.09);
+    const padTop = Math.max(30, height * 0.17);
+    const baseY = height - Math.max(46, height * 0.14);
+
     return {
       x0: padX,
       y0: baseY,
