@@ -344,8 +344,8 @@ function KycPage() {
                 </Button>
                 {!readyForReview && !locked ? (
                   <p className="text-xs text-muted-foreground">
-                    Precisas de submeter os dados e carregar o documento (frente) e a selfie com o
-                    documento.
+                    Falta {missingSteps.join(", ")}. Escolhe o tipo de documento em baixo e carrega a
+                    imagem.
                   </p>
                 ) : null}
                 {review ? (
