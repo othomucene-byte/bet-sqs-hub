@@ -188,7 +188,8 @@ export const getRoundStats = createServerFn({ method: "POST" })
     });
 
     const bets = (roundBets ?? []).map(map);
-    const myBets = bets.filter((row) => (roundBets ?? []).some((raw) => raw.id === row.id && raw.user_id === context.userId));
+    const userId = context?.userId ?? "";
+    const myBets = bets.filter((row) => (roundBets ?? []).some((raw) => raw.id === row.id && raw.user_id === userId));
     return {
       bets,
       myBets,

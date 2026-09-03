@@ -250,7 +250,16 @@ function FishPage() {
           })}
         </div>
 
+        <RoundStats
+          bets={statsQuery.data?.bets ?? []}
+          top={statsQuery.data?.top ?? []}
+          myBets={statsQuery.data?.myBets ?? []}
+          totalStaked={statsQuery.data?.totalStaked ?? 0}
+          totalPaid={statsQuery.data?.totalPaid ?? 0}
+        />
+
         <TotalsBar
+          totalBets={statsQuery.data?.totalBets ?? 0}
           staked={statsQuery.data?.totalStaked ?? 0}
           paid={statsQuery.data?.totalPaid ?? 0}
         />
