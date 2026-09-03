@@ -14,7 +14,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const REQUIRED_DOCS = ["id_front", "selfie"] as const;
+const REQUIRED_DOCS = ["id_front", "id_back"] as const;
 
 export type KycReviewOutcome = {
   ok: boolean;
