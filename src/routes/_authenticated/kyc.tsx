@@ -87,7 +87,7 @@ function KycPage() {
     nationality: "Moçambique",
     riskProfile: "moderado",
   });
-  const [docType, setDocType] = useState("id_front");
+  const [docType, setDocType] = useState<"id_front" | "id_back">("id_front");
   const [review, setReview] = useState<KycReviewOutcome | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
