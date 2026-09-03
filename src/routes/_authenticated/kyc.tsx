@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -90,6 +90,7 @@ function KycPage() {
   const [docType, setDocType] = useState("id_front");
   const [review, setReview] = useState<KycReviewOutcome | null>(null);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const current = kyc.data;
   const status = current?.status ?? "not_started";
@@ -140,7 +141,12 @@ function KycPage() {
   });
 
   const docTypes = new Set((current?.documents ?? []).map((doc) => doc.docType));
-  const readyForReview = docTypes.has("id_front") && docTypes.has("selfie");
+  const missingSteps = [
+    !current ? "submeter os teus dados" : null,
+    !docTypes.has("id_front") ? "carregar o documento (frente)" : null,
+    !docTypes.has("selfie") ? "carregar a selfie com o documento" : null,
+  ].filter(Boolean) as string[];
+  const readyForReview = missingSteps.length === 0;
 
   async function handleUpload(file: File) {
     setUploading(true);
@@ -338,8 +344,8 @@ function KycPage() {
                 </Button>
                 {!readyForReview && !locked ? (
                   <p className="text-xs text-muted-foreground">
-                    Precisas de submeter os dados e carregar o documento (frente) e a selfie com o
-                    documento.
+                    Falta {missingSteps.join(", ")}. Escolhe o tipo de documento em baixo e carrega a
+                    imagem.
                   </p>
                 ) : null}
                 {review ? (
@@ -391,18 +397,29 @@ function KycPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Label
-                  htmlFor="kyc-file"
-                  className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border py-6 text-sm text-muted-foreground hover:bg-secondary"
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={locked || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-auto justify-center gap-2 border-dashed py-6 text-sm text-muted-foreground"
                 >
-                  <Upload className="size-4" />
-                  {uploading ? "A enviar…" : "Escolher ficheiro"}
-                </Label>
-                <Input
+                  {uploading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> A enviar…
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="size-4" /> Escolher ficheiro ou tirar foto
+                    </>
+                  )}
+                </Button>
+                <input
+                  ref={fileInputRef}
                   id="kyc-file"
                   type="file"
                   accept="image/*,application/pdf"
-                  className="hidden"
+                  className="sr-only"
                   disabled={locked || uploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
