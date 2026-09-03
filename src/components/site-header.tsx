@@ -140,7 +140,18 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
-        <BrandLogo />
+        {signedIn ? (
+          <>
+            <div className="sm:hidden">
+              <BrandLogo compact />
+            </div>
+            <div className="hidden sm:block">
+              <BrandLogo />
+            </div>
+          </>
+        ) : (
+          <BrandLogo />
+        )}
 
         <nav className="hidden items-center gap-1 lg:flex">
           {desktopLinks.map((l) => (
