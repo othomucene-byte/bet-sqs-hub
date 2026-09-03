@@ -136,17 +136,16 @@ function FishPage() {
   const minBet = config?.minBet ?? 10;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
-  const active = myBet?.status === "active";
 
-  const stateLabel = active
-    ? "Em jogo"
-    : myBet?.status === "cashed_out"
-      ? `Levantado ${myBet.cashoutMultiplier?.toFixed(2)}x`
-      : myBet?.status === "lost"
-        ? "Perdida"
-        : status === "BETTING"
-          ? `Fecha em ${countdown}s`
-          : "A aguardar ronda";
+  const betForSlot = (slot: 1 | 2) => bets.find((bet) => bet.slot === slot) ?? null;
+  const labelFor = (slot: 1 | 2) => {
+    const bet = betForSlot(slot);
+    if (bet?.status === "active") return "Em jogo";
+    if (bet?.status === "cashed_out") return `Levantado ${bet.cashoutMultiplier?.toFixed(2)}x`;
+    if (bet?.status === "lost") return "Perdida";
+    if (status === "BETTING") return `Fecha em ${countdown}s`;
+    return "A aguardar ronda";
+  };
 
   return (
     <div
@@ -211,29 +210,29 @@ function FishPage() {
 
         {/* APOSTAS */}
         <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
-          <BetPad
-            value={amount}
-            onValue={setAmount}
-            minBet={minBet}
-            maxBet={maxBet}
-            disabled={Boolean(myBet) || status !== "BETTING"}
-            mode={active ? "cashout" : "bet"}
-            stateLabel={stateLabel}
-            cashoutValue={(myBet?.amount ?? 0) * multiplier}
-            busy={placeMutation.isPending || cashoutMutation.isPending}
-            onPlace={() => placeMutation.mutate(Number(amount) || 0)}
-            onCashout={() => myBet && cashoutMutation.mutate(myBet.id)}
-          />
-
-          <BetPad
-            value="50"
-            onValue={() => {}}
-            minBet={minBet}
-            maxBet={maxBet}
-            disabled
-            mode="locked"
-            stateLabel="1 aposta por ronda"
-          />
+          {([1, 2] as const).map((slot) => {
+            const bet = betForSlot(slot);
+            const isActive = bet?.status === "active";
+            return (
+              <BetPad
+                key={slot}
+                title={`Aposta ${slot}`}
+                value={amounts[slot]}
+                onValue={(next) => setAmounts((prev) => ({ ...prev, [slot]: next }))}
+                minBet={minBet}
+                maxBet={maxBet}
+                disabled={Boolean(bet) || status !== "BETTING"}
+                mode={isActive ? "cashout" : "bet"}
+                stateLabel={labelFor(slot)}
+                cashoutValue={(bet?.amount ?? 0) * multiplier}
+                busy={placeMutation.isPending || cashoutMutation.isPending}
+                onPlace={() =>
+                  placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })
+                }
+                onCashout={() => bet && cashoutMutation.mutate(bet.id)}
+              />
+            );
+          })}
         </div>
 
         <TotalsBar
