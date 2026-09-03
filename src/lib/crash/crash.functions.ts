@@ -146,6 +146,7 @@ export const getMyBet = createServerFn({ method: "POST" })
  * Só leitura; os nomes de outros jogadores são mascarados.
  */
 export const getRoundStats = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ roundId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
