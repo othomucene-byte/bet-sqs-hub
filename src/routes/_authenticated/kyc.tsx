@@ -3,7 +3,17 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { BadgeCheck, Clock, ShieldAlert, ShieldCheck, Upload, XCircle } from "lucide-react";
+import {
+  BadgeCheck,
+  Clock,
+  Loader2,
+  ScanFace,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  XCircle,
+} from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { getKyc, registerKycDocument, submitKyc } from "@/lib/investments/kyc.functions";
+import { runKycReview, type KycReviewOutcome } from "@/lib/investments/kyc-review.functions";
 
 export const Route = createFileRoute("/_authenticated/kyc")({
   head: () => ({
@@ -62,6 +73,7 @@ function KycPage() {
   const fetchKyc = useServerFn(getKyc);
   const doSubmit = useServerFn(submitKyc);
   const doRegister = useServerFn(registerKycDocument);
+  const doReview = useServerFn(runKycReview);
 
   const kyc = useQuery({ queryKey: ["kyc"], queryFn: () => fetchKyc() });
 
@@ -76,6 +88,7 @@ function KycPage() {
     riskProfile: "moderado",
   });
   const [docType, setDocType] = useState("id_front");
+  const [review, setReview] = useState<KycReviewOutcome | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const current = kyc.data;
@@ -106,6 +119,28 @@ function KycPage() {
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível submeter."),
   });
+
+  const reviewMutation = useMutation({
+    mutationFn: async () => doReview({ data: {} }),
+    onSuccess: (result) => {
+      setReview(result);
+      if (!result.ok) {
+        toast.error(result.error ?? "A verificação automática não concluiu.");
+      } else if (result.status === "approved") {
+        toast.success("Oséias verificou a tua identidade: aprovada.");
+      } else if (result.status === "rejected") {
+        toast.error("Oséias recusou a verificação. Vê as observações.");
+      } else {
+        toast.info("Oséias encaminhou o teu caso para análise humana.");
+      }
+      void queryClient.invalidateQueries({ queryKey: ["kyc"] });
+      void queryClient.invalidateQueries({ queryKey: ["investor-overview"] });
+    },
+    onError: () => toast.error("Não foi possível correr a verificação automática."),
+  });
+
+  const docTypes = new Set((current?.documents ?? []).map((doc) => doc.docType));
+  const readyForReview = docTypes.has("id_front") && docTypes.has("selfie");
 
   async function handleUpload(file: File) {
     setUploading(true);
@@ -159,7 +194,7 @@ function KycPage() {
             <CardHeader>
               <CardTitle className="text-base">Dados do titular</CardTitle>
               <CardDescription>
-                Os dados são revistos por uma pessoa do backoffice. Nada é aprovado automaticamente.
+                O Oséias, assistente de verificação automática, analisa os dados e os documentos. Casos duvidosos seguem para análise humana.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
@@ -276,6 +311,66 @@ function KycPage() {
           </Card>
 
           <div className="grid gap-6">
+            <Card className="border-primary/40">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ScanFace className="size-4 text-primary" /> Oséias — verificação automática
+                </CardTitle>
+                <CardDescription>
+                  Analisa o documento e a selfie e devolve o resultado em minutos (normalmente 3 a 5).
+                  A decisão é aplicada no servidor; qualquer dúvida vai para análise humana.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3">
+                <Button
+                  onClick={() => reviewMutation.mutate()}
+                  disabled={locked || !readyForReview || reviewMutation.isPending}
+                >
+                  {reviewMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" /> A verificar…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 size-4" /> Verificar com o Oséias
+                    </>
+                  )}
+                </Button>
+                {!readyForReview && !locked ? (
+                  <p className="text-xs text-muted-foreground">
+                    Precisas de submeter os dados e carregar o documento (frente) e a selfie com o
+                    documento.
+                  </p>
+                ) : null}
+                {review ? (
+                  <div className="rounded-lg border border-border bg-secondary/40 p-3 text-sm">
+                    <p className="font-semibold">
+                      {review.ok
+                        ? review.status === "approved"
+                          ? "Identidade verificada"
+                          : review.status === "rejected"
+                            ? "Verificação recusada"
+                            : "Enviado para análise humana"
+                        : "Verificação não concluída"}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">{review.summary ?? review.error}</p>
+                    {review.issues && review.issues.length > 0 ? (
+                      <ul className="mt-2 list-disc pl-4 text-xs text-muted-foreground">
+                        {review.issues.map((issue) => (
+                          <li key={issue}>{issue}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                ) : null}
+                {current?.reviewNotes && !review ? (
+                  <p className="whitespace-pre-line text-xs text-muted-foreground">
+                    {current.reviewNotes}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Documentos</CardTitle>

@@ -11,8 +11,15 @@
 export const GROWTH_PER_SECOND = 1.06;
 
 export const GAME_CONFIG = {
-  /** Vantagem da casa incorporada no RTP — nunca subtraída do cash-out. */
-  houseEdge: 0.05,
+  /**
+   * Margem da casa: 3% → RTP oficial de 97%.
+   * Cerca de 3% das rondas explodem imediatamente em 1.00x; nas restantes o
+   * resultado é (1 - margem) / (1 - aleatório), pelo que ~50% das rondas
+   * terminam abaixo de 2.00x. Nunca é subtraída do cash-out.
+   */
+  houseEdge: 0.03,
+  /** Retorno ao jogador a longo prazo (1 - houseEdge). */
+  rtp: 0.97,
   depositFee: 0,
   withdrawalFee: 0,
   /** Duração da fase de apostas. */

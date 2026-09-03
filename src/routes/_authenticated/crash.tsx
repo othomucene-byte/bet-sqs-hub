@@ -295,9 +295,13 @@ function CrashPage() {
               onTargetChange={setVerifyTarget}
             />
             <p className="mt-3 text-[11px] text-fish-muted">
-              Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é
-              a autoridade sobre ronda, aposta, cash-out e saldo. Jogue com responsabilidade.
+              RTP oficial de 97% (margem da casa de 3%): cerca de 3% das rondas explodem logo em
+              1.00x e aproximadamente metade termina abaixo de 2.00x — é probabilidade, não
+              manipulação. Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN.
+              O servidor é a autoridade sobre ronda, aposta, cash-out e saldo. Jogue com
+              responsabilidade.
             </p>
+
           </div>
         </details>
       </main>
