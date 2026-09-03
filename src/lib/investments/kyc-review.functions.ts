@@ -14,7 +14,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const REQUIRED_DOCS = ["id_front", "selfie"] as const;
+const REQUIRED_DOCS = ["id_front", "id_back"] as const;
 
 export type KycReviewOutcome = {
   ok: boolean;
@@ -34,13 +34,13 @@ const DecisionSchema = z.object({
 });
 
 const SYSTEM_PROMPT = `Chamas-te Oséias e és o analista automático de KYC da BETFCOM SQs (Moçambique).
-Analisas dados declarados e imagens de documentos de identidade (BI, passaporte, DIRE, carta de condução) e selfies.
+Analisas dados declarados e as imagens da frente e do verso do documento de identidade (BI, passaporte, DIRE, carta de condução).
 
 Verifica, por esta ordem:
 1. Legibilidade: a imagem é nítida, completa e sem cortes ou brilho que impeçam a leitura?
 2. Autenticidade aparente: sinais óbvios de edição digital, fotocópia de ecrã, ou documento claramente falso.
 3. Coerência: nome, número de documento, tipo de documento e data de nascimento coincidem com o que foi declarado.
-4. Selfie: parece a mesma pessoa do documento e é uma pessoa real (não foto de foto).
+4. Frente e verso pertencem ao mesmo documento.
 
 Decide:
 - "approve" apenas se tudo estiver legível e coerente e a tua confiança for alta.
@@ -100,17 +100,17 @@ export const runKycReview = createServerFn({ method: "POST" })
         ok: false,
         error:
           missing.length === REQUIRED_DOCS.length
-            ? "Carrega o documento de identificação (frente) e uma selfie com o documento."
-            : missing[0] === "selfie"
-              ? "Falta a selfie com o documento."
-              : "Falta a frente do documento de identificação.",
+            ? "Carrega a foto da frente e do verso do BI."
+            : missing[0] === "id_back"
+              ? "Falta a foto do verso do BI."
+              : "Falta a foto da frente do BI.",
       };
     }
 
     // Leitura das imagens no armazenamento privado (só do próprio utilizador).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const images: { label: string; mimeType: string; data: string }[] = [];
-    for (const type of ["id_front", "id_back", "selfie", "proof_address"] as const) {
+    for (const type of ["id_front", "id_back"] as const) {
       const path = byType.get(type);
       if (!path) continue;
       if (!path.startsWith(`${userId}/`)) continue;

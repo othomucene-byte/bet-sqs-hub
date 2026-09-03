@@ -61,8 +61,8 @@ const statusMeta: Record<string, { label: string; tone: string; icon: typeof Shi
 };
 
 const docLabels: Record<string, string> = {
-  id_front: "Documento (frente)",
-  id_back: "Documento (verso)",
+  id_front: "BI — frente",
+  id_back: "BI — verso",
   selfie: "Selfie com documento",
   proof_address: "Comprovativo de morada",
   other: "Outro",
@@ -87,7 +87,7 @@ function KycPage() {
     nationality: "Moçambique",
     riskProfile: "moderado",
   });
-  const [docType, setDocType] = useState("id_front");
+  const [docType, setDocType] = useState<"id_front" | "id_back">("id_front");
   const [review, setReview] = useState<KycReviewOutcome | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,23 +143,23 @@ function KycPage() {
   const docTypes = new Set((current?.documents ?? []).map((doc) => doc.docType));
   const missingSteps = [
     !current ? "submeter os teus dados" : null,
-    !docTypes.has("id_front") ? "carregar o documento (frente)" : null,
-    !docTypes.has("selfie") ? "carregar a selfie com o documento" : null,
+    !docTypes.has("id_front") ? "a foto da frente do BI" : null,
+    !docTypes.has("id_back") ? "a foto do verso do BI" : null,
   ].filter(Boolean) as string[];
   const readyForReview = missingSteps.length === 0;
 
-  async function handleUpload(file: File) {
+  async function handleUpload(file: File, type: "id_front" | "id_back" = docType) {
     setUploading(true);
     try {
       const { data: session } = await supabase.auth.getUser();
       const uid = session.user?.id;
       if (!uid) throw new Error("Sessão expirada.");
       const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${uid}/${docType}-${Date.now()}.${ext}`;
+      const path = `${uid}/${type}-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("kyc").upload(path, file, { upsert: false });
       if (error) throw new Error(error.message);
-      await doRegister({ data: { docType: docType as "id_front", storagePath: path } });
-      toast.success("Documento enviado.");
+      await doRegister({ data: { docType: type, storagePath: path } });
+      toast.success(type === "id_front" ? "Frente do BI enviada." : "Verso do BI enviado.");
       queryClient.invalidateQueries({ queryKey: ["kyc"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Falha no envio do documento.");
@@ -323,8 +323,8 @@ function KycPage() {
                   <ScanFace className="size-4 text-primary" /> Oséias — verificação automática
                 </CardTitle>
                 <CardDescription>
-                  Analisa o documento e a selfie e devolve o resultado em minutos (normalmente 3 a 5).
-                  A decisão é aplicada no servidor; qualquer dúvida vai para análise humana.
+                  Analisa a frente e o verso do BI e devolve o resultado em minutos (normalmente 3 a
+                  5). A decisão é aplicada no servidor; qualquer dúvida vai para análise humana.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
@@ -344,8 +344,7 @@ function KycPage() {
                 </Button>
                 {!readyForReview && !locked ? (
                   <p className="text-xs text-muted-foreground">
-                    Falta {missingSteps.join(", ")}. Escolhe o tipo de documento em baixo e carrega a
-                    imagem.
+                    Falta {missingSteps.join(" e ")}.
                   </p>
                 ) : null}
                 {review ? (
@@ -379,65 +378,56 @@ function KycPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Documentos</CardTitle>
+                <CardTitle className="text-base">Foto do BI</CardTitle>
                 <CardDescription>
-                  Ficheiros guardados em armazenamento privado — só tu e o backoffice têm acesso.
+                  Só precisamos da frente e do verso do teu BI. Guardados em armazenamento privado.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
-                <Select value={docType} onValueChange={setDocType} disabled={locked}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(docLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={locked || uploading}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-auto justify-center gap-2 border-dashed py-6 text-sm text-muted-foreground"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" /> A enviar…
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="size-4" /> Escolher ficheiro ou tirar foto
-                    </>
-                  )}
-                </Button>
+                {(["id_front", "id_back"] as const).map((type) => {
+                  const done = docTypes.has(type);
+                  return (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant="outline"
+                      disabled={locked || uploading}
+                      onClick={() => {
+                        setDocType(type);
+                        fileInputRef.current?.click();
+                      }}
+                      className="h-auto justify-center gap-2 border-dashed py-6 text-sm"
+                    >
+                      {uploading && docType === type ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" /> A enviar…
+                        </>
+                      ) : done ? (
+                        <>
+                          <BadgeCheck className="size-4 text-primary" />
+                          {docLabels[type]} enviada — tocar para substituir
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="size-4" /> Tirar foto do {docLabels[type]}
+                        </>
+                      )}
+                    </Button>
+                  );
+                })}
                 <input
                   ref={fileInputRef}
                   id="kyc-file"
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept="image/*"
                   className="sr-only"
                   disabled={locked || uploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) void handleUpload(file);
+                    if (file) void handleUpload(file, docType);
                     e.target.value = "";
                   }}
                 />
-                <ul className="grid gap-1.5 text-sm">
-                  {(current?.documents ?? []).map((doc) => (
-                    <li key={doc.id} className="flex items-center justify-between">
-                      <span>{docLabels[doc.docType] ?? doc.docType}</span>
-                      <Badge variant="outline">{doc.status}</Badge>
-                    </li>
-                  ))}
-                  {(current?.documents ?? []).length === 0 ? (
-                    <li className="text-muted-foreground">Nenhum documento enviado.</li>
-                  ) : null}
-                </ul>
               </CardContent>
             </Card>
 
