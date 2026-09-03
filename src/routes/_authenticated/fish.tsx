@@ -237,10 +237,14 @@ function FishPage() {
                 stateLabel={labelFor(slot)}
                 cashoutValue={(bet?.amount ?? 0) * multiplier}
                 busy={placeMutation.isPending || cashoutMutation.isPending}
-                onPlace={() =>
-                  placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })
-                }
+                onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
+                autoPlay={autoPlay[slot]}
+                autoCashout={autoEnabled[slot]}
+                autoCashoutValue={autoValues[slot]}
+                onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onToggleAutoCashout={() => setAutoEnabled((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onAutoCashoutValue={(next) => setAutoValues((prev) => ({ ...prev, [slot]: next }))}
               />
             );
           })}
