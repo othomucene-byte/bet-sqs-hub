@@ -379,65 +379,56 @@ function KycPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Documentos</CardTitle>
+                <CardTitle className="text-base">Foto do BI</CardTitle>
                 <CardDescription>
-                  Ficheiros guardados em armazenamento privado — só tu e o backoffice têm acesso.
+                  Só precisamos da frente e do verso do teu BI. Guardados em armazenamento privado.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
-                <Select value={docType} onValueChange={setDocType} disabled={locked}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(docLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={locked || uploading}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-auto justify-center gap-2 border-dashed py-6 text-sm text-muted-foreground"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" /> A enviar…
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="size-4" /> Escolher ficheiro ou tirar foto
-                    </>
-                  )}
-                </Button>
+                {(["id_front", "id_back"] as const).map((type) => {
+                  const done = docTypes.has(type);
+                  return (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant="outline"
+                      disabled={locked || uploading}
+                      onClick={() => {
+                        setDocType(type);
+                        fileInputRef.current?.click();
+                      }}
+                      className="h-auto justify-center gap-2 border-dashed py-6 text-sm"
+                    >
+                      {uploading && docType === type ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" /> A enviar…
+                        </>
+                      ) : done ? (
+                        <>
+                          <BadgeCheck className="size-4 text-primary" />
+                          {docLabels[type]} enviada — tocar para substituir
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="size-4" /> Tirar foto do {docLabels[type]}
+                        </>
+                      )}
+                    </Button>
+                  );
+                })}
                 <input
                   ref={fileInputRef}
                   id="kyc-file"
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept="image/*"
                   className="sr-only"
                   disabled={locked || uploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) void handleUpload(file);
+                    if (file) void handleUpload(file, docType);
                     e.target.value = "";
                   }}
                 />
-                <ul className="grid gap-1.5 text-sm">
-                  {(current?.documents ?? []).map((doc) => (
-                    <li key={doc.id} className="flex items-center justify-between">
-                      <span>{docLabels[doc.docType] ?? doc.docType}</span>
-                      <Badge variant="outline">{doc.status}</Badge>
-                    </li>
-                  ))}
-                  {(current?.documents ?? []).length === 0 ? (
-                    <li className="text-muted-foreground">Nenhum documento enviado.</li>
-                  ) : null}
-                </ul>
               </CardContent>
             </Card>
 
