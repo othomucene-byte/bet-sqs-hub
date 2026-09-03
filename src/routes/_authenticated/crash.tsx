@@ -81,8 +81,9 @@ function CrashPage() {
   });
 
   const [amounts, setAmounts] = useState<Record<1 | 2, string>>({ 1: "50", 2: "50" });
-  const [auto, setAuto] = useState("2.00");
-  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [autoValues, setAutoValues] = useState<Record<1 | 2, string>>({ 1: "2.00", 2: "2.00" });
+  const [autoEnabled, setAutoEnabled] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
+  const [autoPlay, setAutoPlay] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
   const [muted, setMutedState] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState("");
   const clock = useClock();
