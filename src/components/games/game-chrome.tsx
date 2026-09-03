@@ -65,25 +65,31 @@ export function HistoryStrip({
   onSelect?: (roundNumber: number) => void;
 }) {
   return (
-    <div className="flex gap-3 overflow-x-auto border-b border-fish-line/60 bg-fish-bg px-3 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex gap-2 overflow-x-auto border-b border-fish-line/70 bg-fish-bg px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.length === 0 && (
         <span className="text-xs text-fish-muted">Sem rondas terminadas ainda.</span>
       )}
       {items.map((item) => {
         const m = item.multiplier ?? 0;
-        const tone = m >= 10 ? "text-fuchsia-400" : m >= 2 ? "text-violet-400" : "text-sky-400";
+        const tone =
+          m >= 10
+            ? "border-game-high/60 bg-game-high/15 text-game-high"
+            : m >= 2
+              ? "border-game-mid/60 bg-game-mid/15 text-game-mid"
+              : "border-game-low/60 bg-game-low/15 text-game-low";
         return (
           <button
             key={item.roundNumber}
             type="button"
             onClick={() => onSelect?.(item.roundNumber)}
-            className={`shrink-0 text-sm font-bold tabular-nums ${tone}`}
+            className={`shrink-0 rounded-full border px-2.5 py-0.5 text-sm font-extrabold tabular-nums ${tone}`}
           >
-            {m.toFixed(2)}
+            {m.toFixed(2)}x
           </button>
         );
       })}
     </div>
+
   );
 }
 
