@@ -152,14 +152,35 @@ export const runKycReview = createServerFn({ method: "POST" })
       ],
     });
 
-    if (!result.ok) {
+    /**
+     * A verificação nunca fica num estado falhado: se o Oséias não conseguir
+     * decidir (serviço indisponível ou resposta inválida), o pedido segue para
+     * análise humana com registo do motivo.
+     */
+    async function fallbackToHumanReview(reason: string): Promise<KycReviewOutcome> {
+      const notes = `Oséias: sem decisão automática → análise humana\n${reason}`;
+      await supabaseAdmin
+        .from("kyc_profiles")
+        .update({ status: "pending", review_notes: notes, reviewed_at: new Date().toISOString() })
+        .eq("id", profile!.id);
+      await supabaseAdmin.from("notifications").insert({
+        user_id: userId,
+        category: "kyc",
+        title: "Verificação em análise",
+        body: "Recebemos os teus documentos. A verificação segue para análise da nossa equipa.",
+        metadata: { source: "oseias", decision: "manual", reason },
+      });
       return {
-        ok: false,
-        error:
-          result.status === 429
-            ? "O Oséias está com muitos pedidos. Tenta novamente dentro de um minuto."
-            : result.error,
+        ok: true,
+        status: "pending",
+        decision: "manual",
+        summary:
+          "Recebemos os teus documentos. A verificação automática não ficou concluída agora, por isso o teu pedido segue para análise da nossa equipa.",
       };
+    }
+
+    if (!result.ok) {
+      return await fallbackToHumanReview(result.error);
     }
 
     let verdict: z.infer<typeof DecisionSchema>;
@@ -167,7 +188,7 @@ export const runKycReview = createServerFn({ method: "POST" })
       verdict = await readJsonDecision(result.text);
     } catch (error) {
       console.error("[kyc-review] parse error", error);
-      return { ok: false, error: "O Oséias devolveu uma resposta inválida. Fica em análise humana." };
+      return await fallbackToHumanReview("Resposta automática ilegível.");
     }
 
     const status =
