@@ -100,17 +100,17 @@ export const runKycReview = createServerFn({ method: "POST" })
         ok: false,
         error:
           missing.length === REQUIRED_DOCS.length
-            ? "Carrega o documento de identificação (frente) e uma selfie com o documento."
-            : missing[0] === "selfie"
-              ? "Falta a selfie com o documento."
-              : "Falta a frente do documento de identificação.",
+            ? "Carrega a foto da frente e do verso do BI."
+            : missing[0] === "id_back"
+              ? "Falta a foto do verso do BI."
+              : "Falta a foto da frente do BI.",
       };
     }
 
     // Leitura das imagens no armazenamento privado (só do próprio utilizador).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const images: { label: string; mimeType: string; data: string }[] = [];
-    for (const type of ["id_front", "id_back", "selfie", "proof_address"] as const) {
+    for (const type of ["id_front", "id_back"] as const) {
       const path = byType.get(type);
       if (!path) continue;
       if (!path.startsWith(`${userId}/`)) continue;
