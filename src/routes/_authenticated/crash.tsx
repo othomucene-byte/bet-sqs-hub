@@ -106,7 +106,7 @@ function CrashPage() {
           roundId: round!.id,
           amount: input.amount,
           slot: input.slot,
-          autoCashout: input.slot === 1 && autoEnabled && Number(auto) > 1 ? Number(auto) : null,
+          autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
         },
       }),
     onSuccess: (result) => {
