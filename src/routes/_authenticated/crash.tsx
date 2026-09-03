@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { FlightCanvas, type FlightStatus } from "@/components/crash/flight-canvas";
 import { BetPad } from "@/components/games/bet-pad";
 import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt, sha256Hex, crashResult } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
@@ -80,8 +81,9 @@ function CrashPage() {
   });
 
   const [amounts, setAmounts] = useState<Record<1 | 2, string>>({ 1: "50", 2: "50" });
-  const [auto, setAuto] = useState("2.00");
-  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [autoValues, setAutoValues] = useState<Record<1 | 2, string>>({ 1: "2.00", 2: "2.00" });
+  const [autoEnabled, setAutoEnabled] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
+  const [autoPlay, setAutoPlay] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
   const [muted, setMutedState] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState("");
   const clock = useClock();
@@ -104,7 +106,7 @@ function CrashPage() {
           roundId: round!.id,
           amount: input.amount,
           slot: input.slot,
-          autoCashout: input.slot === 1 && autoEnabled && Number(auto) > 1 ? Number(auto) : null,
+          autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
         },
       }),
     onSuccess: (result) => {
@@ -148,7 +150,7 @@ function CrashPage() {
 
   const bets = betQuery.data ?? [];
   const config = roundQuery.data?.config;
-  const minBet = config?.minBet ?? 10;
+  const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
@@ -245,39 +247,36 @@ function CrashPage() {
                 busy={placeMutation.isPending || cashoutMutation.isPending}
                 onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
-                footer={
-                  slot === 1 ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setAutoEnabled((v) => !v)}
-                        className={`flex-1 rounded-full py-2 text-xs font-bold transition ${
-                          autoEnabled
-                            ? "bg-fish-green text-fish-ink"
-                            : "bg-fish-step text-fish-quick-foreground"
-                        }`}
-                      >
-                        Levantamento automático
-                      </button>
-                      <input
-                        inputMode="decimal"
-                        aria-label="Multiplicador de levantamento automático"
-                        value={auto}
-                        onChange={(event) => setAuto(event.target.value)}
-                        className="w-[72px] rounded-full bg-fish-input py-2 text-center text-xs font-bold tabular-nums text-fish-foreground outline-none"
-                      />
-                    </div>
-                  ) : undefined
-                }
+                autoPlay={autoPlay[slot]}
+                autoCashout={autoEnabled[slot]}
+                autoCashoutValue={autoValues[slot]}
+                onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onToggleAutoCashout={() => setAutoEnabled((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onAutoCashoutValue={(next) => setAutoValues((prev) => ({ ...prev, [slot]: next }))}
               />
             );
           })}
         </div>
 
+        <RoundStats
+          bets={statsQuery.data?.bets ?? []}
+          top={statsQuery.data?.top ?? []}
+          myBets={statsQuery.data?.myBets ?? []}
+          totalStaked={statsQuery.data?.totalStaked ?? 0}
+          totalPaid={statsQuery.data?.totalPaid ?? 0}
+        />
+
         <TotalsBar
+          totalBets={statsQuery.data?.totalBets ?? 0}
           staked={statsQuery.data?.totalStaked ?? 0}
           paid={statsQuery.data?.totalPaid ?? 0}
         />
+
+        <p className="mt-3 flex items-start gap-1.5 text-[11px] text-fish-muted">
+          <ShieldCheck className="mt-[1px] size-3.5 shrink-0 text-fish-green" />
+          Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é a
+          autoridade sobre ronda, aposta, cash-out e saldo. Jogue com responsabilidade.
+        </p>
 
         <details className="mt-2.5 rounded-2xl border border-fish-line/70 bg-fish-panel">
           <summary className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-bold">

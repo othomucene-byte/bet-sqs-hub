@@ -146,8 +146,9 @@ export const getMyBet = createServerFn({ method: "POST" })
  * Só leitura; os nomes de outros jogadores são mascarados.
  */
 export const getRoundStats = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ roundId: z.string().uuid() }).parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { maskName } = await import("./stats.server");
 
@@ -187,8 +188,11 @@ export const getRoundStats = createServerFn({ method: "POST" })
     });
 
     const bets = (roundBets ?? []).map(map);
+    const userId = context?.userId ?? "";
+    const myBets = bets.filter((row) => (roundBets ?? []).some((raw) => raw.id === row.id && raw.user_id === userId));
     return {
       bets,
+      myBets,
       top: (topBets ?? []).map(map),
       totalBets: bets.length,
       totalStaked: bets.reduce((sum, b) => sum + b.amount, 0),

@@ -80,6 +80,18 @@
   --color-game-low: var(--game-low);
   --color-game-mid: var(--game-mid);
   --color-game-high: var(--game-high);
+  --color-bet-surface: var(--bet-surface);
+  --color-bet-panel: var(--bet-panel);
+  --color-bet-line: var(--bet-line);
+  --color-bet-pill: var(--bet-pill);
+  --color-bet-chip: var(--bet-chip);
+  --color-bet-ghost: var(--bet-ghost);
+  --color-bet-ghost-foreground: var(--bet-ghost-foreground);
+  --color-bet-green: var(--bet-green);
+  --color-bet-green-foreground: var(--bet-green-foreground);
+  --color-bet-amber: var(--bet-amber);
+  --color-bet-foreground: var(--bet-foreground);
+  --color-bet-muted: var(--bet-muted);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
@@ -158,6 +170,20 @@
   --game-low: #22b8ff;
   --game-mid: #a855ff;
   --game-high: #ff3ea5;
+
+  /* Zona de apostas (neutra, estilo casino) — igual nos dois jogos */
+  --bet-surface: #0b0b0b;
+  --bet-panel: #1e1e1e;
+  --bet-line: #2e2e2e;
+  --bet-pill: #0d0d0d;
+  --bet-chip: #151515;
+  --bet-ghost: #4a4a4a;
+  --bet-ghost-foreground: #f2f2f2;
+  --bet-green: #4caf35;
+  --bet-green-foreground: #ffffff;
+  --bet-amber: #ff9f1c;
+  --bet-foreground: #ffffff;
+  --bet-muted: #9a9a9a;
 
 
 }

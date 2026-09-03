@@ -8,6 +8,7 @@ import { ShieldCheck } from "lucide-react";
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
 import { BetPad } from "@/components/games/bet-pad";
 import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
@@ -78,6 +79,9 @@ function FishPage() {
   });
 
   const [amounts, setAmounts] = useState<Record<1 | 2, string>>({ 1: "50", 2: "50" });
+  const [autoValues, setAutoValues] = useState<Record<1 | 2, string>>({ 1: "2.00", 2: "2.00" });
+  const [autoEnabled, setAutoEnabled] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
+  const [autoPlay, setAutoPlay] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
   const [muted, setMutedState] = useState(false);
   const clock = useClock();
   const bets = betQuery.data ?? [];
@@ -104,7 +108,14 @@ function FishPage() {
 
   const placeMutation = useMutation({
     mutationFn: async (input: { slot: 1 | 2; amount: number }) =>
-      submitBet({ data: { roundId: round!.id, amount: input.amount, slot: input.slot } }),
+      submitBet({
+        data: {
+          roundId: round!.id,
+          amount: input.amount,
+          slot: input.slot,
+          autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
+        },
+      }),
     onSuccess: (result) => {
       if (!result.ok) {
         toast.error(result.error);
@@ -133,7 +144,7 @@ function FishPage() {
     onError: () => toast.error("Não foi possível fazer cash-out."),
   });
 
-  const minBet = config?.minBet ?? 10;
+  const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
@@ -226,16 +237,29 @@ function FishPage() {
                 stateLabel={labelFor(slot)}
                 cashoutValue={(bet?.amount ?? 0) * multiplier}
                 busy={placeMutation.isPending || cashoutMutation.isPending}
-                onPlace={() =>
-                  placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })
-                }
+                onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
+                autoPlay={autoPlay[slot]}
+                autoCashout={autoEnabled[slot]}
+                autoCashoutValue={autoValues[slot]}
+                onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onToggleAutoCashout={() => setAutoEnabled((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onAutoCashoutValue={(next) => setAutoValues((prev) => ({ ...prev, [slot]: next }))}
               />
             );
           })}
         </div>
 
+        <RoundStats
+          bets={statsQuery.data?.bets ?? []}
+          top={statsQuery.data?.top ?? []}
+          myBets={statsQuery.data?.myBets ?? []}
+          totalStaked={statsQuery.data?.totalStaked ?? 0}
+          totalPaid={statsQuery.data?.totalPaid ?? 0}
+        />
+
         <TotalsBar
+          totalBets={statsQuery.data?.totalBets ?? 0}
           staked={statsQuery.data?.totalStaked ?? 0}
           paid={statsQuery.data?.totalPaid ?? 0}
         />
