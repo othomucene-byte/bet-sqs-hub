@@ -3,12 +3,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ShieldCheck } from "lucide-react";
 
-import { SiteHeader } from "@/components/site-header";
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
+import { BetPad } from "@/components/games/bet-pad";
+import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
-import { cashout, getCurrentRound, getMyBet, placeBet } from "@/lib/crash/crash.functions";
+import {
+  cashout,
+  getCurrentRound,
+  getMyBet,
+  getRoundStats,
+  placeBet,
+} from "@/lib/crash/crash.functions";
 import { getWallet } from "@/lib/wallet/wallet.functions";
 
 export const Route = createFileRoute("/_authenticated/fish")({
@@ -34,26 +43,13 @@ export const Route = createFileRoute("/_authenticated/fish")({
 });
 
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const QUICK: { label: string; value: number }[] = [
-  { label: "50", value: 50 },
-  { label: "100", value: 100 },
-  { label: "500", value: 500 },
-  { label: "1K", value: 1000 },
-];
-
-const statusText: Record<string, string> = {
-  WAITING: "A PREPARAR",
-  BETTING: "PRÓXIMA RODADA",
-  RUNNING: "EM VOO",
-  CRASHED: "FUGIU!",
-  SETTLED: "RODADA LIQUIDADA",
-};
 
 function FishPage() {
   const queryClient = useQueryClient();
   const fetchRound = useServerFn(getCurrentRound);
   const fetchWallet = useServerFn(getWallet);
   const fetchBet = useServerFn(getMyBet);
+  const fetchStats = useServerFn(getRoundStats);
   const submitBet = useServerFn(placeBet);
   const submitCashout = useServerFn(cashout);
 
@@ -74,8 +70,16 @@ function FishPage() {
     queryFn: () => fetchBet({ data: { roundId: round!.id } }),
     enabled: Boolean(round?.id),
   });
+  const statsQuery = useQuery({
+    queryKey: ["crash", "stats", round?.id],
+    queryFn: () => fetchStats({ data: { roundId: round!.id } }),
+    enabled: Boolean(round?.id),
+    refetchInterval: 3000,
+  });
 
-  const [amounts, setAmounts] = useState(["50", "50", "50"]);
+  const [amount, setAmount] = useState("50");
+  const [muted, setMutedState] = useState(false);
+  const clock = useClock();
   const myBet = betQuery.data;
 
   const multiplier = useLiveMultiplier(
@@ -87,8 +91,19 @@ function FishPage() {
   );
   useFishAudio(status, multiplier);
 
+  useEffect(() => {
+    setMutedState(sound.loadMutePreference());
+  }, []);
+
+  const toggleMute = () => {
+    const next = !muted;
+    sound.setMuted(next);
+    setMutedState(next);
+    if (!next) sound.ensureAudio();
+  };
+
   const placeMutation = useMutation({
-    mutationFn: async (amount: number) => submitBet({ data: { roundId: round!.id, amount } }),
+    mutationFn: async (value: number) => submitBet({ data: { roundId: round!.id, amount: value } }),
     onSuccess: (result) => {
       if (!result.ok) {
         toast.error(result.error);
@@ -97,6 +112,7 @@ function FishPage() {
       sound.playBet();
       void queryClient.invalidateQueries({ queryKey: ["wallet"] });
       void betQuery.refetch();
+      void statsQuery.refetch();
     },
     onError: () => toast.error("Não foi possível registar a aposta."),
   });
@@ -111,6 +127,7 @@ function FishPage() {
       sound.playCashout();
       void queryClient.invalidateQueries({ queryKey: ["wallet"] });
       void betQuery.refetch();
+      void statsQuery.refetch();
     },
     onError: () => toast.error("Não foi possível fazer cash-out."),
   });
@@ -118,192 +135,117 @@ function FishPage() {
   const minBet = config?.minBet ?? 10;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
+  const active = myBet?.status === "active";
 
-  const setAmount = (index: number, value: string) =>
-    setAmounts((prev) => prev.map((v, i) => (i === index ? value : v)));
+  const stateLabel = active
+    ? "Em jogo"
+    : myBet?.status === "cashed_out"
+      ? `Levantado ${myBet.cashoutMultiplier?.toFixed(2)}x`
+      : myBet?.status === "lost"
+        ? "Perdida"
+        : status === "BETTING"
+          ? `Fecha em ${countdown}s`
+          : "A aguardar ronda";
 
   return (
-    <div className="min-h-screen bg-fish-bg text-fish-foreground" onPointerDown={() => sound.ensureAudio()}>
-      <SiteHeader />
+    <div
+      className="flex min-h-[100dvh] flex-col bg-fish-bg text-fish-foreground"
+      onPointerDown={() => sound.ensureAudio()}
+    >
+      <GameTopBar
+        title="Fish Crash"
+        accent="#ffb21c"
+        balance={walletQuery.data?.balance ?? null}
+        clock={clock}
+        muted={muted}
+        onToggleMute={toggleMute}
+      />
+      <HistoryStrip items={roundQuery.data?.history ?? []} />
 
-      <div className="mx-auto w-full max-w-[1100px] p-2.5 pb-16">
-        {/* HEADER DO JOGO */}
-        <div className="mb-2.5 flex h-[55px] items-center justify-between gap-2 border-b border-fish-line bg-fish-panel px-4">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-display text-lg font-black text-fish-amber sm:text-xl">
-              FISH CRASH
-            </span>
-          </span>
-          <div className="rounded-lg border border-fish-input-border bg-fish-input px-3 py-2 text-sm font-bold">
-            Saldo:{" "}
-            <span className="text-fish-green tabular-nums">
-              {walletQuery.data ? `${NUM.format(walletQuery.data.balance)} MZN` : "—"}
-            </span>
-          </div>
-        </div>
-
+      <main className="mx-auto w-full max-w-[820px] flex-1 px-2.5 pb-4">
         {/* PALCO */}
-        <div className="relative h-[48dvh] min-h-[300px] overflow-hidden rounded-xl border border-[#193b50] bg-[#03111b] shadow-[inset_0_0_60px_rgba(0,0,0,0.75)] sm:h-[430px]">
+        <section className="relative mt-2.5 h-[42dvh] min-h-[240px] overflow-hidden rounded-2xl border border-fish-line/70 bg-[#03111b] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)] sm:h-[360px]">
           <FishCanvas status={status} multiplier={multiplier} />
 
-          {/* Estado no topo */}
-          <div
-            className="absolute left-1/2 top-[15px] z-10 -translate-x-1/2 rounded-[20px] border border-fish-green px-4 py-1.5 text-[11px] font-black tracking-widest backdrop-blur-sm sm:px-5 sm:py-2 sm:text-[13px]"
-            style={{ background: "rgba(3, 24, 38, 0.75)", color: "#00ffaa", boxShadow: "0 0 14px rgba(39,229,138,0.35)" }}
-          >
-            {status === "BETTING" ? `PRÓXIMA RODADA · ${countdown}s` : statusText[status]}
-          </div>
-
-          {/* Caixa do multiplicador */}
-          <div
-            className="pointer-events-none absolute right-[4%] top-[52%] z-[5] -translate-y-1/2 rounded-[15px] border-2 border-fish-green px-4 py-2 text-center backdrop-blur-md transition-transform duration-300 sm:right-[7%] sm:px-5 sm:py-3"
-            style={{
-              background: "rgba(3, 24, 38, 0.72)",
-              boxShadow: "0 0 22px rgba(39,229,138,0.45), inset 0 0 14px rgba(0,0,0,0.55)",
-              transform: `translateY(-50%) scale(${status === "RUNNING" ? 1 + Math.min(0.12, multiplier * 0.012) : 1})`,
-            }}
-          >
-            <span
-              className="font-display text-[30px] font-black tabular-nums tracking-tight text-fish-green sm:text-[40px]"
-              style={{ textShadow: "0 0 12px #27e58a, 0 0 26px rgba(39,229,138,0.55)" }}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+            {status === "CRASHED" && (
+              <p className="font-display text-lg font-bold tracking-wide text-fish-foreground/90 sm:text-2xl">
+                O PEIXE FUGIU!
+              </p>
+            )}
+            <p
+              className={`font-display text-[52px] font-black leading-none tabular-nums sm:text-[76px] ${
+                status === "CRASHED" ? "text-[#e0333f]" : "text-fish-green"
+              }`}
+              style={{
+                textShadow:
+                  status === "CRASHED"
+                    ? "0 6px 30px rgba(0,0,0,0.65)"
+                    : "0 0 14px rgba(39,229,138,0.55)",
+              }}
             >
-              {multiplier.toFixed(2)}x
-            </span>
-          </div>
-        </div>
+              {multiplier.toFixed(2)}
+              <span className="text-[0.6em]">x</span>
+            </p>
 
+            {status === "BETTING" && (
+              <div className="mt-4 w-[min(320px,80%)] rounded-2xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-sm">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-fish-muted">
+                  A aguardar pela próxima ronda
+                </p>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
+                  <div
+                    className="h-full rounded-full bg-fish-green transition-[width] duration-1000 ease-linear"
+                    style={{ width: `${Math.min(100, (countdown / 8) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-fish-muted">
+            Ronda #{round?.roundNumber ?? "—"}
+          </span>
+        </section>
 
         {/* APOSTAS */}
-        <div className="mt-2.5 grid grid-cols-1 gap-2.5 md:grid-cols-3">
-          {[0, 1, 2].map((index) => {
-            const primary = index === 0;
-            const amountNumber = Number(amounts[index]) || 0;
-            const active = primary && myBet?.status === "active";
-            const canBet =
-              primary &&
-              status === "BETTING" &&
-              !myBet &&
-              amountNumber >= minBet &&
-              amountNumber <= maxBet;
-            const locked = !primary || Boolean(myBet) || status !== "BETTING";
+        <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
+          <BetPad
+            value={amount}
+            onValue={setAmount}
+            minBet={minBet}
+            maxBet={maxBet}
+            disabled={Boolean(myBet) || status !== "BETTING"}
+            mode={active ? "cashout" : "bet"}
+            stateLabel={stateLabel}
+            cashoutValue={(myBet?.amount ?? 0) * multiplier}
+            busy={placeMutation.isPending || cashoutMutation.isPending}
+            onPlace={() => placeMutation.mutate(Number(amount) || 0)}
+            onCashout={() => myBet && cashoutMutation.mutate(myBet.id)}
+          />
 
-            const stateLabel = !primary
-              ? "1 aposta por rodada"
-              : active
-                ? "Em jogo"
-                : myBet?.status === "cashed_out"
-                  ? `Levantado ${myBet.cashoutMultiplier?.toFixed(2)}x`
-                  : myBet?.status === "lost"
-                    ? "Perdida"
-                    : status === "BETTING"
-                      ? "Pronto"
-                      : "Aguardar";
-
-            return (
-              <div
-                key={index}
-                className="rounded-xl border border-[#1b3b4f] bg-fish-panel p-2.5 sm:p-3"
-              >
-                <div className="mb-2.5 flex items-center justify-between">
-                  <b className="text-sm">Aposta {index + 1}</b>
-                  <span className="text-[11px] font-bold text-fish-muted">{stateLabel}</span>
-                </div>
-
-                <div className="mb-2 flex gap-1.5">
-                  <button
-                    type="button"
-                    aria-label="Diminuir"
-                    disabled={locked}
-                    onClick={() => setAmount(index, String(Math.max(minBet, amountNumber - 10)))}
-                    className="w-[38px] rounded-[7px] bg-fish-step text-lg text-fish-foreground disabled:opacity-45"
-                  >
-                    −
-                  </button>
-                  <input
-                    inputMode="decimal"
-                    aria-label={`Valor da aposta ${index + 1}`}
-                    value={amounts[index]}
-                    disabled={locked}
-                    onChange={(e) => setAmount(index, e.target.value)}
-                    className="min-w-0 flex-1 rounded-[7px] border border-fish-input-border bg-fish-input py-2 text-center text-base font-bold tabular-nums text-fish-foreground outline-none disabled:opacity-45"
-                  />
-                  <button
-                    type="button"
-                    aria-label="Aumentar"
-                    disabled={locked}
-                    onClick={() => setAmount(index, String(Math.min(maxBet, amountNumber + 10)))}
-                    className="w-[38px] rounded-[7px] bg-fish-step text-lg text-fish-foreground disabled:opacity-45"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="mb-2.5 flex gap-1.5">
-                  {QUICK.map((chip) => (
-                    <button
-                      key={chip.label}
-                      type="button"
-                      disabled={locked}
-                      onClick={() => setAmount(index, String(chip.value))}
-                      className="flex-1 rounded-md bg-fish-quick px-1 py-1.5 text-[11px] text-fish-quick-foreground disabled:opacity-45"
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-
-                {active ? (
-                  <button
-                    type="button"
-                    disabled={status !== "RUNNING" || cashoutMutation.isPending}
-                    onClick={() => myBet && cashoutMutation.mutate(myBet.id)}
-                    className="h-[43px] w-full rounded-lg text-sm font-black text-fish-ink disabled:opacity-45"
-                    style={{ background: "linear-gradient(90deg, #ffb21c, #ff8c1c)", color: "#000" }}
-                  >
-                    LEVANTAR {NUM.format(myBet.amount * multiplier)}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={!canBet || placeMutation.isPending}
-                    onClick={() => placeMutation.mutate(amountNumber)}
-                    className="h-[43px] w-full rounded-lg bg-fish-green text-sm font-black text-fish-ink transition disabled:opacity-45"
-                  >
-                    APOSTAR
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          <BetPad
+            value="50"
+            onValue={() => {}}
+            minBet={minBet}
+            maxBet={maxBet}
+            disabled
+            mode="locked"
+            stateLabel="1 aposta por ronda"
+          />
         </div>
 
-        {/* HISTÓRICO */}
-        <div className="mt-2.5 rounded-xl border border-[#193346] bg-fish-panel p-3">
-          <div className="mb-2 flex justify-between">
-            <b className="text-[13px]">Histórico</b>
-            <span className="text-[13px] text-fish-muted">Últimas rodadas</span>
-          </div>
-          <div className="flex gap-[7px] overflow-x-auto">
-            {(roundQuery.data?.history ?? []).length === 0 && (
-              <span className="text-xs text-fish-muted">Sem rodadas terminadas ainda.</span>
-            )}
-            {(roundQuery.data?.history ?? []).map((item) => (
-              <span
-                key={item.roundNumber}
-                className={`flex-none rounded-[7px] bg-fish-chip px-2.5 py-1.5 text-xs font-bold tabular-nums ${
-                  (item.multiplier ?? 0) >= 2 ? "text-fish-green" : "text-fish-chip-foreground"
-                }`}
-              >
-                {(item.multiplier ?? 0).toFixed(2)}x
-              </span>
-            ))}
-          </div>
-          <p className="mt-3 text-[11px] text-fish-muted">
-            Ronda #{round?.roundNumber ?? "—"} · o servidor é a autoridade sobre rodada, aposta,
-            cash-out e saldo. Mínimo {minBet} MZN.
-          </p>
-        </div>
-      </div>
+        <TotalsBar
+          staked={statsQuery.data?.totalStaked ?? 0}
+          paid={statsQuery.data?.totalPaid ?? 0}
+        />
+
+        <p className="mt-3 flex items-start gap-1.5 text-[11px] text-fish-muted">
+          <ShieldCheck className="mt-[1px] size-3.5 shrink-0 text-fish-green" />
+          Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é a
+          autoridade sobre ronda, aposta, cash-out e saldo. Jogue com responsabilidade.
+        </p>
+      </main>
     </div>
   );
 }
