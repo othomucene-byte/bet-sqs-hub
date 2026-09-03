@@ -117,7 +117,7 @@ export async function callGemini({
   const candidates = [model, ...FALLBACK_MODELS.filter((entry) => entry !== model)];
   let last: GeminiResult = { ok: false, error: "O serviço de IA falhou a responder. Tenta novamente." };
 
-  for (const [index, candidate] of candidates.entries()) {
+  outer: for (const [index, candidate] of candidates.entries()) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const result = await callOnce(apiKey, candidate, body);
       if (result.ok) return result;
@@ -125,7 +125,9 @@ export async function callGemini({
         result.status === undefined
           ? { ok: false, error: result.error }
           : { ok: false, status: result.status, error: result.error };
-      if (!result.retryable) return last;
+      // Erros não recuperáveis (chave inválida, pedido recusado) não melhoram com
+      // novas tentativas — passa directamente ao fornecedor alternativo.
+      if (!result.retryable) break outer;
       if (attempt < 2) await sleep(700 * 2 ** attempt + Math.random() * 300);
     }
     if (index < candidates.length - 1) {
