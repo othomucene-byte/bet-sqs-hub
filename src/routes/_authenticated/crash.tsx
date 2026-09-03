@@ -189,7 +189,7 @@ function CrashPage() {
             crashMultiplier={round?.crashMultiplier ?? null}
           />
 
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+          <div className="pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center px-4 text-center">
             {status === "CRASHED" && (
               <p className="font-display text-lg font-bold tracking-wide text-fish-foreground/90 sm:text-2xl">
                 O AVIÃO PARTIU!
@@ -220,7 +220,7 @@ function CrashPage() {
             )}
           </div>
 
-          <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-fish-muted">
+          <span className="absolute left-3 top-3 z-[5] rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-fish-muted">
             Ronda #{round?.roundNumber ?? "—"}
           </span>
         </section>
