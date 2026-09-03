@@ -69,10 +69,12 @@ export function HistoryStrip({
 
 /** Totais confirmados pelo servidor e acesso visual à ronda anterior. */
 export function TotalsBar({
+  totalBets,
   staked,
   paid,
   onPreviousRound,
 }: {
+  totalBets: number;
   staked: number;
   paid: number;
   onPreviousRound?: () => void;
@@ -81,7 +83,8 @@ export function TotalsBar({
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-bet-line bg-bet-surface px-4 py-3.5 sm:px-5">
       <div className="min-w-0">
         <p className="text-xs text-bet-muted">Total de apostas</p>
-        <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">{NUM.format(staked)}</p>
+        <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">{totalBets}</p>
+        <p className="text-[11px] text-bet-muted">{NUM.format(staked)} MZN apostados</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
@@ -89,7 +92,7 @@ export function TotalsBar({
           <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">{NUM.format(paid).replace("MZN", "").trim()}</p>
         </div>
         {onPreviousRound && (
-          <button type="button" onClick={onPreviousRound} className="flex h-10 items-center gap-1.5 rounded-full bg-bet-panel px-3 text-xs font-semibold text-bet-foreground transition hover:bg-bet-ghost">
+          <button type="button" onClick={onPreviousRound} aria-label="Ver ronda anterior" className="flex h-10 items-center gap-1.5 rounded-full bg-bet-panel px-3 text-xs font-semibold text-bet-foreground transition hover:bg-bet-ghost">
             <History className="size-4" />
             <span className="hidden sm:inline">Ronda anterior</span>
           </button>
