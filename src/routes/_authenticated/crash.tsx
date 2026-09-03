@@ -247,30 +247,12 @@ function CrashPage() {
                 busy={placeMutation.isPending || cashoutMutation.isPending}
                 onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
-                footer={
-                  slot === 1 ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setAutoEnabled((v) => !v)}
-                        className={`flex-1 rounded-full py-2 text-xs font-bold transition ${
-                          autoEnabled
-                            ? "bg-fish-green text-fish-ink"
-                            : "bg-fish-step text-fish-quick-foreground"
-                        }`}
-                      >
-                        Levantamento automático
-                      </button>
-                      <input
-                        inputMode="decimal"
-                        aria-label="Multiplicador de levantamento automático"
-                        value={auto}
-                        onChange={(event) => setAuto(event.target.value)}
-                        className="w-[72px] rounded-full bg-fish-input py-2 text-center text-xs font-bold tabular-nums text-fish-foreground outline-none"
-                      />
-                    </div>
-                  ) : undefined
-                }
+                autoPlay={autoPlay[slot]}
+                autoCashout={autoEnabled[slot]}
+                autoCashoutValue={autoValues[slot]}
+                onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onToggleAutoCashout={() => setAutoEnabled((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onAutoCashoutValue={(next) => setAutoValues((prev) => ({ ...prev, [slot]: next }))}
               />
             );
           })}
