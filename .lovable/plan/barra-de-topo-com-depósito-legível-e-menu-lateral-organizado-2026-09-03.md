@@ -6,7 +6,7 @@ Só a barra de topo (`SiteHeader`) muda. Nada de novo no backend: o saldo contin
 
 Para quem tem sessão, o lado direito passa a ter dois elementos claros e grandes, ao estilo da referência:
 
-- Botão **DEPÓSITO** verde, alto (44px, alvo de toque confortável), texto forte e legível, sempre visível — também no telemóvel. Liga a `/pagamentos`.
+- Botão **DEPÓSITO** verde, alto (35px, alvo de toque confortável), texto forte e legível, sempre visível — também no telemóvel. Liga a `/pagamentos`.
 - Chip de **saldo** ao lado: ícone de notas + `1,05 MZN` em número grande e negrito + seta. Enquanto carrega mostra `—` em vez de zero.
 - Clicar no chip abre um painel de conta com linhas bem separadas e etiquetas em maiúsculas discretas e valores alinhados à direita:
   - Utilizador (email da sessão)
@@ -22,7 +22,7 @@ Contraste: usa os tokens já existentes (verde de acção, superfície escura, t
 Passa a painel lateral que desliza da direita (Sheet), com fecho por toque fora e tecla Esc:
 
 - Topo do painel: saldo em destaque + botão **Depósito** de largura total.
-- Itens grandes (48px de altura) com ícone e texto legível, agrupados por secções com título:
+- Itens grandes (43px de altura) com ícone e texto legível, agrupados por secções com título:
   - **Conta** — A minha conta, Carteira, KYC, Notificações
   - **Jogos** — Aviator, Fish Crash
   - **Investimentos** — Investimentos, Empresas, Pagamentos
