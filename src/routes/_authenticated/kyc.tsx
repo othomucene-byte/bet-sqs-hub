@@ -344,8 +344,7 @@ function KycPage() {
                 </Button>
                 {!readyForReview && !locked ? (
                   <p className="text-xs text-muted-foreground">
-                    Falta {missingSteps.join(", ")}. Escolhe o tipo de documento em baixo e carrega a
-                    imagem.
+                    Falta {missingSteps.join(" e ")}.
                   </p>
                 ) : null}
                 {review ? (
