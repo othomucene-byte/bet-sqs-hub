@@ -266,6 +266,12 @@ function CrashPage() {
           totalPaid={statsQuery.data?.totalPaid ?? 0}
         />
 
+        <TotalsBar
+          totalBets={statsQuery.data?.totalBets ?? 0}
+          staked={statsQuery.data?.totalStaked ?? 0}
+          paid={statsQuery.data?.totalPaid ?? 0}
+        />
+
         <p className="mt-3 flex items-start gap-1.5 text-[11px] text-fish-muted">
           <ShieldCheck className="mt-[1px] size-3.5 shrink-0 text-fish-green" />
           Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é a
