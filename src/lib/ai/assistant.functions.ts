@@ -26,56 +26,21 @@ Regras que nunca podes quebrar:
 export const askAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ChatInput.parse(input))
   .handler(async ({ data }) => {
-    const apiKey = process.env["MISTRAL_API_KEY"];
-    if (!apiKey) {
-      return {
-        ok: false as const,
-        error: "O assistente ainda não está configurado (falta a chave Mistral).",
-      };
+    const { callGemini } = await import("./gemini.server");
+    const result = await callGemini({
+      system: SYSTEM_PROMPT,
+      contents: data.messages.map((message) => ({
+        role: message.role === "assistant" ? ("model" as const) : ("user" as const),
+        parts: [{ text: message.content }],
+      })),
+      temperature: 0.3,
+      maxOutputTokens: 900,
+    });
+
+    if (!result.ok) {
+      return { ok: false as const, error: result.error };
     }
 
-    let response: Response;
-    try {
-      response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          model: "mistral-small-latest",
-          temperature: 0.3,
-          max_tokens: 700,
-          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...data.messages],
-        }),
-      });
-    } catch (error) {
-      console.error("[assistant] Mistral network error", error);
-      return { ok: false as const, error: "Não foi possível contactar o assistente. Tenta novamente." };
-    }
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      console.error(`[assistant] Mistral ${response.status}: ${body.slice(0, 500)}`);
-      const message =
-        response.status === 401
-          ? "A chave da Mistral é inválida. Actualiza a configuração do assistente."
-          : response.status === 429
-            ? "O assistente está com demasiados pedidos. Aguarda alguns segundos e tenta outra vez."
-            : response.status === 402
-              ? "A conta Mistral não tem crédito disponível."
-              : "O assistente falhou a responder. Tenta novamente.";
-      return { ok: false as const, error: message };
-    }
-
-    const payload = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string | null } }>;
-    };
-    const reply = payload.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      return { ok: false as const, error: "O assistente devolveu uma resposta vazia." };
-    }
-
+    const reply = result.text;
     return { ok: true as const, reply };
   });

@@ -14,9 +14,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const MODEL = "google/gemini-3.7-flash";
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 const REQUIRED_DOCS = ["id_front", "selfie"] as const;
 
 export type KycReviewOutcome = {
@@ -110,14 +107,9 @@ export const runKycReview = createServerFn({ method: "POST" })
       };
     }
 
-    const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) {
-      return { ok: false, error: "A verificação automática ainda não está configurada." };
-    }
-
     // Leitura das imagens no armazenamento privado (só do próprio utilizador).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const images: { label: string; dataUrl: string }[] = [];
+    const images: { label: string; mimeType: string; data: string }[] = [];
     for (const type of ["id_front", "id_back", "selfie", "proof_address"] as const) {
       const path = byType.get(type);
       if (!path) continue;
@@ -129,7 +121,7 @@ export const runKycReview = createServerFn({ method: "POST" })
       let binary = "";
       for (const byte of bytes) binary += String.fromCharCode(byte);
       const mime = file.type && file.type.startsWith("image/") ? file.type : "image/jpeg";
-      images.push({ label: type, dataUrl: `data:${mime};base64,${btoa(binary)}` });
+      images.push({ label: type, mimeType: mime, data: btoa(binary) });
     }
 
     if (images.length === 0) {
@@ -146,58 +138,33 @@ export const runKycReview = createServerFn({ method: "POST" })
       `Morada: ${profile.address ?? "não indicada"}`,
     ].join("\n");
 
-    let response: Response;
-    try {
-      response = await fetch(GATEWAY, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-          "X-Lovable-AIG-SDK": "fetch",
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          temperature: 0.1,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: `Dados declarados pelo utilizador:\n${declared}` },
-                ...images.flatMap((image) => [
-                  { type: "text" as const, text: `Imagem: ${image.label}` },
-                  { type: "image_url" as const, image_url: { url: image.dataUrl } },
-                ]),
-              ],
-            },
-          ],
-        }),
-      });
-    } catch (error) {
-      console.error("[kyc-review] network error", error);
-      return { ok: false, error: "Não foi possível contactar o Oséias. Tenta novamente." };
-    }
+    const { callGemini } = await import("@/lib/ai/gemini.server");
+    const result = await callGemini({
+      system: SYSTEM_PROMPT,
+      temperature: 0.1,
+      maxOutputTokens: 700,
+      parts: [
+        { text: `Dados declarados pelo utilizador:\n${declared}` },
+        ...images.flatMap((image) => [
+          { text: `Imagem: ${image.label}` },
+          { inlineData: { mimeType: image.mimeType, data: image.data } },
+        ]),
+      ],
+    });
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      console.error(`[kyc-review] gateway ${response.status}: ${body.slice(0, 400)}`);
-      const error =
-        response.status === 429
-          ? "O Oséias está com muitos pedidos. Tenta novamente dentro de um minuto."
-          : response.status === 402
-            ? "Sem créditos de IA disponíveis para a verificação automática."
-            : response.status === 403
-              ? "A verificação automática está bloqueada nas configurações do espaço."
-              : "A verificação automática falhou. A tua submissão fica em análise humana.";
-      return { ok: false, error };
+    if (!result.ok) {
+      return {
+        ok: false,
+        error:
+          result.status === 429
+            ? "O Oséias está com muitos pedidos. Tenta novamente dentro de um minuto."
+            : result.error,
+      };
     }
 
     let verdict: z.infer<typeof DecisionSchema>;
     try {
-      const payload = (await response.json()) as {
-        choices?: Array<{ message?: { content?: string | null } }>;
-      };
-      verdict = await readJsonDecision(payload.choices?.[0]?.message?.content ?? "");
+      verdict = await readJsonDecision(result.text);
     } catch (error) {
       console.error("[kyc-review] parse error", error);
       return { ok: false, error: "O Oséias devolveu uma resposta inválida. Fica em análise humana." };
