@@ -323,8 +323,8 @@ function KycPage() {
                   <ScanFace className="size-4 text-primary" /> Oséias — verificação automática
                 </CardTitle>
                 <CardDescription>
-                  Analisa o documento e a selfie e devolve o resultado em minutos (normalmente 3 a 5).
-                  A decisão é aplicada no servidor; qualquer dúvida vai para análise humana.
+                  Analisa a frente e o verso do BI e devolve o resultado em minutos (normalmente 3 a
+                  5). A decisão é aplicada no servidor; qualquer dúvida vai para análise humana.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
