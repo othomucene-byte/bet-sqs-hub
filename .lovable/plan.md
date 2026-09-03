@@ -1,34 +1,44 @@
-# Aviator / Fish: distribuição de resultados mais equilibrada + auditoria visível
+# Painéis de aposta como na imagem (Aviator + Fish) e mínimo de 3 MZN
 
-## O que se passou (verificado nos dados)
+Alterar apenas a zona inferior dos dois jogos (painéis de aposta, separadores e totais) e baixar a aposta mínima para 3 MZN. Nada muda na animação, na matemática da ronda, no cash-out nem na autoridade do servidor.
 
-A fórmula do resultado não foi alterada — apenas a margem da casa passou de 5% para 3%. Desde essa mudança correram só 10 rondas de Aviator, e nove delas ficaram abaixo de 2.00x (a décima foi 15.33x). Nas 460 rondas anteriores, 53.7% ficaram abaixo de 2.00x e 4.3% explodiram logo em 1.00x — ou seja, o comportamento estatístico está correto e o que sentiste foi variância de amostra pequena.
+## Aposta mínima 3 MZN
 
-Ainda assim, a curva atual concentra demasiados resultados na zona 1.00x–1.60x, que é a que faz o jogo parecer "quebrado". Vou manter o RTP oficial de 97% e redistribuir os resultados para reduzir rondas mortas, mais mostrar prova pública de que os números batem.
+- `minBet` passa de 10 para 3 MZN (máximo mantém-se 25 000 MZN).
+- Validação atualizada no servidor (validador da aposta) e a RPC de aposta confirmada/atualizada para aceitar 3 como mínimo — sem isto o botão falharia com erro do servidor.
+- O texto informativo passa a dizer "Aposta mínima 3,00 MZN".
+- Fichas rápidas passam a 3, 5, 10, 20 (a primeira igual ao mínimo real).
 
-## O que vou fazer
+## Painéis como na imagem
 
-1. **Nova curva de resultados (RTP 97% mantido)**
-   - Continuar com ~3% de rondas a explodir em 1.00x (parte da margem).
-   - Reduzir a franja 1.00x–1.30x, que hoje ocupa ~25% das rondas, para cerca de metade disso, empurrando essas rondas para a faixa 1.5x–4x.
-   - Manter a cauda alta (rondas de 10x+ continuam a existir, com a mesma raridade).
-   - A distribuição resultante fica em torno de 50% acima de 2.00x, como está prometido no ecrã do jogo.
+Dois cartões iguais, empilhados no telemóvel (lado a lado em ecrã largo), com cores fortes e planas como na referência:
 
-2. **Painel de auditoria no jogo**
-   - Um cartão "Justiça do jogo" com números reais calculados no servidor sobre as últimas 100 e 1000 rondas: % de rondas em 1.00x, % acima de 2.00x, multiplicador médio e RTP efetivo.
-   - Mostra que o resultado observado corresponde ao anunciado, em vez de o jogador ter de confiar no texto.
+- Cartão cinzento-escuro neutro, cantos bem arredondados, sem brilho azul.
+- Stepper em pílula escura: `−  5.00  +` com valor grande e centrado.
+- Linha de 4 fichas em pílulas escuras.
+- Botão verde grande à direita, altura total do bloco do stepper + fichas: "Aposta" em cima e "5.00 MZN" em baixo, a negrito. Em jogo muda para "Levantar" com o valor a subir (âmbar).
+- Nova linha inferior com dois botões cinzentos: "Jogo Automático" (com ícone) e "Levantamento Automático".
+  - "Levantamento Automático" abre o campo de multiplicador alvo já suportado pelo servidor (cash-out automático executado no servidor).
+  - "Jogo Automático" repete a aposta do mesmo valor na ronda seguinte, do lado do cliente apenas enquanto a página estiver aberta; cada aposta continua a ser criada pelo servidor. Estado visível de ligado/desligado.
 
-3. **Verificador provably fair por ronda**
-   - No histórico, tocar numa ronda passada mostra semente do servidor, semente do cliente, nonce, o hash publicado antes da ronda e o multiplicador recalculado no browser — se coincidir, a ronda é comprovadamente honesta.
+## Abaixo dos painéis
 
-4. **Coerência do ecrã**
-   - Corrigir os textos e o valor de margem que ainda assumem 5% em vez da margem real da ronda.
-   - Aplicar as mesmas regras ao Fish Crash (as rondas de Fish em curso ainda usam margem 5%; passam a usar a mesma configuração do Aviator).
+- Separadores em pílula: "Todas as apostas" (ativo), "As minhas apostas", "Principais Ganhos" — ligados às estatísticas reais da ronda que já existem; estado vazio honesto quando não há dados.
+- Faixa de totais: "Total de apostas 0/0" à esquerda e "Ganho total MZN 0" à direita, mais o botão "Ronda anterior" com ícone, tal como na imagem.
 
-## Detalhes técnicos
+## Cores
 
-- A nova curva vive numa migração que substitui `public.crash_result` (mesma assinatura, mesmo HMAC-SHA256 provably fair, mesma verificação independente) e no espelho browser-safe `src/lib/crash/fair.ts`, mantendo as duas implementações idênticas — o mapeamento passa a aplicar uma transformação monótona ao float uniforme antes da fórmula do multiplicador, com o RTP recalculado para continuar em 0.97.
-- Rondas já criadas não são recalculadas: o resultado é gravado antes da ronda abrir e continua auditável com a semente original.
-- As estatísticas de auditoria são agregadas numa server function em `src/lib/crash/stats.server.ts` (nenhum cálculo financeiro no frontend).
-- O verificador do histórico usa `crashResult`/`sha256Hex` já existentes em `src/lib/crash/fair.ts`, apenas no cliente e apenas para rondas terminadas.
-- Nada muda em apostas, carteira, liquidação ou ledger.
+Nova paleta neutra de casino em tokens no `src/styles.css` (superfície do painel, pílula, chip, verde de aposta, âmbar de levantar), usada pelos dois jogos. Sem cores fixas nos componentes.
+
+## Ficheiros
+
+- `src/components/games/bet-pad.tsx` — reescrito (visual + linha de automáticos).
+- `src/components/games/game-chrome.tsx` — separadores e faixa de totais com "Ronda anterior".
+- `src/routes/_authenticated/crash.tsx` e `fish.tsx` — composição, fichas e ligação dos separadores.
+- `src/lib/crash/fair.ts` — `minBet: 3`.
+- Uma migração pequena, só se a RPC de aposta tiver o mínimo 10 gravado.
+- `src/styles.css` — tokens de cor do painel.
+
+## Verificação
+
+Screenshots via Playwright em viewport de telemóvel (390px) nos estados apostas/voo, mais typecheck e log de build.
