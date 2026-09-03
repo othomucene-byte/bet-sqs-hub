@@ -266,6 +266,12 @@ function CrashPage() {
           totalPaid={statsQuery.data?.totalPaid ?? 0}
         />
 
+        <p className="mt-3 flex items-start gap-1.5 text-[11px] text-fish-muted">
+          <ShieldCheck className="mt-[1px] size-3.5 shrink-0 text-fish-green" />
+          Aposta mínima {NUM.format(minBet)} MZN · máxima {NUM.format(maxBet)} MZN. O servidor é a
+          autoridade sobre ronda, aposta, cash-out e saldo. Jogue com responsabilidade.
+        </p>
+
         <details className="mt-2.5 rounded-2xl border border-fish-line/70 bg-fish-panel">
           <summary className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-bold">
             <ShieldCheck className="size-4 text-fish-green" />
