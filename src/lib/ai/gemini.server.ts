@@ -12,9 +12,12 @@ export type GeminiResult =
   | { ok: true; text: string }
   | { ok: false; status?: number; error: string };
 
+export type GeminiContent = { role: "user" | "model"; parts: GeminiPart[] };
+
 type GeminiOptions = {
   system: string;
-  parts: GeminiPart[];
+  parts?: GeminiPart[];
+  contents?: GeminiContent[];
   temperature?: number;
   maxOutputTokens?: number;
   model?: string;
@@ -35,6 +38,7 @@ function messageForStatus(status: number): string {
 export async function callGemini({
   system,
   parts,
+  contents,
   temperature = 0.2,
   maxOutputTokens = 900,
   model = GEMINI_MODEL,
@@ -51,7 +55,7 @@ export async function callGemini({
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts }],
+        contents: contents ?? [{ role: "user", parts: parts ?? [] }],
         generationConfig: { temperature, maxOutputTokens },
       }),
     });
