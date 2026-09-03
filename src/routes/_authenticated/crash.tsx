@@ -258,9 +258,12 @@ function CrashPage() {
           })}
         </div>
 
-        <TotalsBar
-          staked={statsQuery.data?.totalStaked ?? 0}
-          paid={statsQuery.data?.totalPaid ?? 0}
+        <RoundStats
+          bets={statsQuery.data?.bets ?? []}
+          top={statsQuery.data?.top ?? []}
+          myBets={statsQuery.data?.myBets ?? []}
+          totalStaked={statsQuery.data?.totalStaked ?? 0}
+          totalPaid={statsQuery.data?.totalPaid ?? 0}
         />
 
         <details className="mt-2.5 rounded-2xl border border-fish-line/70 bg-fish-panel">
