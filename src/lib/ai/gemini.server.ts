@@ -121,7 +121,10 @@ export async function callGemini({
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const result = await callOnce(apiKey, candidate, body);
       if (result.ok) return result;
-      last = { ok: false, status: result.status, error: result.error };
+      last =
+        result.status === undefined
+          ? { ok: false, error: result.error }
+          : { ok: false, status: result.status, error: result.error };
       if (!result.retryable) return last;
       if (attempt < 2) await sleep(700 * 2 ** attempt + Math.random() * 300);
     }
