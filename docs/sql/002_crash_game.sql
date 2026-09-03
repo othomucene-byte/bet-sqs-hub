@@ -77,7 +77,7 @@ create or replace function public.crash_result(
     _server_seed text,
     _client_seed text,
     _nonce bigint,
-    _house_edge numeric default 0.05
+    _house_edge numeric default 0.03
 )
 returns numeric
 language plpgsql
@@ -95,7 +95,7 @@ begin
     _slice := ('x' || encode(substring(_digest from 1 for 4), 'hex'))::bit(32)::bigint;
     _float := _slice::numeric / _max::numeric;
 
-    -- 1% das rondas são crash instantâneo (parte da house edge)
+    -- Uma fracção igual à margem da casa termina em crash instantâneo (1.00x)
     if _float < _house_edge then
         return 1.00;
     end if;
