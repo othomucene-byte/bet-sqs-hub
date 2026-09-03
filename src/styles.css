@@ -132,22 +132,28 @@
   --hero-foreground: oklch(0.985 0.005 250);
   --hero-muted: oklch(0.985 0.005 250 / 72%);
 
-  /* Paleta dedicada do Fish Crash (tema fixo do jogo, igual em light/dark) */
-  --fish-bg: #03111b;
-  --fish-panel: #0b1b29;
-  --fish-line: #1c3a4f;
-  --fish-input: #07131f;
-  --fish-input-border: #284558;
-  --fish-step: #172c3c;
-  --fish-quick: #142a3a;
-  --fish-quick-foreground: #b8cbd7;
-  --fish-green: #27e58a;
-  --fish-amber: #ffb21c;
-  --fish-ink: #04120c;
-  --fish-muted: #829aaa;
-  --fish-chip: #142636;
-  --fish-chip-foreground: #8fa8b8;
+  /* Paleta dedicada dos jogos (tema fixo, igual em light/dark) — cores fortes e consistentes */
+  --fish-bg: #020b14;
+  --fish-panel: #0a1a2b;
+  --fish-line: #2a5578;
+  --fish-input: #05121e;
+  --fish-input-border: #35688f;
+  --fish-step: #1b3d5c;
+  --fish-quick: #1f4straight;
+  --fish-quick-foreground: #dff0ff;
+  --fish-green: #00e07a;
+  --fish-amber: #ffab00;
+  --fish-ink: #021009;
+  --fish-muted: #9fbcd3;
+  --fish-chip: #1b3d5c;
+  --fish-chip-foreground: #cfe4f5;
   --fish-foreground: #ffffff;
+  --fish-red: #ff2d46;
+  /* Escala do histórico de multiplicadores */
+  --game-low: #22b8ff;
+  --game-mid: #a855ff;
+  --game-high: #ff3ea5;
+
 
 }
 

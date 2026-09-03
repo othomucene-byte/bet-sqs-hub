@@ -10,6 +10,8 @@
  */
 import { GAME_CONFIG, msForMultiplier, multiplierAt, sha256Hex } from "./fair";
 
+export type GameKey = "aviator" | "fish";
+
 export type RoundStatus = "WAITING" | "BETTING" | "RUNNING" | "CRASHED" | "SETTLED";
 
 /** Vista da ronda entregue ao cliente. Nunca inclui a semente de rondas em curso. */
@@ -72,7 +74,7 @@ async function admin() {
 }
 
 /** Cria uma ronda nova: semente, compromisso e resultado fixados antes de abrir apostas. */
-async function createRound(): Promise<RoundRow> {
+async function createRound(game: GameKey): Promise<RoundRow> {
   const db = await admin();
   const serverSeed = randomHex(32);
   const serverSeedHash = await sha256Hex(serverSeed);
@@ -81,6 +83,7 @@ async function createRound(): Promise<RoundRow> {
   const { data: inserted, error: insertError } = await db
     .from("game_rounds")
     .insert({
+      game,
       status: "WAITING",
       server_seed: serverSeed,
       server_seed_hash: serverSeedHash,
@@ -121,11 +124,12 @@ async function createRound(): Promise<RoundRow> {
   return opened as RoundRow;
 }
 
-async function latestRound(): Promise<RoundRow | null> {
+async function latestRound(game: GameKey): Promise<RoundRow | null> {
   const db = await admin();
   const { data, error } = await db
     .from("game_rounds")
     .select("*")
+    .eq("game", game)
     .order("round_number", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -137,12 +141,12 @@ async function latestRound(): Promise<RoundRow | null> {
  * Avança a máquina de estados e devolve a ronda corrente.
  * Idempotente: seguro chamar em cada pedido de polling.
  */
-export async function advanceRound(): Promise<RoundRow> {
+export async function advanceRound(game: GameKey = "aviator"): Promise<RoundRow> {
   const db = await admin();
-  let round = await latestRound();
+  let round = await latestRound(game);
 
   if (!round || round.status === "SETTLED") {
-    return await createRound();
+    return await createRound(game);
   }
 
   // WAITING sobrante (falha a meio da criação) → abrir apostas.
@@ -154,7 +158,7 @@ export async function advanceRound(): Promise<RoundRow> {
       .eq("status", "WAITING")
       .select("*")
       .maybeSingle();
-    round = (data as RoundRow | null) ?? (await latestRound())!;
+    round = (data as RoundRow | null) ?? (await latestRound(game))!;
   }
 
   if (round.status === "BETTING") {
@@ -168,7 +172,7 @@ export async function advanceRound(): Promise<RoundRow> {
         .eq("status", "BETTING")
         .select("*")
         .maybeSingle();
-      round = (data as RoundRow | null) ?? (await latestRound())!;
+      round = (data as RoundRow | null) ?? (await latestRound(game))!;
     }
   }
 
@@ -197,7 +201,7 @@ export async function advanceRound(): Promise<RoundRow> {
         const { error } = await db.rpc("settle_round", { _round_id: round.id });
         if (error) throw error;
       } else {
-        round = (await latestRound())!;
+        round = (await latestRound(game))!;
       }
     }
   }
@@ -210,7 +214,7 @@ export async function advanceRound(): Promise<RoundRow> {
         .update({ status: "SETTLED", settled_at: new Date().toISOString() })
         .eq("id", round.id)
         .eq("status", "CRASHED");
-      return await createRound();
+      return await createRound(game);
     }
   }
 

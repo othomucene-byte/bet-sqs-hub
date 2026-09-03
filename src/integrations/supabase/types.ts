@@ -126,6 +126,7 @@ export type Database = {
           payout: number | null
           placed_at: string
           round_id: string
+          slot: number
           status: string
           user_id: string
         }
@@ -138,6 +139,7 @@ export type Database = {
           payout?: number | null
           placed_at?: string
           round_id: string
+          slot?: number
           status?: string
           user_id: string
         }
@@ -150,6 +152,7 @@ export type Database = {
           payout?: number | null
           placed_at?: string
           round_id?: string
+          slot?: number
           status?: string
           user_id?: string
         }
@@ -171,6 +174,7 @@ export type Database = {
           crash_multiplier: number | null
           crashed_at: string | null
           created_at: string
+          game: string
           house_edge: number
           id: string
           nonce: number
@@ -188,6 +192,7 @@ export type Database = {
           crash_multiplier?: number | null
           crashed_at?: string | null
           created_at?: string
+          game?: string
           house_edge?: number
           id?: string
           nonce: number
@@ -205,6 +210,7 @@ export type Database = {
           crash_multiplier?: number | null
           crashed_at?: string | null
           created_at?: string
+          game?: string
           house_edge?: number
           id?: string
           nonce?: number
@@ -1028,6 +1034,7 @@ export type Database = {
           payout: number | null
           placed_at: string
           round_id: string
+          slot: number
           status: string
           user_id: string
         }
@@ -1062,32 +1069,62 @@ export type Database = {
         }
         Returns: boolean
       }
-      place_bet: {
-        Args: {
-          _amount: number
-          _auto_cashout?: number
-          _round_id: string
-          _user_id: string
-        }
-        Returns: {
-          amount: number
-          auto_cashout: number | null
-          cashed_out_at: string | null
-          cashout_multiplier: number | null
-          id: string
-          payout: number | null
-          placed_at: string
-          round_id: string
-          status: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "game_bets"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      place_bet:
+        | {
+            Args: {
+              _amount: number
+              _auto_cashout?: number
+              _round_id: string
+              _user_id: string
+            }
+            Returns: {
+              amount: number
+              auto_cashout: number | null
+              cashed_out_at: string | null
+              cashout_multiplier: number | null
+              id: string
+              payout: number | null
+              placed_at: string
+              round_id: string
+              slot: number
+              status: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "game_bets"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              _amount: number
+              _auto_cashout?: number
+              _round_id: string
+              _slot?: number
+              _user_id: string
+            }
+            Returns: {
+              amount: number
+              auto_cashout: number | null
+              cashed_out_at: string | null
+              cashout_multiplier: number | null
+              id: string
+              payout: number | null
+              placed_at: string
+              round_id: string
+              slot: number
+              status: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "game_bets"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       place_investment: {
         Args: { _amount: number; _product_id: string; _user_id: string }
         Returns: {

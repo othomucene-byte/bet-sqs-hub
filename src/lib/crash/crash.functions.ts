@@ -8,15 +8,20 @@ import { GAME_CONFIG } from "./fair";
  * Estado da ronda corrente. Público (o histórico do Crash é público) e é este
  * pedido que faz avançar a máquina de estados no servidor.
  */
-export const getCurrentRound = createServerFn({ method: "GET" }).handler(async () => {
+const gameInput = z.object({ game: z.enum(["aviator", "fish"]).default("aviator") });
+
+export const getCurrentRound = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => gameInput.parse(input ?? {}))
+  .handler(async ({ data }) => {
   const { advanceRound, toPublicRound } = await import("./engine.server");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const round = toPublicRound(await advanceRound());
+  const round = toPublicRound(await advanceRound(data.game));
 
   const { data: history } = await supabaseAdmin
     .from("game_rounds")
     .select("round_number, crash_multiplier, status")
+    .eq("game", data.game)
     .in("status", ["CRASHED", "SETTLED"])
     .order("round_number", { ascending: false })
     .limit(20);
@@ -39,12 +44,14 @@ export const getCurrentRound = createServerFn({ method: "GET" }).handler(async (
       houseEdge: GAME_CONFIG.houseEdge,
     },
   };
-});
+  });
 
 const placeBetInput = z.object({
   roundId: z.string().uuid(),
   amount: z.number().min(GAME_CONFIG.minBet).max(GAME_CONFIG.maxBet),
   autoCashout: z.number().min(1.01).max(10000).nullable().optional(),
+  /** Painel de aposta (1 ou 2): permite duas apostas independentes por ronda. */
+  slot: z.union([z.literal(1), z.literal(2)]).default(1),
 });
 
 /** Coloca a aposta. O valor é debitado pelo servidor, dentro do ledger. */
@@ -58,6 +65,7 @@ export const placeBet = createServerFn({ method: "POST" })
       _user_id: context.userId,
       _round_id: data.roundId,
       _amount: data.amount,
+      _slot: data.slot,
       ...(data.autoCashout ? { _auto_cashout: data.autoCashout } : {}),
     });
 
@@ -86,6 +94,28 @@ export const cashout = createServerFn({ method: "POST" })
 
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const, bet };
+  });
+
+/** Apostas do utilizador na ronda indicada (um registo por painel). */
+export const getMyBets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ roundId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: rows } = await context.supabase
+      .from("game_bets")
+      .select("id, amount, auto_cashout, cashout_multiplier, payout, status, slot")
+      .eq("round_id", data.roundId)
+      .eq("user_id", context.userId);
+
+    return (rows ?? []).map((bet) => ({
+      id: bet.id as string,
+      slot: (Number(bet.slot) === 2 ? 2 : 1) as 1 | 2,
+      amount: Number(bet.amount),
+      autoCashout: bet.auto_cashout === null ? null : Number(bet.auto_cashout),
+      cashoutMultiplier: bet.cashout_multiplier === null ? null : Number(bet.cashout_multiplier),
+      payout: bet.payout === null ? null : Number(bet.payout),
+      status: bet.status as "active" | "cashed_out" | "lost" | "refunded",
+    }));
   });
 
 /** Aposta do utilizador na ronda indicada, se existir. */
