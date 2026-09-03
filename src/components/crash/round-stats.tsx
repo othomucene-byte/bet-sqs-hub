@@ -1,10 +1,9 @@
 import { useState } from "react";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const MZN = new Intl.NumberFormat("pt-PT", { style: "currency", currency: "MZN" });
 
-export type StatBet = {
+type StatBet = {
   id: string;
   player: string;
   amount: number;
@@ -15,13 +14,13 @@ export type StatBet = {
 
 type Tab = "todas" | "minhas" | "ganhos";
 
-const TABS: { id: Tab; label: string; short: string }[] = [
-  { id: "todas", label: "Todas as apostas", short: "Todas" },
-  { id: "minhas", label: "As minhas apostas", short: "Minhas" },
-  { id: "ganhos", label: "Maiores ganhos", short: "Ganhos" },
+const TABS: { id: Tab; label: string }[] = [
+  { id: "todas", label: "Todas as apostas" },
+  { id: "minhas", label: "As minhas apostas" },
+  { id: "ganhos", label: "Principais Ganhos" },
 ];
 
-/** Painel de estatísticas — só mostra dados vindos do servidor. */
+/** Faixa de estatísticas da ronda com dados exclusivamente confirmados pelo servidor. */
 export function RoundStats({
   bets,
   top,
@@ -39,78 +38,69 @@ export function RoundStats({
   const rows = tab === "todas" ? bets : tab === "minhas" ? myBets : top;
 
   return (
-    <Card>
-      <CardContent className="space-y-4 py-4">
-        <div className="flex gap-1 rounded-full bg-secondary/60 p-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`flex-1 whitespace-nowrap rounded-full px-2 py-1.5 text-[11px] font-semibold transition-colors ${
-                tab === t.id
-                  ? "bg-card text-foreground shadow-card"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span className="sm:hidden">{t.short}</span>
-              <span className="hidden sm:inline">{t.label}</span>
-            </button>
-          ))}
+    <section className="mt-3 overflow-hidden rounded-[24px] border border-bet-line bg-bet-surface">
+      <div className="grid grid-cols-3 gap-1 border-b border-bet-line bg-bet-panel p-1.5">
+        {TABS.map((item) => (
+          <Button
+            key={item.id}
+            type="button"
+            variant="ghost"
+            onClick={() => setTab(item.id)}
+            className={`h-11 rounded-full px-2 text-xs font-medium sm:text-sm ${
+              tab === item.id
+                ? "bg-bet-ghost text-bet-ghost-foreground hover:bg-bet-ghost"
+                : "text-bet-muted hover:bg-bet-ghost/60 hover:text-bet-foreground"
+            }`}
+          >
+            <span className="sm:hidden">{item.id === "todas" ? "Todas" : item.id === "minhas" ? "Minhas" : "Ganhos"}</span>
+            <span className="hidden sm:inline">{item.label}</span>
+          </Button>
+        ))}
+      </div>
+
+      <div className="px-3.5 py-3.5 sm:px-5">
+        <div className="flex items-center justify-between gap-3 border-b border-bet-line pb-3">
+          <div>
+            <p className="text-xs text-bet-muted">Total de apostas</p>
+            <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">
+              {rows.length}/{bets.length}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-bet-muted">Ganho total MZN</p>
+            <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">
+              {MZN.format(totalPaid).replace("MZN", "").trim()}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between border-b border-border/50 pb-2 text-xs">
-          <span className="text-muted-foreground">
-            Apostas nesta ronda: <span className="font-semibold text-foreground">{bets.length}</span>
-          </span>
-          <span className="text-muted-foreground">
-            Apostado: <span className="font-semibold text-foreground">{MZN.format(totalStaked)}</span>
-          </span>
-        </div>
-
-        <div className="space-y-1.5">
-          {rows.length === 0 && (
-            <p className="py-4 text-center text-xs text-muted-foreground">
+        <div className="mt-3 space-y-1.5">
+          {rows.length === 0 ? (
+            <p className="py-4 text-center text-xs text-bet-muted">
               {tab === "minhas"
                 ? "Ainda não tem apostas registadas."
                 : tab === "ganhos"
                   ? "Sem ganhos registados até agora."
                   : "Nenhuma aposta nesta ronda ainda."}
             </p>
+          ) : (
+            rows.slice(0, 5).map((row) => (
+              <div key={row.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-xl px-2 py-2 text-xs odd:bg-bet-panel">
+                <span className="truncate text-bet-muted">{row.player}</span>
+                <span className="tabular-nums text-bet-foreground">{MZN.format(row.amount)}</span>
+                <span className="text-right font-semibold tabular-nums text-bet-green">
+                  {row.multiplier ? `${row.multiplier.toFixed(2)}x` : row.status === "active" ? "Em jogo" : "—"}
+                </span>
+              </div>
+            ))
           )}
-          {rows.map((row) => (
-            <div
-              key={row.id}
-              className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-lg px-2 py-1.5 text-xs odd:bg-secondary/30"
-            >
-              <span className="truncate text-muted-foreground">{row.player}</span>
-              <span className="tabular-nums text-foreground">{MZN.format(row.amount)}</span>
-              <span
-                className={
-                  row.multiplier
-                    ? "w-24 text-right font-semibold tabular-nums text-primary"
-                    : "w-24 text-right tabular-nums text-muted-foreground"
-                }
-              >
-                {row.multiplier
-                  ? `${row.multiplier.toFixed(2)}x · ${MZN.format(row.payout ?? 0)}`
-                  : row.status === "active"
-                    ? "em voo"
-                    : "—"}
-              </span>
-            </div>
-          ))}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border/50 pt-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Pago nesta ronda
-          </span>
-          <span className="font-display text-sm font-bold tabular-nums text-chart-3">
-            {MZN.format(totalPaid)}
-          </span>
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-bet-line pt-3 text-xs">
+          <span className="text-bet-muted">Total apostado</span>
+          <span className="font-semibold tabular-nums text-bet-foreground">{MZN.format(totalStaked)}</span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
