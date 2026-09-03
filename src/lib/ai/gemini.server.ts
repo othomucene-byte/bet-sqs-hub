@@ -137,7 +137,13 @@ export async function callGemini({
 
   // Último recurso: fornecedor alternativo (Mistral), para que uma indisponibilidade
   // do Google não faça falhar o pedido.
-  const mistral = await callMistral({ system, parts, contents, temperature, maxOutputTokens });
+  const mistral = await callMistral({
+    system,
+    ...(parts ? { parts } : {}),
+    ...(contents ? { contents } : {}),
+    temperature,
+    maxOutputTokens,
+  });
   if (mistral.ok) {
     console.warn("[gemini] resposta obtida via fornecedor alternativo (Mistral)");
     return mistral;
