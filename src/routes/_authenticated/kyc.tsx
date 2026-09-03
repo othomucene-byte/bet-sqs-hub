@@ -148,7 +148,7 @@ function KycPage() {
   ].filter(Boolean) as string[];
   const readyForReview = missingSteps.length === 0;
 
-  async function handleUpload(file: File) {
+  async function handleUpload(file: File, type: "id_front" | "id_back" = docType) {
     setUploading(true);
     try {
       const { data: session } = await supabase.auth.getUser();
