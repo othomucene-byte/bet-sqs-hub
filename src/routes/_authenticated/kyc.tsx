@@ -90,6 +90,7 @@ function KycPage() {
   const [docType, setDocType] = useState("id_front");
   const [review, setReview] = useState<KycReviewOutcome | null>(null);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const current = kyc.data;
   const status = current?.status ?? "not_started";
