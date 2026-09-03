@@ -169,7 +169,7 @@ function CrashPage() {
     >
       <GameTopBar
         title="Aviator"
-        accent="#ff3b47"
+        accent="#ff2d46"
         balance={walletQuery.data?.balance ?? null}
         clock={clock}
         muted={muted}
@@ -197,7 +197,7 @@ function CrashPage() {
             )}
             <p
               className={`font-display text-[52px] font-black leading-none tabular-nums sm:text-[76px] ${
-                status === "CRASHED" ? "text-[#e0333f]" : "text-fish-foreground"
+                status === "CRASHED" ? "text-fish-red" : "text-fish-foreground"
               }`}
               style={{ textShadow: "0 6px 30px rgba(0,0,0,0.65)" }}
             >
@@ -212,7 +212,7 @@ function CrashPage() {
                 </p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
                   <div
-                    className="h-full rounded-full bg-[#ff3b47] transition-[width] duration-1000 ease-linear"
+                    className="h-full rounded-full bg-fish-red transition-[width] duration-1000 ease-linear"
                     style={{ width: `${Math.min(100, (countdown / 8) * 100)}%` }}
                   />
                 </div>

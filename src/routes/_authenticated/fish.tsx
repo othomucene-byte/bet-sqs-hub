@@ -154,7 +154,7 @@ function FishPage() {
     >
       <GameTopBar
         title="Fish Crash"
-        accent="#ffb21c"
+        accent="#ffab00"
         balance={walletQuery.data?.balance ?? null}
         clock={clock}
         muted={muted}
@@ -175,13 +175,13 @@ function FishPage() {
             )}
             <p
               className={`font-display text-[52px] font-black leading-none tabular-nums sm:text-[76px] ${
-                status === "CRASHED" ? "text-[#e0333f]" : "text-fish-green"
+                status === "CRASHED" ? "text-fish-red" : "text-fish-green"
               }`}
               style={{
                 textShadow:
                   status === "CRASHED"
                     ? "0 6px 30px rgba(0,0,0,0.65)"
-                    : "0 0 14px rgba(39,229,138,0.55)",
+                    : "0 0 14px rgba(0,224,122,0.65)",
               }}
             >
               {multiplier.toFixed(2)}
