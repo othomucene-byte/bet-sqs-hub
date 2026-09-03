@@ -6,6 +6,13 @@ const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const GEMINI_MODEL = "gemini-3.7-flash";
 
+/** Modelos alternativos quando o principal está sobrecarregado (503) ou limitado (429). */
+const FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
+
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
 
 export type GeminiResult =
