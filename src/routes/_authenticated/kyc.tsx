@@ -61,8 +61,8 @@ const statusMeta: Record<string, { label: string; tone: string; icon: typeof Shi
 };
 
 const docLabels: Record<string, string> = {
-  id_front: "Documento (frente)",
-  id_back: "Documento (verso)",
+  id_front: "BI — frente",
+  id_back: "BI — verso",
   selfie: "Selfie com documento",
   proof_address: "Comprovativo de morada",
   other: "Outro",
