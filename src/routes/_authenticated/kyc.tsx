@@ -143,8 +143,8 @@ function KycPage() {
   const docTypes = new Set((current?.documents ?? []).map((doc) => doc.docType));
   const missingSteps = [
     !current ? "submeter os teus dados" : null,
-    !docTypes.has("id_front") ? "carregar o documento (frente)" : null,
-    !docTypes.has("selfie") ? "carregar a selfie com o documento" : null,
+    !docTypes.has("id_front") ? "a foto da frente do BI" : null,
+    !docTypes.has("id_back") ? "a foto do verso do BI" : null,
   ].filter(Boolean) as string[];
   const readyForReview = missingSteps.length === 0;
 
