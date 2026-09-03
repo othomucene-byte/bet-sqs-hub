@@ -80,6 +80,18 @@
   --color-game-low: var(--game-low);
   --color-game-mid: var(--game-mid);
   --color-game-high: var(--game-high);
+  --color-bet-surface: var(--bet-surface);
+  --color-bet-panel: var(--bet-panel);
+  --color-bet-line: var(--bet-line);
+  --color-bet-pill: var(--bet-pill);
+  --color-bet-chip: var(--bet-chip);
+  --color-bet-ghost: var(--bet-ghost);
+  --color-bet-ghost-foreground: var(--bet-ghost-foreground);
+  --color-bet-green: var(--bet-green);
+  --color-bet-green-foreground: var(--bet-green-foreground);
+  --color-bet-amber: var(--bet-amber);
+  --color-bet-foreground: var(--bet-foreground);
+  --color-bet-muted: var(--bet-muted);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
