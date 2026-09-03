@@ -10,12 +10,12 @@ const aviatorTheme: StageTheme = {
   character: gameAssets.aviator.character,
   characterWidth: 250,
   characterTilt: -0.12,
-  line: "#ff3b47",
-  lineSoft: "rgba(255,59,71,0.32)",
-  glow: "rgba(255,59,71,0.6)",
-  crashLine: "#ff6b3d",
-  crashGlow: "rgba(255,107,61,0.3)",
-  ambient: "rgba(255,150,80,0.16)",
+  line: "#ff2d46",
+  lineSoft: "rgba(255,45,70,0.38)",
+  glow: "rgba(255,45,70,0.75)",
+  crashLine: "#ffab00",
+  crashGlow: "rgba(255,171,0,0.35)",
+  ambient: "rgba(255,120,40,0.22)",
 };
 
 /** Palco do Aviator: cenário fotográfico, avião 3D e curva do multiplicador. */

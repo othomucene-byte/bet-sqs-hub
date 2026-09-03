@@ -14,7 +14,7 @@ import * as sound from "@/lib/crash/sound";
 import {
   cashout,
   getCurrentRound,
-  getMyBet,
+  getMyBets,
   getRoundStats,
   placeBet,
 } from "@/lib/crash/crash.functions";
@@ -48,14 +48,14 @@ function FishPage() {
   const queryClient = useQueryClient();
   const fetchRound = useServerFn(getCurrentRound);
   const fetchWallet = useServerFn(getWallet);
-  const fetchBet = useServerFn(getMyBet);
+  const fetchBets = useServerFn(getMyBets);
   const fetchStats = useServerFn(getRoundStats);
   const submitBet = useServerFn(placeBet);
   const submitCashout = useServerFn(cashout);
 
   const roundQuery = useQuery({
-    queryKey: ["crash", "round"],
-    queryFn: () => fetchRound(),
+    queryKey: ["fish", "round"],
+    queryFn: () => fetchRound({ data: { game: "fish" } }),
     refetchInterval: 1000,
     refetchIntervalInBackground: true,
   });
@@ -66,21 +66,21 @@ function FishPage() {
 
   const walletQuery = useQuery({ queryKey: ["wallet"], queryFn: () => fetchWallet() });
   const betQuery = useQuery({
-    queryKey: ["crash", "bet", round?.id],
-    queryFn: () => fetchBet({ data: { roundId: round!.id } }),
+    queryKey: ["fish", "bets", round?.id],
+    queryFn: () => fetchBets({ data: { roundId: round!.id } }),
     enabled: Boolean(round?.id),
   });
   const statsQuery = useQuery({
-    queryKey: ["crash", "stats", round?.id],
+    queryKey: ["fish", "stats", round?.id],
     queryFn: () => fetchStats({ data: { roundId: round!.id } }),
     enabled: Boolean(round?.id),
     refetchInterval: 3000,
   });
 
-  const [amount, setAmount] = useState("50");
+  const [amounts, setAmounts] = useState<Record<1 | 2, string>>({ 1: "50", 2: "50" });
   const [muted, setMutedState] = useState(false);
   const clock = useClock();
-  const myBet = betQuery.data;
+  const bets = betQuery.data ?? [];
 
   const multiplier = useLiveMultiplier(
     status,
@@ -103,7 +103,8 @@ function FishPage() {
   };
 
   const placeMutation = useMutation({
-    mutationFn: async (value: number) => submitBet({ data: { roundId: round!.id, amount: value } }),
+    mutationFn: async (input: { slot: 1 | 2; amount: number }) =>
+      submitBet({ data: { roundId: round!.id, amount: input.amount, slot: input.slot } }),
     onSuccess: (result) => {
       if (!result.ok) {
         toast.error(result.error);
@@ -135,17 +136,16 @@ function FishPage() {
   const minBet = config?.minBet ?? 10;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
-  const active = myBet?.status === "active";
 
-  const stateLabel = active
-    ? "Em jogo"
-    : myBet?.status === "cashed_out"
-      ? `Levantado ${myBet.cashoutMultiplier?.toFixed(2)}x`
-      : myBet?.status === "lost"
-        ? "Perdida"
-        : status === "BETTING"
-          ? `Fecha em ${countdown}s`
-          : "A aguardar ronda";
+  const betForSlot = (slot: 1 | 2) => bets.find((bet) => bet.slot === slot) ?? null;
+  const labelFor = (slot: 1 | 2) => {
+    const bet = betForSlot(slot);
+    if (bet?.status === "active") return "Em jogo";
+    if (bet?.status === "cashed_out") return `Levantado ${bet.cashoutMultiplier?.toFixed(2)}x`;
+    if (bet?.status === "lost") return "Perdida";
+    if (status === "BETTING") return `Fecha em ${countdown}s`;
+    return "A aguardar ronda";
+  };
 
   return (
     <div
@@ -154,7 +154,7 @@ function FishPage() {
     >
       <GameTopBar
         title="Fish Crash"
-        accent="#ffb21c"
+        accent="#ffab00"
         balance={walletQuery.data?.balance ?? null}
         clock={clock}
         muted={muted}
@@ -175,13 +175,13 @@ function FishPage() {
             )}
             <p
               className={`font-display text-[52px] font-black leading-none tabular-nums sm:text-[76px] ${
-                status === "CRASHED" ? "text-[#e0333f]" : "text-fish-green"
+                status === "CRASHED" ? "text-fish-red" : "text-fish-green"
               }`}
               style={{
                 textShadow:
                   status === "CRASHED"
                     ? "0 6px 30px rgba(0,0,0,0.65)"
-                    : "0 0 14px rgba(39,229,138,0.55)",
+                    : "0 0 14px rgba(0,224,122,0.65)",
               }}
             >
               {multiplier.toFixed(2)}
@@ -210,29 +210,29 @@ function FishPage() {
 
         {/* APOSTAS */}
         <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
-          <BetPad
-            value={amount}
-            onValue={setAmount}
-            minBet={minBet}
-            maxBet={maxBet}
-            disabled={Boolean(myBet) || status !== "BETTING"}
-            mode={active ? "cashout" : "bet"}
-            stateLabel={stateLabel}
-            cashoutValue={(myBet?.amount ?? 0) * multiplier}
-            busy={placeMutation.isPending || cashoutMutation.isPending}
-            onPlace={() => placeMutation.mutate(Number(amount) || 0)}
-            onCashout={() => myBet && cashoutMutation.mutate(myBet.id)}
-          />
-
-          <BetPad
-            value="50"
-            onValue={() => {}}
-            minBet={minBet}
-            maxBet={maxBet}
-            disabled
-            mode="locked"
-            stateLabel="1 aposta por ronda"
-          />
+          {([1, 2] as const).map((slot) => {
+            const bet = betForSlot(slot);
+            const isActive = bet?.status === "active";
+            return (
+              <BetPad
+                key={slot}
+                title={`Aposta ${slot}`}
+                value={amounts[slot]}
+                onValue={(next) => setAmounts((prev) => ({ ...prev, [slot]: next }))}
+                minBet={minBet}
+                maxBet={maxBet}
+                disabled={Boolean(bet) || status !== "BETTING"}
+                mode={isActive ? "cashout" : "bet"}
+                stateLabel={labelFor(slot)}
+                cashoutValue={(bet?.amount ?? 0) * multiplier}
+                busy={placeMutation.isPending || cashoutMutation.isPending}
+                onPlace={() =>
+                  placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })
+                }
+                onCashout={() => bet && cashoutMutation.mutate(bet.id)}
+              />
+            );
+          })}
         </div>
 
         <TotalsBar

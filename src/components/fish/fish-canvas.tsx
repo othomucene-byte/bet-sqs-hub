@@ -10,12 +10,12 @@ const fishTheme: StageTheme = {
   character: gameAssets.fish.character,
   characterWidth: 240,
   characterTilt: -0.05,
-  line: "#27e58a",
-  lineSoft: "rgba(39,229,138,0.3)",
-  glow: "rgba(39,229,138,0.6)",
-  crashLine: "#ff5d5d",
-  crashGlow: "rgba(255,93,93,0.28)",
-  ambient: "rgba(80,190,255,0.16)",
+  line: "#00e07a",
+  lineSoft: "rgba(0,224,122,0.35)",
+  glow: "rgba(0,224,122,0.7)",
+  crashLine: "#ff2d46",
+  crashGlow: "rgba(255,45,70,0.32)",
+  ambient: "rgba(60,190,255,0.22)",
 };
 
 /** Palco do Fish Crash: água profunda, peixe realista, bolhas e curva neon. */

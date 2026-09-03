@@ -76,6 +76,11 @@
   --color-fish-chip: var(--fish-chip);
   --color-fish-chip-foreground: var(--fish-chip-foreground);
   --color-fish-foreground: var(--fish-foreground);
+  --color-fish-red: var(--fish-red);
+  --color-game-low: var(--game-low);
+  --color-game-mid: var(--game-mid);
+  --color-game-high: var(--game-high);
+
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --shadow-card: var(--shadow-card);
@@ -139,7 +144,7 @@
   --fish-input: #05121e;
   --fish-input-border: #35688f;
   --fish-step: #1b3d5c;
-  --fish-quick: #1f4straight;
+  --fish-quick: #1f4a6d;
   --fish-quick-foreground: #dff0ff;
   --fish-green: #00e07a;
   --fish-amber: #ffab00;
