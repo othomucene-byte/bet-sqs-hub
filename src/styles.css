@@ -171,6 +171,20 @@
   --game-mid: #a855ff;
   --game-high: #ff3ea5;
 
+  /* Zona de apostas (neutra, estilo casino) — igual nos dois jogos */
+  --bet-surface: #0b0b0b;
+  --bet-panel: #1e1e1e;
+  --bet-line: #2e2e2e;
+  --bet-pill: #0d0d0d;
+  --bet-chip: #151515;
+  --bet-ghost: #4a4a4a;
+  --bet-ghost-foreground: #f2f2f2;
+  --bet-green: #4caf35;
+  --bet-green-foreground: #ffffff;
+  --bet-amber: #ff9f1c;
+  --bet-foreground: #ffffff;
+  --bet-muted: #9a9a9a;
+
 
 }
 
