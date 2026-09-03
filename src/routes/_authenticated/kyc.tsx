@@ -141,7 +141,12 @@ function KycPage() {
   });
 
   const docTypes = new Set((current?.documents ?? []).map((doc) => doc.docType));
-  const readyForReview = docTypes.has("id_front") && docTypes.has("selfie");
+  const missingSteps = [
+    !current ? "submeter os teus dados" : null,
+    !docTypes.has("id_front") ? "carregar o documento (frente)" : null,
+    !docTypes.has("selfie") ? "carregar a selfie com o documento" : null,
+  ].filter(Boolean) as string[];
+  const readyForReview = missingSteps.length === 0;
 
   async function handleUpload(file: File) {
     setUploading(true);
