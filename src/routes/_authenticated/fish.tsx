@@ -7,7 +7,7 @@ import { ShieldCheck } from "lucide-react";
 
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
 import { BetPad } from "@/components/games/bet-pad";
-import { GameTopBar, HistoryStrip } from "@/components/games/game-chrome";
+import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
 import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt } from "@/lib/crash/fair";
@@ -108,7 +108,14 @@ function FishPage() {
 
   const placeMutation = useMutation({
     mutationFn: async (input: { slot: 1 | 2; amount: number }) =>
-      submitBet({ data: { roundId: round!.id, amount: input.amount, slot: input.slot } }),
+      submitBet({
+        data: {
+          roundId: round!.id,
+          amount: input.amount,
+          slot: input.slot,
+          autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
+        },
+      }),
     onSuccess: (result) => {
       if (!result.ok) {
         toast.error(result.error);

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FlightCanvas, type FlightStatus } from "@/components/crash/flight-canvas";
 import { BetPad } from "@/components/games/bet-pad";
-import { GameTopBar, HistoryStrip } from "@/components/games/game-chrome";
+import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
 import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt, sha256Hex, crashResult } from "@/lib/crash/fair";
