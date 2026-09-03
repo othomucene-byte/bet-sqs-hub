@@ -1,7 +1,7 @@
 import { CirclePlay, Minus, Plus } from "lucide-react";
 
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const CHIPS = [3, 5, 10, 20];
+const CHIPS = [1, 2, 5, 10];
 
 /**
  * Painel de aposta compacto, inspirado no formato de casino mobile.
