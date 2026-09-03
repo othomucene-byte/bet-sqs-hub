@@ -26,7 +26,7 @@ export const GAME_CONFIG = {
   bettingMs: 8_000,
   /** Tempo de exibição do crash antes da ronda seguinte. */
   crashedMs: 4_000,
-  minBet: 10,
+  minBet: 3,
   maxBet: 25_000,
 } as const;
 

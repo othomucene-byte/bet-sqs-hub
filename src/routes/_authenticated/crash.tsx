@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FlightCanvas, type FlightStatus } from "@/components/crash/flight-canvas";
 import { BetPad } from "@/components/games/bet-pad";
-import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { GameTopBar, HistoryStrip } from "@/components/games/game-chrome";
+import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt, sha256Hex, crashResult } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
@@ -148,7 +149,7 @@ function CrashPage() {
 
   const bets = betQuery.data ?? [];
   const config = roundQuery.data?.config;
-  const minBet = config?.minBet ?? 10;
+  const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 

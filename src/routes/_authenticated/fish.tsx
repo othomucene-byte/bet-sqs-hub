@@ -7,7 +7,8 @@ import { ShieldCheck } from "lucide-react";
 
 import { FishCanvas, type FishStatus } from "@/components/fish/fish-canvas";
 import { BetPad } from "@/components/games/bet-pad";
-import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
+import { GameTopBar, HistoryStrip } from "@/components/games/game-chrome";
+import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { multiplierAt } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
@@ -133,7 +134,7 @@ function FishPage() {
     onError: () => toast.error("Não foi possível fazer cash-out."),
   });
 
-  const minBet = config?.minBet ?? 10;
+  const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
