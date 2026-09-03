@@ -155,11 +155,11 @@ function KycPage() {
       const uid = session.user?.id;
       if (!uid) throw new Error("Sessão expirada.");
       const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${uid}/${docType}-${Date.now()}.${ext}`;
+      const path = `${uid}/${type}-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("kyc").upload(path, file, { upsert: false });
       if (error) throw new Error(error.message);
-      await doRegister({ data: { docType: docType as "id_front", storagePath: path } });
-      toast.success("Documento enviado.");
+      await doRegister({ data: { docType: type, storagePath: path } });
+      toast.success(type === "id_front" ? "Frente do BI enviada." : "Verso do BI enviado.");
       queryClient.invalidateQueries({ queryKey: ["kyc"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Falha no envio do documento.");
