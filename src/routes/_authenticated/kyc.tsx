@@ -391,18 +391,29 @@ function KycPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Label
-                  htmlFor="kyc-file"
-                  className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border py-6 text-sm text-muted-foreground hover:bg-secondary"
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={locked || uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-auto justify-center gap-2 border-dashed py-6 text-sm text-muted-foreground"
                 >
-                  <Upload className="size-4" />
-                  {uploading ? "A enviar…" : "Escolher ficheiro"}
-                </Label>
-                <Input
+                  {uploading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> A enviar…
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="size-4" /> Escolher ficheiro ou tirar foto
+                    </>
+                  )}
+                </Button>
+                <input
+                  ref={fileInputRef}
                   id="kyc-file"
                   type="file"
                   accept="image/*,application/pdf"
-                  className="hidden"
+                  className="sr-only"
                   disabled={locked || uploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
