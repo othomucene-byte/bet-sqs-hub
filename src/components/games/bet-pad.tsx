@@ -10,6 +10,7 @@ const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFr
 const CHIPS = [1, 2, 5, 10];
 
 export function BetPad({
+  title,
   value,
   onValue,
   minBet,
@@ -23,6 +24,8 @@ export function BetPad({
   onCashout,
   footer,
 }: {
+  /** Rótulo do painel (ex.: "Aposta 1"). */
+  title?: string;
   value: string;
   onValue: (next: string) => void;
   minBet: number;
@@ -42,17 +45,17 @@ export function BetPad({
     onValue(String(Math.min(maxBet, Math.max(minBet, Math.round((amount + delta) * 100) / 100))));
 
   return (
-    <div className="rounded-2xl border border-fish-line/70 bg-fish-panel p-3">
+    <div className="rounded-2xl border-2 border-fish-line bg-fish-panel p-3 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.9)]">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-fish-muted">
-          {mode === "cashout" ? "Em jogo" : "Aposta"}
+        <span className="text-[11px] font-black uppercase tracking-widest text-fish-quick-foreground">
+          {title ?? (mode === "cashout" ? "Em jogo" : "Aposta")}
         </span>
-        <span className="truncate text-[11px] font-semibold text-fish-muted">{stateLabel}</span>
+        <span className="truncate text-[11px] font-bold text-fish-muted">{stateLabel}</span>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-2.5">
         <div className="min-w-0 space-y-2">
-          <div className="flex items-center justify-between rounded-full bg-fish-input px-2 py-1.5">
+          <div className="flex items-center justify-between rounded-full border border-fish-input-border bg-fish-input px-2 py-1.5">
             <button
               type="button"
               aria-label="Diminuir aposta"
@@ -88,7 +91,7 @@ export function BetPad({
                 type="button"
                 disabled={disabled}
                 onClick={() => onValue(String(Math.max(minBet, chip)))}
-                className="rounded-full bg-fish-quick py-1.5 text-xs font-bold tabular-nums text-fish-quick-foreground disabled:opacity-40"
+                className="rounded-full border border-fish-line bg-fish-quick py-1.5 text-xs font-extrabold tabular-nums text-fish-quick-foreground disabled:opacity-40"
               >
                 {chip}
               </button>
@@ -101,7 +104,7 @@ export function BetPad({
             type="button"
             disabled={busy}
             onClick={onCashout}
-            className="min-h-[72px] rounded-2xl bg-fish-amber px-2 text-center font-display text-fish-ink shadow-[0_6px_0_rgba(0,0,0,0.35)] transition active:translate-y-[2px] disabled:opacity-45"
+            className="min-h-[72px] rounded-2xl border-2 border-white/25 bg-fish-amber px-2 text-center font-display text-fish-ink shadow-[0_6px_0_rgba(0,0,0,0.45),0_0_28px_-4px_var(--fish-amber)] transition active:translate-y-[2px] disabled:opacity-45"
           >
             <span className="block text-sm font-bold">Levantar</span>
             <span className="block text-lg font-black tabular-nums">
@@ -113,7 +116,7 @@ export function BetPad({
             type="button"
             disabled={mode === "locked" || disabled || busy}
             onClick={onPlace}
-            className="min-h-[72px] rounded-2xl bg-fish-green px-2 text-center font-display text-fish-ink shadow-[0_6px_0_rgba(0,0,0,0.35)] transition active:translate-y-[2px] disabled:opacity-45"
+            className="min-h-[72px] rounded-2xl border-2 border-white/25 bg-fish-green px-2 text-center font-display text-fish-ink shadow-[0_6px_0_rgba(0,0,0,0.45),0_0_28px_-4px_var(--fish-green)] transition active:translate-y-[2px] disabled:opacity-45"
           >
             <span className="block text-sm font-bold">Aposta</span>
             <span className="block text-lg font-black tabular-nums">
