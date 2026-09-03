@@ -76,6 +76,11 @@
   --color-fish-chip: var(--fish-chip);
   --color-fish-chip-foreground: var(--fish-chip-foreground);
   --color-fish-foreground: var(--fish-foreground);
+  --color-fish-red: var(--fish-red);
+  --color-game-low: var(--game-low);
+  --color-game-mid: var(--game-mid);
+  --color-game-high: var(--game-high);
+
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --shadow-card: var(--shadow-card);
