@@ -617,6 +617,29 @@ function ApplicationsTable() {
                   <span className="text-sm tabular-nums">{MZN.format(row.fundingGoal)}</span>
                 ) : null}
                 <Badge variant="outline">{row.status}</Badge>
+                {row.status === "submitted" || row.status === "pending" ? (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ applicationId: row.id, decision: "approved" })
+                      }
+                    >
+                      Aprovar e publicar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ applicationId: row.id, decision: "rejected" })
+                      }
+                    >
+                      Recusar
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))
