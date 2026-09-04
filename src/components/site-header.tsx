@@ -237,6 +237,13 @@ export function SiteHeader() {
                   <DropdownMenuItem asChild className="h-10 text-sm">
                     <a href="/investidor">A minha conta</a>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild className="h-10 text-sm">
+                      <a href="/admin">
+                        <ShieldHalf className="size-4" /> Painel de Administração
+                      </a>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="h-10 text-sm" onClick={() => void signOut()}>
                     <LogOut className="size-4" /> Terminar sessão
