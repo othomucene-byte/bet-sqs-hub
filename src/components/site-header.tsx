@@ -15,6 +15,7 @@ import {
   Menu,
   Plane,
   ShieldCheck,
+  ShieldHalf,
   UserRound,
   Wallet,
 } from "lucide-react";
@@ -32,6 +33,7 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { getWalletBalances } from "@/lib/investments/investments.functions";
+import { amIAdmin } from "@/lib/admin/admin.functions";
 
 const MZN = new Intl.NumberFormat("pt-PT", {
   style: "currency",
@@ -126,8 +128,26 @@ export function SiteHeader() {
     staleTime: 15_000,
   });
 
-  const groups = signedIn ? memberGroups : publicGroups;
-  const desktopLinks = flatLinks(groups);
+  const checkAdmin = useServerFn(amIAdmin);
+  const adminQuery = useQuery({
+    queryKey: ["am-i-admin"],
+    queryFn: () => checkAdmin(),
+    enabled: signedIn,
+    staleTime: 60_000,
+  });
+  const isAdmin = Boolean(adminQuery.data?.admin);
+
+  const baseGroups = signedIn ? memberGroups : publicGroups;
+  const groups: NavGroup[] = isAdmin
+    ? [
+        ...baseGroups,
+        {
+          title: "Administração",
+          links: [{ href: "/admin", label: "Painel de Administração", icon: ShieldHalf }],
+        },
+      ]
+    : baseGroups;
+  const desktopLinks = flatLinks(baseGroups);
   const betting = balances.data?.betting;
   const bettingLabel = betting === undefined ? "—" : MZN.format(betting);
 
@@ -217,6 +237,13 @@ export function SiteHeader() {
                   <DropdownMenuItem asChild className="h-10 text-sm">
                     <a href="/investidor">A minha conta</a>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild className="h-10 text-sm">
+                      <a href="/admin">
+                        <ShieldHalf className="size-4" /> Painel de Administração
+                      </a>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="h-10 text-sm" onClick={() => void signOut()}>
                     <LogOut className="size-4" /> Terminar sessão
