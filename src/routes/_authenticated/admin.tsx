@@ -38,6 +38,7 @@ import {
   listPayments,
   listRiskSignals,
   postReturn,
+  reviewApplication,
 } from "@/lib/admin/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -564,10 +565,28 @@ function RiskTable() {
 
 function ApplicationsTable() {
   const fetchApplications = useServerFn(listApplications);
+  const review = useServerFn(reviewApplication);
+  const queryClient = useQueryClient();
   const applications = useQuery({
     queryKey: ["admin-applications"],
     queryFn: () => fetchApplications(),
   });
+
+  const decide = useMutation({
+    mutationFn: (input: { applicationId: string; decision: "approved" | "rejected" }) =>
+      review({ data: input }),
+    onSuccess: (_r, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
+      toast.success(
+        vars.decision === "approved"
+          ? "Candidatura aprovada. A empresa já aparece na página pública."
+          : "Candidatura recusada.",
+      );
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível decidir."),
+  });
+
 
   return (
     <Card>
@@ -598,6 +617,29 @@ function ApplicationsTable() {
                   <span className="text-sm tabular-nums">{MZN.format(row.fundingGoal)}</span>
                 ) : null}
                 <Badge variant="outline">{row.status}</Badge>
+                {row.status === "submitted" || row.status === "pending" ? (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ applicationId: row.id, decision: "approved" })
+                      }
+                    >
+                      Aprovar e publicar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ applicationId: row.id, decision: "rejected" })
+                      }
+                    >
+                      Recusar
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))
