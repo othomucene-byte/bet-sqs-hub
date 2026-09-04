@@ -319,6 +319,74 @@ export const listApplications = createServerFn({ method: "GET" })
     }));
   });
 
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+/**
+ * Aprova ou recusa uma candidatura. A aprovação publica a empresa em public.companies,
+ * o que a torna visível na página pública /empresas.
+ */
+export const reviewApplication = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        applicationId: z.string().uuid(),
+        decision: z.enum(["approved", "rejected"]),
+        notes: z.string().trim().max(1000).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context as unknown as AuthedContext);
+
+    const { data: app, error } = await admin
+      .from("company_applications")
+      .select("*")
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!app) throw new Error("Candidatura inexistente.");
+
+    if (data.decision === "approved") {
+      const base = slugify((app as any).company_name) || "empresa";
+      let slug = base;
+      const { data: existing } = await admin
+        .from("companies")
+        .select("slug")
+        .like("slug", `${base}%`);
+      const taken = new Set((existing ?? []).map((r: any) => r.slug as string));
+      let n = 2;
+      while (taken.has(slug)) slug = `${base}-${n++}`;
+
+      const { error: insertError } = await admin.from("companies").insert({
+        slug,
+        name: (app as any).company_name,
+        sector: (app as any).sector,
+        description: (app as any).description,
+        website: (app as any).website ?? null,
+        listed_bvm: false,
+        status: "published",
+      });
+      if (insertError) throw new Error(insertError.message);
+    }
+
+    const { error: updateError } = await admin
+      .from("company_applications")
+      .update({ status: data.decision, review_notes: data.notes ?? null })
+      .eq("id", data.applicationId);
+    if (updateError) throw new Error(updateError.message);
+
+    return { status: data.decision };
+  });
+
 /** Indica se o utilizador actual é admin (usado apenas para mostrar/esconder navegação). */
 export const amIAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
