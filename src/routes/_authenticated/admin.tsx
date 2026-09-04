@@ -565,10 +565,28 @@ function RiskTable() {
 
 function ApplicationsTable() {
   const fetchApplications = useServerFn(listApplications);
+  const review = useServerFn(reviewApplication);
+  const queryClient = useQueryClient();
   const applications = useQuery({
     queryKey: ["admin-applications"],
     queryFn: () => fetchApplications(),
   });
+
+  const decide = useMutation({
+    mutationFn: (input: { applicationId: string; decision: "approved" | "rejected" }) =>
+      review({ data: input }),
+    onSuccess: (_r, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
+      toast.success(
+        vars.decision === "approved"
+          ? "Candidatura aprovada. A empresa já aparece na página pública."
+          : "Candidatura recusada.",
+      );
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível decidir."),
+  });
+
 
   return (
     <Card>
