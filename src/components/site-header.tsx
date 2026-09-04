@@ -15,6 +15,7 @@ import {
   Menu,
   Plane,
   ShieldCheck,
+  ShieldHalf,
   UserRound,
   Wallet,
 } from "lucide-react";
