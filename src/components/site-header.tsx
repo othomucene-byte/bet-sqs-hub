@@ -128,8 +128,26 @@ export function SiteHeader() {
     staleTime: 15_000,
   });
 
-  const groups = signedIn ? memberGroups : publicGroups;
-  const desktopLinks = flatLinks(groups);
+  const checkAdmin = useServerFn(amIAdmin);
+  const adminQuery = useQuery({
+    queryKey: ["am-i-admin"],
+    queryFn: () => checkAdmin(),
+    enabled: signedIn,
+    staleTime: 60_000,
+  });
+  const isAdmin = Boolean(adminQuery.data?.admin);
+
+  const baseGroups = signedIn ? memberGroups : publicGroups;
+  const groups: NavGroup[] = isAdmin
+    ? [
+        ...baseGroups,
+        {
+          title: "Administração",
+          links: [{ href: "/admin", label: "Painel de Administração", icon: ShieldHalf }],
+        },
+      ]
+    : baseGroups;
+  const desktopLinks = flatLinks(baseGroups);
   const betting = balances.data?.betting;
   const bettingLabel = betting === undefined ? "—" : MZN.format(betting);
 
