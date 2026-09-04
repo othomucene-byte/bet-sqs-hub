@@ -33,6 +33,7 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { getWalletBalances } from "@/lib/investments/investments.functions";
+import { amIAdmin } from "@/lib/admin/admin.functions";
 
 const MZN = new Intl.NumberFormat("pt-PT", {
   style: "currency",
