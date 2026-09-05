@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      bet_selections: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          line: number | null
+          market: string
+          price: number
+          result: string
+          selection: string
+          slip_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          line?: number | null
+          market: string
+          price: number
+          result?: string
+          selection: string
+          slip_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          line?: number | null
+          market?: string
+          price?: number
+          result?: string
+          selection?: string
+          slip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_selections_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sport_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_selections_slip_id_fkey"
+            columns: ["slip_id"]
+            isOneToOne: false
+            referencedRelation: "bet_slips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bet_slips: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          kind: string
+          payout: number | null
+          potential_payout: number
+          reference: string
+          settled_at: string | null
+          stake: number
+          status: string
+          total_odds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          kind: string
+          payout?: number | null
+          potential_payout: number
+          reference: string
+          settled_at?: string | null
+          stake: number
+          status?: string
+          total_odds: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          payout?: number | null
+          potential_payout?: number
+          reference?: string
+          settled_at?: string | null
+          stake?: number
+          status?: string
+          total_odds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           created_at: string
@@ -882,6 +981,177 @@ export type Database = {
         }
         Relationships: []
       }
+      sport_competitions: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          key: string
+          name: string
+          region: string | null
+          sport_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+          region?: string | null
+          sport_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
+          region?: string | null
+          sport_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_competitions_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sport_events: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          commence_at: string
+          competition_id: string
+          created_at: string
+          home_score: number | null
+          home_team: string
+          id: string
+          odds_updated_at: string | null
+          provider_event_id: string
+          settled_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          commence_at: string
+          competition_id: string
+          created_at?: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          odds_updated_at?: string | null
+          provider_event_id: string
+          settled_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          commence_at?: string
+          competition_id?: string
+          created_at?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          odds_updated_at?: string | null
+          provider_event_id?: string
+          settled_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_events_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "sport_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sport_odds: {
+        Row: {
+          active: boolean
+          created_at: string
+          event_id: string
+          id: string
+          line: number | null
+          market: string
+          price: number
+          selection: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          event_id: string
+          id?: string
+          line?: number | null
+          market: string
+          price: number
+          selection: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          event_id?: string
+          id?: string
+          line?: number | null
+          market?: string
+          price?: number
+          selection?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_odds_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sport_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sports: {
+        Row: {
+          active: boolean
+          created_at: string
+          grouping: string
+          id: string
+          key: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          grouping?: string
+          id?: string
+          key: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          grouping?: string
+          id?: string
+          key?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1125,6 +1395,35 @@ export type Database = {
               isSetofReturn: false
             }
           }
+      place_bet_slip: {
+        Args: {
+          _idempotency_key: string
+          _selections: Json
+          _stake: number
+          _user_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          kind: string
+          payout: number | null
+          potential_payout: number
+          reference: string
+          settled_at: string | null
+          stake: number
+          status: string
+          total_odds: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bet_slips"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       place_investment: {
         Args: { _amount: number; _product_id: string; _user_id: string }
         Returns: {
@@ -1248,6 +1547,7 @@ export type Database = {
         }
       }
       refund_round: { Args: { _round_id: string }; Returns: number }
+      resolve_bet_slips: { Args: never; Returns: number }
       round_reveal: {
         Args: { _round_number: number }
         Returns: {
@@ -1260,6 +1560,20 @@ export type Database = {
         }[]
       }
       settle_round: { Args: { _round_id: string }; Returns: number }
+      settle_sport_event: {
+        Args: { _away: number; _event_id: string; _home: number }
+        Returns: number
+      }
+      sport_selection_outcome: {
+        Args: {
+          _away: number
+          _home: number
+          _line: number
+          _market: string
+          _selection: string
+        }
+        Returns: string
+      }
       transfer_between_wallets: {
         Args: {
           _amount: number
@@ -1269,6 +1583,7 @@ export type Database = {
         }
         Returns: number
       }
+      void_sport_event: { Args: { _event_id: string }; Returns: number }
       wallet_apply: {
         Args: {
           _amount: number
