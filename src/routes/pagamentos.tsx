@@ -109,7 +109,7 @@ function MethodCard({ method, configured }: { method: NetshopMethod; configured:
 }
 
 const ERROR_LABEL: Record<string, string> = {
-  not_configured: "Integração não configurada no servidor.",
+  not_configured: "Este método não está ativo na conta do gateway.",
   no_wallet: "Carteira de apostas indisponível.",
   insufficient_funds: "Saldo insuficiente na Betting Wallet.",
   identifier_required: "Indica o número/identificador do pagador.",
@@ -118,6 +118,21 @@ const ERROR_LABEL: Record<string, string> = {
   amount_below_minimum: "Valor abaixo do mínimo do método escolhido.",
   failed: "O gateway recusou a operação. Tenta novamente.",
 };
+
+/** Traduz as razões devolvidas pelo gateway para linguagem do utilizador. */
+function providerReason(message?: string | null): string | null {
+  if (!message) return null;
+  const raw = message.toLowerCase();
+  if (raw.includes("timeout_no_callback")) {
+    return "Não houve confirmação no telemóvel dentro do tempo limite. Repete e aprova o pedido com o teu PIN.";
+  }
+  if (raw.includes("method_disabled") || raw.includes("indisponível")) {
+    return "O método está desativado no gateway. Usa outro método por agora.";
+  }
+  if (raw.includes("insufficient")) return "Saldo insuficiente na carteira móvel.";
+  return message;
+}
+
 
 function TransactionForm({
   direction,
