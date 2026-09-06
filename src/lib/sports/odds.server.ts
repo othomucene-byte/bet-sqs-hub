@@ -1,84 +1,80 @@
 /**
- * Cliente do fornecedor de cotações (The Odds API) e sincronização.
+ * Cliente do fornecedor de jogos e cotações (API-Football / API-Sports) e
+ * sincronização.
  *
  * Regras:
- *  - A chave `ODDS_API_KEY` é lida apenas dentro das funções, no servidor.
+ *  - A chave `API_FOOTBALL_KEY` é lida apenas dentro das funções, no servidor.
  *  - Sem chave nada é inventado: a plataforma reporta "não configurado".
  *  - A app nunca lê o fornecedor diretamente: escrevemos na base de dados e a
  *    UI lê sempre a nossa base.
  */
 
-const BASE = "https://api.the-odds-api.com/v4";
+const BASE = "https://v3.football.api-sports.io";
 
-/** Grupos aceites do fornecedor e nome em português. */
-const GROUPS: Record<string, string> = {
-  Soccer: "Futebol",
-  Basketball: "Basquetebol",
-  "Tennis (ATP)": "Ténis",
-  "Tennis (WTA)": "Ténis",
-  Tennis: "Ténis",
-};
-
-/** Competições preferidas — sincronizadas primeiro para poupar quota. */
-const PREFERRED = [
-  "soccer_epl",
-  "soccer_spain_la_liga",
-  "soccer_italy_serie_a",
-  "soccer_uefa_champs_league",
-  "soccer_portugal_primeira_liga",
-  "basketball_nba",
+/** Ligas sincronizadas (id da API-Football → nome). */
+const LEAGUES: Array<{ id: number; name: string; region: string }> = [
+  { id: 39, name: "Premier League", region: "Inglaterra" },
+  { id: 140, name: "La Liga", region: "Espanha" },
+  { id: 135, name: "Serie A", region: "Itália" },
+  { id: 2, name: "Liga dos Campeões", region: "UEFA" },
+  { id: 94, name: "Primeira Liga", region: "Portugal" },
+  { id: 78, name: "Bundesliga", region: "Alemanha" },
 ];
 
-const MAX_COMPETITIONS = 8;
+const FIXTURES_PER_LEAGUE = 8;
 
 export function oddsApiKey(): string | null {
-  const key = process.env["ODDS_API_KEY"];
+  const key = process.env["API_FOOTBALL_KEY"];
   return key && key.trim() ? key.trim() : null;
 }
 
-type ProviderSport = {
-  key: string;
-  group: string;
-  title: string;
-  description?: string;
-  active: boolean;
-  has_outrights: boolean;
+type ApiFixture = {
+  fixture: {
+    id: number;
+    date: string;
+    status: { short: string };
+  };
+  league: { id: number; name: string; season: number };
+  teams: { home: { name: string }; away: { name: string } };
+  goals: { home: number | null; away: number | null };
 };
 
-type ProviderOutcome = { name: string; price: number; point?: number };
-type ProviderEvent = {
-  id: string;
-  sport_key: string;
-  commence_time: string;
-  home_team?: string;
-  away_team?: string;
+type ApiOddsBetValue = { value: string; odd: string };
+type ApiOddsFixture = {
+  fixture: { id: number };
   bookmakers?: Array<{
-    key: string;
-    markets?: Array<{ key: string; outcomes?: ProviderOutcome[] }>;
+    bets?: Array<{ id: number; name: string; values?: ApiOddsBetValue[] }>;
   }>;
-};
-
-type ProviderScore = {
-  id: string;
-  completed: boolean;
-  home_team?: string;
-  away_team?: string;
-  scores?: Array<{ name: string; score: string }> | null;
 };
 
 async function call<T>(path: string, params: Record<string, string>): Promise<T> {
   const key = oddsApiKey();
-  if (!key) throw new Error("ODDS_API_KEY ausente");
+  if (!key) throw new Error("API_FOOTBALL_KEY ausente");
   const url = new URL(`${BASE}${path}`);
-  url.searchParams.set("apiKey", key);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
+  const res = await fetch(url.toString(), {
+    headers: { accept: "application/json", "x-apisports-key": key },
+  });
+  const body = (await res.json().catch(() => null)) as {
+    response?: T;
+    errors?: Record<string, string> | string[];
+  } | null;
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`fornecedor de cotações respondeu ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`fornecedor respondeu ${res.status}`);
   }
-  return (await res.json()) as T;
+  const errors = body?.errors;
+  if (errors && (Array.isArray(errors) ? errors.length : Object.keys(errors).length)) {
+    const first = Array.isArray(errors) ? errors[0] : Object.values(errors)[0];
+    throw new Error(String(first).slice(0, 200));
+  }
+  return (body?.response ?? ([] as unknown)) as T;
+}
+
+function currentSeason(): number {
+  const now = new Date();
+  // época europeia começa em agosto
+  return now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
 }
 
 function clampPrice(price: number): number | null {
@@ -89,49 +85,51 @@ function clampPrice(price: number): number | null {
 }
 
 function derivedDouble(a: number, b: number): number | null {
-  const price = 1 / (1 / a + 1 / b);
-  // margem já existente nas cotações do fornecedor; sem margem adicional
-  return clampPrice(price);
+  return clampPrice(1 / (1 / a + 1 / b));
 }
 
 type OddRow = { market: string; selection: string; line: number | null; price: number };
 
-function buildOdds(event: ProviderEvent): OddRow[] {
-  const home = event.home_team ?? "";
-  const away = event.away_team ?? "";
+function buildOdds(entry: ApiOddsFixture): OddRow[] {
   const rows: OddRow[] = [];
-
-  const bookmakers = event.bookmakers ?? [];
-  const findMarket = (key: string) => {
+  const bookmakers = entry.bookmakers ?? [];
+  const findBet = (id: number) => {
     for (const bm of bookmakers) {
-      const market = (bm.markets ?? []).find((m) => m.key === key);
-      if (market && (market.outcomes ?? []).length) return market;
+      const bet = (bm.bets ?? []).find((b) => b.id === id);
+      if (bet && (bet.values ?? []).length) return bet;
     }
     return null;
   };
+  const priceOf = (bet: ReturnType<typeof findBet>, name: string) => {
+    const v = bet?.values?.find((x) => x.value.toLowerCase() === name.toLowerCase());
+    const price = v ? clampPrice(Number(v.odd)) : null;
+    return price;
+  };
 
-  const h2h = findMarket("h2h");
+  // Match Winner (1X2)
+  const h2h = findBet(1);
   let priceHome: number | null = null;
   let priceDraw: number | null = null;
   let priceAway: number | null = null;
-
-  for (const outcome of h2h?.outcomes ?? []) {
-    const price = clampPrice(outcome.price);
-    if (price === null) continue;
-    if (outcome.name === home) {
-      priceHome = price;
-      rows.push({ market: "h2h", selection: "HOME", line: null, price });
-    } else if (outcome.name === away) {
-      priceAway = price;
-      rows.push({ market: "h2h", selection: "AWAY", line: null, price });
-    } else if (outcome.name.toLowerCase() === "draw") {
-      priceDraw = price;
-      rows.push({ market: "h2h", selection: "DRAW", line: null, price });
-    }
+  if (h2h) {
+    priceHome = priceOf(h2h, "Home");
+    priceDraw = priceOf(h2h, "Draw");
+    priceAway = priceOf(h2h, "Away");
+    if (priceHome) rows.push({ market: "h2h", selection: "HOME", line: null, price: priceHome });
+    if (priceDraw) rows.push({ market: "h2h", selection: "DRAW", line: null, price: priceDraw });
+    if (priceAway) rows.push({ market: "h2h", selection: "AWAY", line: null, price: priceAway });
   }
 
-  // Dupla chance derivada das probabilidades implícitas do 1X2 do fornecedor.
-  if (priceHome && priceDraw && priceAway) {
+  // Dupla chance (id 12) ou derivada do 1X2
+  const dc = findBet(12);
+  if (dc) {
+    const p1x = priceOf(dc, "Home/Draw");
+    const p12 = priceOf(dc, "Home/Away");
+    const px2 = priceOf(dc, "Draw/Away");
+    if (p1x) rows.push({ market: "dc", selection: "1X", line: null, price: p1x });
+    if (p12) rows.push({ market: "dc", selection: "12", line: null, price: p12 });
+    if (px2) rows.push({ market: "dc", selection: "X2", line: null, price: px2 });
+  } else if (priceHome && priceDraw && priceAway) {
     const dc1x = derivedDouble(priceHome, priceDraw);
     const dcx2 = derivedDouble(priceDraw, priceAway);
     const dc12 = derivedDouble(priceHome, priceAway);
@@ -140,31 +138,36 @@ function buildOdds(event: ProviderEvent): OddRow[] {
     if (dc12) rows.push({ market: "dc", selection: "12", line: null, price: dc12 });
   }
 
-  const totals = findMarket("totals");
+  // Mais/Menos golos (id 5)
+  const totals = findBet(5);
   const seen = new Set<string>();
-  for (const outcome of totals?.outcomes ?? []) {
-    const price = clampPrice(outcome.price);
-    const line = typeof outcome.point === "number" ? Math.round(outcome.point * 100) / 100 : null;
-    if (price === null || line === null) continue;
-    const selection = outcome.name.toLowerCase() === "over" ? "OVER" : "UNDER";
+  for (const v of totals?.values ?? []) {
+    const match = /^(Over|Under)\s+([\d.]+)$/i.exec(v.value.trim());
+    if (!match) continue;
+    const price = clampPrice(Number(v.odd));
+    if (price === null) continue;
+    const selection = match[1]!.toUpperCase();
+    const line = Math.round(Number(match[2]) * 100) / 100;
     const dedupe = `${selection}:${line}`;
     if (seen.has(dedupe)) continue;
     seen.add(dedupe);
     rows.push({ market: "totals", selection, line, price });
   }
 
-  const btts = findMarket("btts");
-  for (const outcome of btts?.outcomes ?? []) {
-    const price = clampPrice(outcome.price);
-    if (price === null) continue;
-    const selection = outcome.name.toLowerCase() === "yes" ? "YES" : "NO";
-    rows.push({ market: "btts", selection, line: null, price });
-  }
+  // Ambas marcam (id 8)
+  const btts = findBet(8);
+  const pYes = priceOf(btts, "Yes");
+  const pNo = priceOf(btts, "No");
+  if (pYes) rows.push({ market: "btts", selection: "YES", line: null, price: pYes });
+  if (pNo) rows.push({ market: "btts", selection: "NO", line: null, price: pNo });
 
   return rows;
 }
 
-/** Sincroniza catálogo, jogos e cotações. Devolve contagens reais. */
+const FINISHED = new Set(["FT", "AET", "PEN"]);
+const ABANDONED = new Set(["PST", "CANC", "ABD", "AWD", "WO"]);
+
+/** Sincroniza ligas, jogos e cotações. Devolve contagens reais. */
 export async function syncSportsCatalog(): Promise<{
   competitions: number;
   events: number;
@@ -173,41 +176,30 @@ export async function syncSportsCatalog(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const errors: string[] = [];
+  const season = currentSeason();
 
-  const list = await call<ProviderSport[]>("/sports", { all: "false" });
-  const eligible = list.filter((s) => s.active && !s.has_outrights && GROUPS[s.group]);
-  eligible.sort((a, b) => {
-    const ia = PREFERRED.indexOf(a.key);
-    const ib = PREFERRED.indexOf(b.key);
-    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-  });
-  const chosen = eligible.slice(0, MAX_COMPETITIONS);
+  const { data: sportRow, error: sportError } = await supabaseAdmin
+    .from("sports")
+    .upsert({ key: "futebol", name: "Futebol", grouping: "Futebol", active: true }, { onConflict: "key" })
+    .select("id")
+    .single();
+  if (sportError || !sportRow) {
+    return { competitions: 0, events: 0, odds: 0, errors: [`desporto: ${sportError?.message ?? "falhou"}`] };
+  }
 
   let eventCount = 0;
   let oddsCount = 0;
+  let compCount = 0;
 
-  for (const sport of chosen) {
-    const sportName = GROUPS[sport.group]!;
-    const sportKey = sportName.toLowerCase();
-
-    const { data: sportRow, error: sportError } = await supabaseAdmin
-      .from("sports")
-      .upsert({ key: sportKey, name: sportName, grouping: sportName, active: true }, { onConflict: "key" })
-      .select("id")
-      .single();
-    if (sportError || !sportRow) {
-      errors.push(`desporto ${sportName}: ${sportError?.message ?? "falhou"}`);
-      continue;
-    }
-
+  for (const league of LEAGUES) {
     const { data: compRow, error: compError } = await supabaseAdmin
       .from("sport_competitions")
       .upsert(
         {
           sport_id: sportRow.id,
-          key: sport.key,
-          name: sport.title,
-          region: sport.description ?? null,
+          key: `af_${league.id}`,
+          name: league.name,
+          region: league.region,
           active: true,
         },
         { onConflict: "key" },
@@ -215,26 +207,28 @@ export async function syncSportsCatalog(): Promise<{
       .select("id")
       .single();
     if (compError || !compRow) {
-      errors.push(`competição ${sport.key}: ${compError?.message ?? "falhou"}`);
+      errors.push(`competição ${league.name}: ${compError?.message ?? "falhou"}`);
       continue;
     }
+    compCount += 1;
 
-    let events: ProviderEvent[] = [];
+    let fixtures: ApiFixture[] = [];
     try {
-      events = await call<ProviderEvent[]>(`/sports/${sport.key}/odds`, {
-        regions: "eu",
-        markets: "h2h,totals",
-        oddsFormat: "decimal",
-        dateFormat: "iso",
+      fixtures = await call<ApiFixture[]>("/fixtures", {
+        league: String(league.id),
+        season: String(season),
+        next: String(FIXTURES_PER_LEAGUE),
       });
     } catch (error) {
-      errors.push(`cotações ${sport.key}: ${(error as Error).message}`);
+      errors.push(`jogos ${league.name}: ${(error as Error).message}`);
       continue;
     }
 
-    for (const event of events) {
-      if (!event.home_team || !event.away_team) continue;
-      const commence = new Date(event.commence_time);
+    for (const fixture of fixtures) {
+      const home = fixture.teams?.home?.name;
+      const away = fixture.teams?.away?.name;
+      if (!home || !away) continue;
+      const commence = new Date(fixture.fixture.date);
       if (Number.isNaN(commence.getTime())) continue;
 
       const { data: eventRow, error: eventError } = await supabaseAdmin
@@ -242,9 +236,9 @@ export async function syncSportsCatalog(): Promise<{
         .upsert(
           {
             competition_id: compRow.id,
-            provider_event_id: event.id,
-            home_team: event.home_team,
-            away_team: event.away_team,
+            provider_event_id: String(fixture.fixture.id),
+            home_team: home,
+            away_team: away,
             commence_at: commence.toISOString(),
             status: commence.getTime() <= Date.now() ? "live" : "scheduled",
             odds_updated_at: new Date().toISOString(),
@@ -254,12 +248,24 @@ export async function syncSportsCatalog(): Promise<{
         .select("id, status")
         .single();
       if (eventError || !eventRow) {
-        errors.push(`jogo ${event.id}: ${eventError?.message ?? "falhou"}`);
+        errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
         continue;
       }
       eventCount += 1;
 
-      const rows = buildOdds(event);
+      // Cotações por jogo (o plano gratuito pode não incluir odds — nesse caso
+      // o jogo fica visível sem botões de aposta, nunca com cotações inventadas)
+      let oddsEntries: ApiOddsFixture[] = [];
+      try {
+        oddsEntries = await call<ApiOddsFixture[]>("/odds", {
+          fixture: String(fixture.fixture.id),
+        });
+      } catch (error) {
+        errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
+        continue;
+      }
+
+      const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
       await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
       if (!rows.length) continue;
 
@@ -273,12 +279,12 @@ export async function syncSportsCatalog(): Promise<{
           active: true,
         })),
       );
-      if (oddsError) errors.push(`cotações do jogo ${event.id}: ${oddsError.message}`);
+      if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
       else oddsCount += rows.length;
     }
   }
 
-  return { competitions: chosen.length, events: eventCount, odds: oddsCount, errors };
+  return { competitions: compCount, events: eventCount, odds: oddsCount, errors };
 }
 
 /** Busca resultados finais e liquida jogos e bilhetes no servidor. */
@@ -294,74 +300,83 @@ export async function syncSportsResults(): Promise<{
   let voided = 0;
   let slips = 0;
 
-  const { data: competitions } = await supabaseAdmin
-    .from("sport_competitions")
-    .select("id, key")
-    .eq("active", true);
+  const { data: pending } = await supabaseAdmin
+    .from("sport_events")
+    .select("id, provider_event_id, home_team, away_team, commence_at")
+    .in("status", ["scheduled", "live", "closed"])
+    .lt("commence_at", new Date().toISOString());
 
-  for (const competition of competitions ?? []) {
-    const { data: pending } = await supabaseAdmin
-      .from("sport_events")
-      .select("id, provider_event_id, home_team, away_team, commence_at")
-      .eq("competition_id", competition.id)
-      .in("status", ["scheduled", "live", "closed"])
-      .lt("commence_at", new Date().toISOString());
+  for (const event of pending ?? []) {
+    const startedAgoHours =
+      (Date.now() - new Date(event.commence_at as string).getTime()) / 3_600_000;
 
-    if (!pending?.length) continue;
-
-    let scores: ProviderScore[] = [];
+    let fixtures: ApiFixture[] = [];
     try {
-      scores = await call<ProviderScore[]>(`/sports/${competition.key}/scores`, {
-        daysFrom: "3",
-        dateFormat: "iso",
-      });
+      fixtures = await call<ApiFixture[]>("/fixtures", { id: event.provider_event_id });
     } catch (error) {
-      errors.push(`resultados ${competition.key}: ${(error as Error).message}`);
+      errors.push(`resultado ${event.provider_event_id}: ${(error as Error).message}`);
+      continue;
+    }
+    const fixture = fixtures[0];
+
+    if (!fixture) {
+      if (startedAgoHours > 48) {
+        const { data, error } = await supabaseAdmin.rpc("void_sport_event", {
+          _event_id: event.id,
+        });
+        if (error) errors.push(`anular ${event.provider_event_id}: ${error.message}`);
+        else {
+          voided += 1;
+          slips += Number(data ?? 0);
+        }
+      }
       continue;
     }
 
-    const byId = new Map(scores.map((score) => [score.id, score]));
+    const short = fixture.fixture.status.short;
 
-    for (const event of pending) {
-      const score = byId.get(event.provider_event_id);
-      const startedAgoHours =
-        (Date.now() - new Date(event.commence_at as string).getTime()) / 3_600_000;
-
-      if (!score || !score.completed) {
-        // Jogos muito antigos sem resultado do fornecedor são anulados (devolução).
-        if (startedAgoHours > 48) {
-          const { data, error } = await supabaseAdmin.rpc("void_sport_event", {
-            _event_id: event.id,
-          });
-          if (error) errors.push(`anular ${event.provider_event_id}: ${error.message}`);
-          else {
-            voided += 1;
-            slips += Number(data ?? 0);
-          }
-        }
-        continue;
-      }
-
-      const home = score.scores?.find((s) => s.name === event.home_team)?.score;
-      const away = score.scores?.find((s) => s.name === event.away_team)?.score;
-      const homeScore = home === undefined ? Number.NaN : Number(home);
-      const awayScore = away === undefined ? Number.NaN : Number(away);
-
-      if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) {
-        errors.push(`resultado ilegível em ${event.provider_event_id}`);
-        continue;
-      }
-
-      const { data, error } = await supabaseAdmin.rpc("settle_sport_event", {
+    if (ABANDONED.has(short)) {
+      const { data, error } = await supabaseAdmin.rpc("void_sport_event", {
         _event_id: event.id,
-        _home: homeScore,
-        _away: awayScore,
       });
-      if (error) errors.push(`liquidar ${event.provider_event_id}: ${error.message}`);
+      if (error) errors.push(`anular ${event.provider_event_id}: ${error.message}`);
       else {
-        settled += 1;
+        voided += 1;
         slips += Number(data ?? 0);
       }
+      continue;
+    }
+
+    if (!FINISHED.has(short)) {
+      if (startedAgoHours > 48) {
+        const { data, error } = await supabaseAdmin.rpc("void_sport_event", {
+          _event_id: event.id,
+        });
+        if (error) errors.push(`anular ${event.provider_event_id}: ${error.message}`);
+        else {
+          voided += 1;
+          slips += Number(data ?? 0);
+        }
+      }
+      continue;
+    }
+
+    const homeScore = fixture.goals.home;
+    const awayScore = fixture.goals.away;
+    if (homeScore === null || awayScore === null || homeScore === undefined || awayScore === undefined) {
+      errors.push(`resultado ilegível em ${event.provider_event_id}`);
+      continue;
+    }
+
+    const { data, error } = await supabaseAdmin.rpc("settle_sport_event", {
+      _event_id: event.id,
+      _home: homeScore,
+      _away: awayScore,
+    });
+    if (error) errors.push(`liquidar ${event.provider_event_id}: ${error.message}`);
+    else {
+      settled += 1;
+      slips += Number(data ?? 0);
     }
   }
 
