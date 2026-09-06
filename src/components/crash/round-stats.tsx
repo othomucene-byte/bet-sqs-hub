@@ -38,15 +38,15 @@ export function RoundStats({
   const rows = tab === "todas" ? bets : tab === "minhas" ? myBets : top;
 
   return (
-    <section className="mt-3 overflow-hidden rounded-[24px] border border-bet-line bg-bet-surface">
-      <div className="grid grid-cols-3 gap-1 border-b border-bet-line bg-bet-panel p-1.5">
+    <section className="mt-2 overflow-hidden rounded-2xl border border-bet-line bg-bet-surface">
+      <div className="grid grid-cols-3 gap-1 border-b border-bet-line bg-bet-panel p-1">
         {TABS.map((item) => (
           <Button
             key={item.id}
             type="button"
             variant="ghost"
             onClick={() => setTab(item.id)}
-            className={`h-11 rounded-full px-2 text-xs font-medium sm:text-sm ${
+            className={`h-8 rounded-full px-1.5 text-[11px] font-semibold sm:text-sm ${
               tab === item.id
                 ? "bg-bet-ghost text-bet-ghost-foreground hover:bg-bet-ghost"
                 : "text-bet-muted hover:bg-bet-ghost/60 hover:text-bet-foreground"
@@ -58,25 +58,25 @@ export function RoundStats({
         ))}
       </div>
 
-      <div className="px-3.5 py-3.5 sm:px-5">
-        <div className="flex items-center justify-between gap-3 border-b border-bet-line pb-3">
+      <div className="px-3 py-2.5 sm:px-5">
+        <div className="flex items-center justify-between gap-3 border-b border-bet-line pb-2">
           <div>
             <p className="text-xs text-bet-muted">Total de apostas</p>
-            <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">
+            <p className="text-base font-semibold tabular-nums text-bet-foreground">
               {rows.length}/{bets.length}
             </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-bet-muted">Ganho total MZN</p>
-            <p className="mt-0.5 text-xl font-semibold tabular-nums text-bet-foreground">
+            <p className="text-base font-semibold tabular-nums text-bet-foreground">
               {MZN.format(totalPaid).replace("MZN", "").trim()}
             </p>
           </div>
         </div>
 
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-2 space-y-1">
           {rows.length === 0 ? (
-            <p className="py-4 text-center text-xs text-bet-muted">
+            <p className="py-2 text-center text-xs text-bet-muted">
               {tab === "minhas"
                 ? "Ainda não tem apostas registadas."
                 : tab === "ganhos"
@@ -96,7 +96,7 @@ export function RoundStats({
           )}
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3 border-t border-bet-line pt-3 text-xs">
+        <div className="mt-2 flex items-center justify-between gap-3 border-t border-bet-line pt-2 text-xs">
           <span className="text-bet-muted">Total apostado</span>
           <span className="font-semibold tabular-nums text-bet-foreground">{MZN.format(totalStaked)}</span>
         </div>

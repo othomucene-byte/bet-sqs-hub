@@ -1,14 +1,9 @@
 import { CirclePlay, Minus, Plus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const CHIPS = [3, 5, 10, 20];
 
-/**
- * Painel de aposta compacto, inspirado no formato de casino mobile.
- * O servidor continua a ser a autoridade sobre aposta, cash-out e saldo.
- */
 export function BetPad({
   title,
   value,
@@ -24,11 +19,10 @@ export function BetPad({
   onCashout,
   autoPlay,
   autoPlayRounds,
-  autoPlayRemaining,
+  onAutoPlayRounds,
   autoCashout,
   autoCashoutValue,
   onToggleAutoPlay,
-  onAutoPlayRounds,
   onToggleAutoCashout,
   onAutoCashoutValue,
 }: {
@@ -44,13 +38,12 @@ export function BetPad({
   busy?: boolean;
   onPlace?: () => void;
   onCashout?: () => void;
-  autoPlay?: boolean; autoPlayRounds?: number; onAutoPlayRounds?: (next: number) => void;
-  autoPlayRounds?: string;
-  autoPlayRemaining?: number;
+  autoPlay?: boolean;
+  autoPlayRounds?: number;
+  onAutoPlayRounds?: (next: number) => void;
   autoCashout?: boolean;
   autoCashoutValue?: string;
   onToggleAutoPlay?: () => void;
-  onAutoPlayRounds?: (next: string) => void;
   onToggleAutoCashout?: () => void;
   onAutoCashoutValue?: (next: string) => void;
 }) {
@@ -61,7 +54,7 @@ export function BetPad({
   const actionDisabled = mode === "cashout" ? Boolean(busy) : locked || Boolean(busy);
 
   return (
-    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-[0_10px_30px_-18px_var(--bet-surface)]">
+    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-[0 dream-shadow]">
       <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-bet-foreground">
           {title ?? "Aposta"}
@@ -76,7 +69,6 @@ export function BetPad({
               variant="ghost"
               size="icon"
               type="button"
-              aria-label="Diminuir aposta"
               disabled={locked}
               onClick={() => step(-1)}
               className="size-7 shrink-0 rounded-full text-bet-foreground hover:bg-bet-ghost/40 disabled:opacity-35"
@@ -95,7 +87,6 @@ export function BetPad({
               variant="ghost"
               size="icon"
               type="button"
-              aria-label="Aumentar aposta"
               disabled={locked}
               onClick={() => step(1)}
               className="size-7 shrink-0 rounded-full text-bet-foreground hover:bg-bet-ghost/40 disabled:opacity-35"
@@ -148,26 +139,28 @@ export function BetPad({
 
       <div className="mt-1.5 grid grid-cols-2 gap-1.5">
         <div className={`flex h-8 min-w-0 items-center rounded-full border px-1 ${autoPlay ? "border-bet-green bg-bet-green" : "border-bet-line bg-bet-ghost"}`}>
-        <Button
-          variant="ghost"
-          type="button"
-          disabled={locked}
-          onClick={onToggleAutoPlay}
-          aria-pressed={autoPlay}
-          className={`h-7 min-w-0 flex-1 justify-center gap-1 px-1 text-[10px] font-semibold hover:bg-transparent disabled:opacity-40 ${autoPlay ? "text-bet-green-foreground" : "text-bet-ghost-foreground"}`}
-        >
-          <CirclePlay className="size-4 shrink-0" />
-          <span className="truncate">Jogo Auto.</span>
-        </Button>
-        <input
-          inputMode="numeric"
-          aria-label="Número de rondas automáticas"
-          value={autoPlay ? String(autoPlayRemaining ?? 0) : (autoPlayRounds ?? "5")}
-          disabled={autoPlay || locked}
-          onChange={(event) => onAutoPlayRounds?.(event.target.value)}
-          className="h-6 w-8 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold tabular-nums text-bet-foreground outline-none disabled:opacity-80"
-        />
+          <Button
+            variant="ghost"
+            type="button"
+            disabled={locked}
+            onClick={onToggleAutoPlay}
+            aria-pressed={autoPlay}
+            className={`h-7 min-w-0 flex-1 justify-center gap-1 px-1 text-[10px] font-semibold hover:bg-transparent disabled:opacity-40 ${autoPlay ? "text-bet-green-foreground" : "text-bet-ghost-foreground"}`}
+          >
+            <CirclePlay className="size-4 shrink-0" />
+            <span className="truncate">{autoPlay ? `Auto (${autoPlayRounds})` : "Jogo Auto."}</span>
+          </Button>
+          {!autoPlay && (
+            <input
+              inputMode="numeric"
+              aria-label="Rondas automáticas"
+              value={autoPlayRounds ?? 10}
+              onChange={(e) => onAutoPlayRounds?.(Math.max(1, parseInt(e.target.value) || 1))}
+              className="h-6 w-8 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
+            />
+          )}
         </div>
+        
         {autoCashout ? (
           <div className="flex h-8 min-w-0 items-center gap-1 rounded-full border border-bet-amber bg-bet-amber px-1">
             <Button
@@ -178,15 +171,14 @@ export function BetPad({
               aria-pressed
               className="h-7 min-w-0 flex-1 truncate px-1 text-[10px] font-semibold text-bet-surface hover:bg-transparent"
             >
-              Levantamento Auto.
+              Auto Cashout
             </Button>
             <input
               inputMode="decimal"
-              aria-label="Multiplicador de levantamento automático"
-              value={autoCashoutValue ?? "2"}
-              onChange={(event) => onAutoCashoutValue?.(event.target.value)}
-              disabled={locked}
-              className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold tabular-nums text-bet-foreground outline-none"
+              aria-label="Multiplicador"
+              value={autoCashoutValue ?? "2.00"}
+              onChange={(e) => onAutoCashoutValue?.(e.target.value)}
+              className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
             />
           </div>
         ) : (
@@ -198,7 +190,7 @@ export function BetPad({
             aria-pressed={false}
             className="h-8 min-w-0 rounded-full border border-bet-line bg-bet-ghost px-1.5 text-[10px] font-semibold text-bet-ghost-foreground hover:bg-bet-ghost disabled:opacity-40"
           >
-            <span className="truncate">Levantamento Auto.</span>
+            Auto Cashout
           </Button>
         )}
       </div>
