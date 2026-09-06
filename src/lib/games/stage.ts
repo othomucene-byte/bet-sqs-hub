@@ -18,6 +18,8 @@ export type StageTheme = {
   medium: "air" | "water";
   /** Imagem de cenário (parallax + zoom suave). */
   background: string;
+  /** Mantém o cenário imóvel; usado no Aviator para o voo não arrastar o horizonte. */
+  fixedBackground?: boolean;
   /** Sprite realista da personagem (avião ou peixe). */
   character: string;
   /** Largura desenhada do sprite, em px lógicos, a 1x de escala. */
@@ -131,8 +133,8 @@ export function startStage(
 
   /** Progresso 0..1 da curva em função do multiplicador (escala logarítmica). */
   const progressFor = (m: number) => {
-    const p = Math.log(Math.max(1, m)) / Math.log(14);
-    return Math.min(0.985, easeOutCubic(Math.min(1, p)) * 0.94);
+    const p = Math.log(Math.max(1, m)) / Math.log(50);
+    return Math.min(0.92, Math.pow(Math.min(1, p), 0.9) * 0.92);
   };
 
   const geometry = () => {
@@ -157,15 +159,19 @@ export function startStage(
   };
 
   const drawBackground = (dt: number, state: StageState) => {
-    const zoom = 1.06 + Math.min(0.14, Math.log(Math.max(1, shownMultiplier)) * 0.05);
-    bgPan += dt * (state.status === "RUNNING" ? 26 + Math.min(70, shownMultiplier * 9) : 7);
+    const zoom = theme.fixedBackground
+      ? 1.06
+      : 1.06 + Math.min(0.14, Math.log(Math.max(1, shownMultiplier)) * 0.05);
+    if (!theme.fixedBackground) {
+      bgPan += dt * (state.status === "RUNNING" ? 26 + Math.min(70, shownMultiplier * 9) : 7);
+    }
 
     if (bg.complete && bg.naturalWidth > 0) {
       const scale = Math.max((width / bg.naturalWidth) * zoom, (height / bg.naturalHeight) * zoom);
       const dw = bg.naturalWidth * scale;
       const dh = bg.naturalHeight * scale;
-      const driftX = ((bgPan * 0.35) % Math.max(1, dw - width)) * -1;
-      ctx.drawImage(bg, driftX - (dw - width) * 0.25, -(dh - height) * 0.5, dw, dh);
+      const driftX = theme.fixedBackground ? 0 : ((bgPan * 0.35) % Math.max(1, dw - width)) * -1;
+      ctx.drawImage(bg, driftX - (dw - width) * 0.5, -(dh - height) * 0.5, dw, dh);
     } else {
       ctx.fillStyle = theme.medium === "water" ? "#04121f" : "#0a1428";
       ctx.fillRect(0, 0, width, height);
