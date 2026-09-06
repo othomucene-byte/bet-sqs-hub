@@ -11,6 +11,7 @@ import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chr
 import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { useAutoRounds } from "@/lib/games/use-auto-rounds";
+import { useBetFunding } from "@/lib/promotions/use-bet-funding";
 import { multiplierAt } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
 import {
@@ -107,12 +108,14 @@ function FishPage() {
   };
 
   const placeMutation = useMutation({
-    mutationFn: async (input: { slot: 1 | 2; amount: number }) =>
+    mutationFn: async (input: { slot: 1 | 2; amount: number; funding: "wallet" | "bonus" | "free_bet"; freeBetId: string | null }) =>
       submitBet({
         data: {
           roundId: round!.id,
           amount: input.amount,
           slot: input.slot,
+          funding: input.funding,
+          freeBetId: input.freeBetId,
           autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
         },
       }),
@@ -156,6 +159,7 @@ function FishPage() {
 
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
+  const betFunding = useBetFunding();
   const betForSlot = (slot: 1 | 2) => bets.find((bet) => bet.slot === slot) ?? null;
   const placeForSlot = async (slot: 1 | 2) => {
     const amount = Number(amounts[slot]);
@@ -168,8 +172,24 @@ function FishPage() {
       toast.error("O levantamento automático deve estar entre 1,01x e 10 000x.");
       return false;
     }
+    const source = betFunding.resolve(slot);
+    if (source.funding === "free_bet" && source.freeBet) {
+      const { minAmount, maxAmount } = source.freeBet;
+      if (amount < minAmount || amount > maxAmount) {
+        toast.error(
+          `A aposta grátis vale entre ${NUM.format(minAmount)} e ${NUM.format(maxAmount)} MZN.`,
+        );
+        return false;
+      }
+    }
     try {
-      const result = await placeMutation.mutateAsync({ slot, amount });
+      const result = await placeMutation.mutateAsync({
+        slot,
+        amount,
+        funding: source.funding,
+        freeBetId: source.freeBetId,
+      });
+      if (result.ok) betFunding.refresh();
       return result.ok;
     } catch {
       return false;
@@ -272,6 +292,9 @@ function FishPage() {
                 busy={placeMutation.isPending || cashoutMutation.isPending}
                 onPlace={() => void placeForSlot(slot)}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
+                funding={betFunding.selected[slot]}
+                fundingOptions={betFunding.options}
+                onFunding={(next) => betFunding.setFunding(slot, next)}
                 autoPlay={autoRounds.enabled[slot]}
                 autoPlayRounds={autoRounds.rounds[slot]}
                 autoPlayRemaining={autoRounds.remaining[slot]}

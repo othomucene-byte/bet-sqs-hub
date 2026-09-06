@@ -27,6 +27,7 @@ import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
+import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
@@ -124,6 +125,12 @@ const AuthenticatedInvestidorRendimentosRoute =
     path: '/investidor/rendimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicCronBonusExpiryRoute =
+  ApiPublicCronBonusExpiryRouteImport.update({
+    id: '/api/public/cron/bonus-expiry',
+    path: '/api/public/cron/bonus-expiry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   id: '/api/public/cron/sports-sync',
   path: '/api/public/cron/sports-sync',
@@ -154,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -175,6 +183,7 @@ export interface FileRoutesByTo {
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -198,6 +207,7 @@ export interface FileRoutesById {
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/investidor/ordens'
     | '/investidor/rendimentos'
     | '/investidor/'
+    | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/investidor/ordens'
     | '/investidor/rendimentos'
     | '/investidor'
+    | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   id:
@@ -264,6 +276,7 @@ export interface FileRouteTypes {
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
     | '/_authenticated/investidor/'
+    | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
@@ -276,6 +289,7 @@ export interface RootRouteChildren {
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
+  ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
 }
@@ -408,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/cron/bonus-expiry': {
+      id: '/api/public/cron/bonus-expiry'
+      path: '/api/public/cron/bonus-expiry'
+      fullPath: '/api/public/cron/bonus-expiry'
+      preLoaderRoute: typeof ApiPublicCronBonusExpiryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/sports-sync': {
       id: '/api/public/cron/sports-sync'
       path: '/api/public/cron/sports-sync'
@@ -465,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
+  ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
 }

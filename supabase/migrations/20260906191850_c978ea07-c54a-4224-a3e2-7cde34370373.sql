@@ -1,0 +1,10 @@
+REVOKE ALL ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric, integer, text, uuid) FROM public, anon, authenticated;
+REVOKE ALL ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric, integer) FROM public, anon, authenticated;
+REVOKE ALL ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric) FROM public, anon, authenticated;
+REVOKE ALL ON FUNCTION public.place_bet_slip(uuid, jsonb, numeric, text, text, uuid) FROM public, anon, authenticated;
+REVOKE ALL ON FUNCTION public.place_bet_slip(uuid, jsonb, numeric, text) FROM public, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric, integer, text, uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.place_bet(uuid, uuid, numeric, numeric) TO service_role;
+GRANT EXECUTE ON FUNCTION public.place_bet_slip(uuid, jsonb, numeric, text, text, uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.place_bet_slip(uuid, jsonb, numeric, text) TO service_role;
