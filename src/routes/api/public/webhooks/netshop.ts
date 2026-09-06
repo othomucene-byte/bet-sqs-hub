@@ -36,14 +36,37 @@ const payloadSchema = z
   })
   .passthrough();
 
-function verifySignature(rawBody: string, signature: string | null, secret: string): boolean {
-  if (!signature) return false;
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const received = Buffer.from(signature.replace(/^sha256=/, "").trim(), "utf8");
-  const expectedBuf = Buffer.from(expected, "utf8");
-  if (received.length !== expectedBuf.length) return false;
-  return timingSafeEqual(received, expectedBuf);
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }
+
+/**
+ * A NetShop pode assinar em hex ou base64, com ou sem prefixo `sha256=`, e
+ * (em algumas versões) sobre `<timestamp>.<corpo>`. Aceitamos qualquer um dos
+ * esquemas, sempre com HMAC-SHA256 e comparação em tempo constante.
+ */
+function verifySignature(
+  rawBody: string,
+  signature: string | null,
+  secret: string,
+  timestamp?: string | null,
+): boolean {
+  if (!signature) return false;
+  const received = signature.replace(/^sha256=/i, "").trim();
+  const payloads = [rawBody, ...(timestamp ? [`${timestamp}.${rawBody}`] : [])];
+  for (const payload of payloads) {
+    const hex = createHmac("sha256", secret).update(payload).digest("hex");
+    if (safeEqual(received.toLowerCase(), hex)) return true;
+    const b64 = createHmac("sha256", secret).update(payload).digest("base64");
+    if (safeEqual(received, b64)) return true;
+  }
+  return false;
+}
+
+
 
 function pickString(...values: unknown[]): string | null {
   for (const value of values) {
@@ -66,10 +89,17 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
           request.headers.get("x-netshop-signature") ??
           request.headers.get("x-signature") ??
           request.headers.get("x-webhook-signature");
+        const timestamp =
+          request.headers.get("x-netshop-timestamp") ?? request.headers.get("x-timestamp");
 
-        if (!verifySignature(rawBody, signature, secret)) {
+        if (!verifySignature(rawBody, signature, secret, timestamp)) {
+          console.error(
+            "netshop webhook signature mismatch; headers:",
+            [...request.headers.keys()].join(","),
+          );
           return Response.json({ error: "invalid_signature" }, { status: 401 });
         }
+
 
         let body: unknown;
         try {
