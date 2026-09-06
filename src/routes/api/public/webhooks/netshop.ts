@@ -58,13 +58,14 @@ function verifySignature(
   const received = signature.replace(/^sha256=/i, "").trim();
   const payloads = [rawBody, ...(timestamp ? [`${timestamp}.${rawBody}`] : [])];
   for (const payload of payloads) {
-    const mac = createHmac("sha256", secret).update(payload);
-    const digest = mac.copy().digest("hex");
-    if (safeEqual(received.toLowerCase(), digest)) return true;
-    if (safeEqual(received, mac.copy().digest("base64"))) return true;
+    const hex = createHmac("sha256", secret).update(payload).digest("hex");
+    if (safeEqual(received.toLowerCase(), hex)) return true;
+    const b64 = createHmac("sha256", secret).update(payload).digest("base64");
+    if (safeEqual(received, b64)) return true;
   }
   return false;
 }
+
 
 
 function pickString(...values: unknown[]): string | null {
