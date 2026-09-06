@@ -81,6 +81,7 @@ function SportsPage() {
   const [selections, setSelections] = useState<SlipSelection[]>([]);
   const [stake, setStake] = useState<number>(SLIP_LIMITS.minStake);
   const [error, setError] = useState<string | null>(null);
+  const [slipOpen, setSlipOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
