@@ -16,6 +16,8 @@ import {
   Plane,
   ShieldCheck,
   ShieldHalf,
+  Ticket,
+  Trophy,
   UserRound,
   Wallet,
 } from "lucide-react";
@@ -47,6 +49,10 @@ type NavGroup = { title: string; links: NavLink[] };
 /** Navegação pública — visível a quem não tem sessão. */
 const publicGroups: NavGroup[] = [
   {
+    title: "Apostas",
+    links: [{ href: "/desportos", label: "Desportos", icon: Trophy }],
+  },
+  {
     title: "Investimentos",
     links: [
       { href: "/investimentos", label: "Investimentos", icon: LineChart },
@@ -72,8 +78,10 @@ const memberGroups: NavGroup[] = [
     ],
   },
   {
-    title: "Jogos",
+    title: "Apostas",
     links: [
+      { href: "/desportos", label: "Desportos", icon: Trophy },
+      { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
       { href: "/crash", label: "Aviator", icon: Plane },
       { href: "/fish", label: "Fish Crash", icon: Fish },
     ],
