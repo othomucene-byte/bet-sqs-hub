@@ -64,7 +64,7 @@ export const placeBet = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: bet, error } = await supabaseAdmin.rpc("place_bet", {
+    const args = {
       _user_id: context.userId,
       _round_id: data.roundId,
       _amount: data.amount,
@@ -72,7 +72,12 @@ export const placeBet = createServerFn({ method: "POST" })
       _funding: data.funding,
       _free_bet_id: data.funding === "free_bet" ? (data.freeBetId ?? null) : null,
       _auto_cashout: data.autoCashout ?? null,
-    });
+    };
+
+    const { data: bet, error } = await supabaseAdmin.rpc(
+      "place_bet",
+      args as unknown as { _user_id: string; _round_id: string; _amount: number; _slot: number },
+    );
 
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const, bet };
