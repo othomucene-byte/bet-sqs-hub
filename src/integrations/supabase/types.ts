@@ -68,6 +68,8 @@ export type Database = {
       bet_slips: {
         Row: {
           created_at: string
+          free_bet_id: string | null
+          funding: string
           id: string
           idempotency_key: string
           kind: string
@@ -83,6 +85,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          free_bet_id?: string | null
+          funding?: string
           id?: string
           idempotency_key: string
           kind: string
@@ -98,6 +102,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          free_bet_id?: string | null
+          funding?: string
           id?: string
           idempotency_key?: string
           kind?: string
@@ -108,6 +114,141 @@ export type Database = {
           stake?: number
           status?: string
           total_odds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_slips_free_bet_id_fkey"
+            columns: ["free_bet_id"]
+            isOneToOne: false
+            referencedRelation: "free_bets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_grants: {
+        Row: {
+          amount: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          kind: string
+          metadata: Json
+          promotion_id: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          promotion_id: string
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          promotion_id?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bonus_grants_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          bonus_wallet_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          reference: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          bonus_wallet_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reference: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          bonus_wallet_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reference?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bonus_transactions_bonus_wallet_id_fkey"
+            columns: ["bonus_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "bonus_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -215,12 +356,70 @@ export type Database = {
         }
         Relationships: []
       }
+      free_bets: {
+        Row: {
+          created_at: string
+          expires_at: string
+          grant_id: string | null
+          id: string
+          max_amount: number
+          min_amount: number
+          status: string
+          updated_at: string
+          used_amount: number | null
+          used_at: string | null
+          used_bet_id: string | null
+          used_context: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          grant_id?: string | null
+          id?: string
+          max_amount?: number
+          min_amount?: number
+          status?: string
+          updated_at?: string
+          used_amount?: number | null
+          used_at?: string | null
+          used_bet_id?: string | null
+          used_context?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          grant_id?: string | null
+          id?: string
+          max_amount?: number
+          min_amount?: number
+          status?: string
+          updated_at?: string
+          used_amount?: number | null
+          used_at?: string | null
+          used_bet_id?: string | null
+          used_context?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "free_bets_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "bonus_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_bets: {
         Row: {
           amount: number
           auto_cashout: number | null
           cashed_out_at: string | null
           cashout_multiplier: number | null
+          free_bet_id: string | null
+          funding: string
           id: string
           payout: number | null
           placed_at: string
@@ -234,6 +433,8 @@ export type Database = {
           auto_cashout?: number | null
           cashed_out_at?: string | null
           cashout_multiplier?: number | null
+          free_bet_id?: string | null
+          funding?: string
           id?: string
           payout?: number | null
           placed_at?: string
@@ -247,6 +448,8 @@ export type Database = {
           auto_cashout?: number | null
           cashed_out_at?: string | null
           cashout_multiplier?: number | null
+          free_bet_id?: string | null
+          funding?: string
           id?: string
           payout?: number | null
           placed_at?: string
@@ -256,6 +459,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "game_bets_free_bet_id_fkey"
+            columns: ["free_bet_id"]
+            isOneToOne: false
+            referencedRelation: "free_bets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "game_bets_round_id_fkey"
             columns: ["round_id"]
@@ -862,6 +1072,36 @@ export type Database = {
         }
         Relationships: []
       }
+      loss_streaks: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          lost_amount: number
+          lost_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          id?: string
+          lost_amount?: number
+          lost_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          lost_amount?: number
+          lost_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -977,6 +1217,48 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string
+          ends_at: string | null
+          id: string
+          kind: string
+          name: string
+          params: Json
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description: string
+          ends_at?: string | null
+          id?: string
+          kind: string
+          name: string
+          params?: Json
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          params?: Json
+          starts_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1267,6 +1549,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bonus_apply: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reference: string
+          _type: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          bonus_wallet_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          reference: string
+          type: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bonus_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_investment: {
         Args: { _investment_id: string; _user_id: string }
         Returns: {
@@ -1300,6 +1609,8 @@ export type Database = {
           auto_cashout: number | null
           cashed_out_at: string | null
           cashout_multiplier: number | null
+          free_bet_id: string | null
+          funding: string
           id: string
           payout: number | null
           placed_at: string
@@ -1328,9 +1639,33 @@ export type Database = {
         }
         Returns: number
       }
+      ensure_bonus_wallet: { Args: { _user_id: string }; Returns: string }
       ensure_wallet: {
         Args: { _kind: string; _user_id: string }
         Returns: string
+      }
+      expire_bonuses: { Args: never; Returns: number }
+      grant_first_deposit_bonus: {
+        Args: { _payment_reference: string; _user_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          kind: string
+          metadata: Json
+          promotion_id: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bonus_grants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       has_role: {
         Args: {
@@ -1338,6 +1673,28 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      maybe_grant_loss_recovery: {
+        Args: { _user_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          kind: string
+          metadata: Json
+          promotion_id: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bonus_grants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       place_bet:
         | {
@@ -1352,6 +1709,8 @@ export type Database = {
               auto_cashout: number | null
               cashed_out_at: string | null
               cashout_multiplier: number | null
+              free_bet_id: string | null
+              funding: string
               id: string
               payout: number | null
               placed_at: string
@@ -1380,6 +1739,8 @@ export type Database = {
               auto_cashout: number | null
               cashed_out_at: string | null
               cashout_multiplier: number | null
+              free_bet_id: string | null
+              funding: string
               id: string
               payout: number | null
               placed_at: string
@@ -1395,35 +1756,103 @@ export type Database = {
               isSetofReturn: false
             }
           }
-      place_bet_slip: {
-        Args: {
-          _idempotency_key: string
-          _selections: Json
-          _stake: number
-          _user_id: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          idempotency_key: string
-          kind: string
-          payout: number | null
-          potential_payout: number
-          reference: string
-          settled_at: string | null
-          stake: number
-          status: string
-          total_odds: number
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "bet_slips"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+        | {
+            Args: {
+              _amount: number
+              _auto_cashout: number
+              _free_bet_id: string
+              _funding: string
+              _round_id: string
+              _slot: number
+              _user_id: string
+            }
+            Returns: {
+              amount: number
+              auto_cashout: number | null
+              cashed_out_at: string | null
+              cashout_multiplier: number | null
+              free_bet_id: string | null
+              funding: string
+              id: string
+              payout: number | null
+              placed_at: string
+              round_id: string
+              slot: number
+              status: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "game_bets"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      place_bet_slip:
+        | {
+            Args: {
+              _idempotency_key: string
+              _selections: Json
+              _stake: number
+              _user_id: string
+            }
+            Returns: {
+              created_at: string
+              free_bet_id: string | null
+              funding: string
+              id: string
+              idempotency_key: string
+              kind: string
+              payout: number | null
+              potential_payout: number
+              reference: string
+              settled_at: string | null
+              stake: number
+              status: string
+              total_odds: number
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bet_slips"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              _free_bet_id: string
+              _funding: string
+              _idempotency_key: string
+              _selections: Json
+              _stake: number
+              _user_id: string
+            }
+            Returns: {
+              created_at: string
+              free_bet_id: string | null
+              funding: string
+              id: string
+              idempotency_key: string
+              kind: string
+              payout: number | null
+              potential_payout: number
+              reference: string
+              settled_at: string | null
+              stake: number
+              status: string
+              total_odds: number
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bet_slips"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       place_investment: {
         Args: { _amount: number; _product_id: string; _user_id: string }
         Returns: {
@@ -1514,6 +1943,10 @@ export type Database = {
       }
       recalc_investment_position: {
         Args: { _product_id: string; _user_id: string }
+        Returns: undefined
+      }
+      record_bet_loss: {
+        Args: { _amount: number; _user_id: string }
         Returns: undefined
       }
       redeem_investment: {
