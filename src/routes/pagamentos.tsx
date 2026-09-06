@@ -176,12 +176,17 @@ function TransactionForm({
           );
         } else if (res.status === "failed") {
           clearInterval(timer);
-          toast.error(res.message ?? "A operação foi recusada pelo provedor.");
+          toast.error(
+            providerReason(res.message) ?? "A operação foi recusada pelo provedor.",
+          );
         }
       } catch {
         /* silencioso: nova tentativa no próximo ciclo */
       }
-      if (attempts >= 40) clearInterval(timer);
+      // O gateway pode levar vários minutos a fechar uma cobrança sem
+      // confirmação (mKesh chega a ~6 min): acompanhar até 12 minutos.
+      if (attempts >= 120) clearInterval(timer);
+
     }, 6000);
   }
 
