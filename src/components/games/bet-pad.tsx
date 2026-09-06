@@ -44,7 +44,7 @@ export function BetPad({
   busy?: boolean;
   onPlace?: () => void;
   onCashout?: () => void;
-  autoPlay?: boolean;
+  autoPlay?: boolean; autoPlayRounds?: number; onAutoPlayRounds?: (next: number) => void;
   autoPlayRounds?: string;
   autoPlayRemaining?: number;
   autoCashout?: boolean;

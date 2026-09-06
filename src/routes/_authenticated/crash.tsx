@@ -84,6 +84,8 @@ function CrashPage() {
   const [autoValues, setAutoValues] = useState<Record<1 | 2, string>>({ 1: "2.00", 2: "2.00" });
   const [autoEnabled, setAutoEnabled] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
   const [autoPlay, setAutoPlay] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
+  const [autoRounds, setAutoRounds] = useState<Record<1 | 2, number>>({ 1: 10, 2: 10 });
+  const lastAttemptedRound = useRef<Record<1 | 2, string | null>>({ 1: null, 2: null });
   const [muted, setMutedState] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState("");
   const clock = useClock();
@@ -152,6 +154,42 @@ function CrashPage() {
   const config = roundQuery.data?.config;
   const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
+  
+  // Autoplay Logic: detect new BETTING round and place bet once.
+  useEffect(() => {
+    if (status !== "BETTING" || !round?.id) return;
+    [1, 2].forEach((s) => {
+      const slot = s as 1 | 2;
+      if (!autoPlay[slot] || autoRounds[slot] <= 0) return;
+      if (lastAttemptedRound.current[slot] === round.id) return;
+
+      const hasBet = bets.some((b) => b.slot === slot);
+      if (hasBet) return;
+
+      lastAttemptedRound.current[slot] = round.id;
+      placeMutation.mutate(
+        { slot, amount: Number(amounts[slot]) || 0 },
+        {
+          onSuccess: (res) => {
+            if (res.ok) {
+              setAutoRounds((prev) => ({ ...prev, [slot]: prev[slot] - 1 }));
+            } else {
+              setAutoPlay((prev) => ({ ...prev, [slot]: false }));
+            }
+          },
+          onError: () => setAutoPlay((prev) => ({ ...prev, [slot]: false })),
+        }
+      );
+    });
+  }, [status, round?.id, autoPlay, autoRounds, bets, amounts, placeMutation]);
+
+  // Refresh wallet when round is settled (payouts processed)
+  useEffect(() => {
+    if (status === "SETTLED") {
+      void queryClient.invalidateQueries({ queryKey: ["wallet"] });
+    }
+  }, [status, queryClient]);
+
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
   const betForSlot = (slot: 1 | 2) => bets.find((bet) => bet.slot === slot) ?? null;
@@ -248,6 +286,8 @@ function CrashPage() {
                 onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
                 autoPlay={autoPlay[slot]}
+                autoPlayRounds={autoRounds[slot]}
+                onAutoPlayRounds={(next) => setAutoRounds((prev) => ({ ...prev, [slot]: next }))}
                 autoCashout={autoEnabled[slot]}
                 autoCashoutValue={autoValues[slot]}
                 onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
