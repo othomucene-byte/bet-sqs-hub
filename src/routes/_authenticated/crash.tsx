@@ -12,6 +12,7 @@ import { BetPad } from "@/components/games/bet-pad";
 import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chrome";
 import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
+import { useAutoRounds } from "@/lib/games/use-auto-rounds";
 import { multiplierAt, sha256Hex, crashResult } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
 import {
@@ -83,7 +84,6 @@ function CrashPage() {
   const [amounts, setAmounts] = useState<Record<1 | 2, string>>({ 1: "50", 2: "50" });
   const [autoValues, setAutoValues] = useState<Record<1 | 2, string>>({ 1: "2.00", 2: "2.00" });
   const [autoEnabled, setAutoEnabled] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
-  const [autoPlay, setAutoPlay] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false });
   const [muted, setMutedState] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState("");
   const clock = useClock();
@@ -152,9 +152,42 @@ function CrashPage() {
   const config = roundQuery.data?.config;
   const minBet = config?.minBet ?? 3;
   const maxBet = config?.maxBet ?? 25000;
+  
+  // Atualiza o saldo assim que a liquidação automática é processada no crash.
+  useEffect(() => {
+    if (status === "CRASHED" || status === "SETTLED") {
+      void queryClient.invalidateQueries({ queryKey: ["wallet"] });
+    }
+  }, [status, queryClient]);
+
   const countdown = Math.max(0, Math.ceil((round?.phaseMsRemaining ?? 0) / 1000));
 
   const betForSlot = (slot: 1 | 2) => bets.find((bet) => bet.slot === slot) ?? null;
+  const placeForSlot = async (slot: 1 | 2) => {
+    const amount = Number(amounts[slot]);
+    const autoTarget = Number(autoValues[slot]);
+    if (!Number.isFinite(amount) || amount < minBet || amount > maxBet) {
+      toast.error(`A aposta deve estar entre ${NUM.format(minBet)} e ${NUM.format(maxBet)} MZN.`);
+      return false;
+    }
+    if (autoEnabled[slot] && (!Number.isFinite(autoTarget) || autoTarget < 1.01 || autoTarget > 10000)) {
+      toast.error("O levantamento automático deve estar entre 1,01x e 10 000x.");
+      return false;
+    }
+    try {
+      const result = await placeMutation.mutateAsync({ slot, amount });
+      return result.ok;
+    } catch {
+      return false;
+    }
+  };
+  const autoRounds = useAutoRounds({
+    roundId: round?.id ?? null,
+    status,
+    occupiedSlots: bets.map((bet) => bet.slot),
+    betsReady: !betQuery.isPending && !placeMutation.isPending,
+    place: placeForSlot,
+  });
   const labelFor = (slot: 1 | 2) => {
     const bet = betForSlot(slot);
     if (bet?.status === "active") return "Em jogo";
@@ -184,7 +217,7 @@ function CrashPage() {
 
       <main className="mx-auto w-full max-w-[820px] flex-1 px-2.5 pb-4">
         {/* PALCO */}
-        <section className="relative mt-2.5 h-[42dvh] min-h-[240px] overflow-hidden rounded-2xl border border-fish-line/70 bg-[#050e19] shadow-[inset_0_0_60px_rgba(0,0,0,0.8)] sm:h-[360px]">
+        <section className="relative mt-2 h-[34dvh] min-h-[205px] max-h-[300px] overflow-hidden rounded-xl border border-fish-line/70 bg-fish-bg sm:h-[340px] sm:max-h-none">
           <FlightCanvas
             status={status}
             multiplier={displayMultiplier}
@@ -228,7 +261,7 @@ function CrashPage() {
         </section>
 
         {/* APOSTAS */}
-        <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
+        <div className="mt-2 grid gap-2 md:grid-cols-2">
           {([1, 2] as const).map((slot) => {
             const bet = betForSlot(slot);
             const isActive = bet?.status === "active";
@@ -245,12 +278,15 @@ function CrashPage() {
                 stateLabel={labelFor(slot)}
                 cashoutValue={(bet?.amount ?? 0) * displayMultiplier}
                 busy={placeMutation.isPending || cashoutMutation.isPending}
-                onPlace={() => placeMutation.mutate({ slot, amount: Number(amounts[slot]) || 0 })}
+                onPlace={() => void placeForSlot(slot)}
                 onCashout={() => bet && cashoutMutation.mutate(bet.id)}
-                autoPlay={autoPlay[slot]}
+                autoPlay={autoRounds.enabled[slot]}
+                autoPlayRounds={autoRounds.rounds[slot]}
+                autoPlayRemaining={autoRounds.remaining[slot]}
                 autoCashout={autoEnabled[slot]}
                 autoCashoutValue={autoValues[slot]}
-                onToggleAutoPlay={() => setAutoPlay((prev) => ({ ...prev, [slot]: !prev[slot] }))}
+                onToggleAutoPlay={() => autoRounds.toggle(slot)}
+                onAutoPlayRounds={(next) => autoRounds.setRoundCount(slot, next)}
                 onToggleAutoCashout={() => setAutoEnabled((prev) => ({ ...prev, [slot]: !prev[slot] }))}
                 onAutoCashoutValue={(next) => setAutoValues((prev) => ({ ...prev, [slot]: next }))}
               />

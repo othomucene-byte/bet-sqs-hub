@@ -6,6 +6,7 @@ export type FlightStatus = "WAITING" | "BETTING" | "RUNNING" | "CRASHED" | "SETT
 
 const aviatorTheme: StageTheme = {
   medium: "air",
+  fixedBackground: true,
   background: gameAssets.aviator.background,
   character: gameAssets.aviator.character,
   characterWidth: 250,

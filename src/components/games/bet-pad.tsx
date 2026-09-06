@@ -1,12 +1,9 @@
 import { CirclePlay, Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const CHIPS = [1, 2, 5, 10];
+const CHIPS = [3, 5, 10, 20];
 
-/**
- * Painel de aposta compacto, inspirado no formato de casino mobile.
- * O servidor continua a ser a autoridade sobre aposta, cash-out e saldo.
- */
 export function BetPad({
   title,
   value,
@@ -21,6 +18,9 @@ export function BetPad({
   onPlace,
   onCashout,
   autoPlay,
+  autoPlayRounds,
+  autoPlayRemaining,
+  onAutoPlayRounds,
   autoCashout,
   autoCashoutValue,
   onToggleAutoPlay,
@@ -40,6 +40,9 @@ export function BetPad({
   onPlace?: () => void;
   onCashout?: () => void;
   autoPlay?: boolean;
+  autoPlayRounds?: string;
+  autoPlayRemaining?: number;
+  onAutoPlayRounds?: (next: string) => void;
   autoCashout?: boolean;
   autoCashoutValue?: string;
   onToggleAutoPlay?: () => void;
@@ -53,128 +56,145 @@ export function BetPad({
   const actionDisabled = mode === "cashout" ? Boolean(busy) : locked || Boolean(busy);
 
   return (
-    <section className="rounded-[20px] border border-bet-line bg-bet-panel p-2.5 shadow-[0_10px_30px_-18px_var(--bet-surface)]">
-      <div className="mb-2 flex items-center justify-between gap-2 px-1.5">
+    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-sm">
+      <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-bet-foreground">
           {title ?? "Aposta"}
         </span>
         <span className="truncate text-[9px] font-bold text-bet-muted">{stateLabel}</span>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] gap-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] gap-1.5">
         <div className="min-w-0">
-          <div className="flex h-[52px] items-center justify-between rounded-full border border-bet-line bg-bet-pill px-2">
-            <button
+          <div className="flex h-11 items-center justify-between rounded-full border border-bet-line bg-bet-pill px-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
               type="button"
-              aria-label="Diminuir aposta"
               disabled={locked}
               onClick={() => step(-1)}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-bet-foreground transition hover:bg-bet-ghost/40 disabled:opacity-35"
+              className="size-7 shrink-0 rounded-full text-bet-foreground hover:bg-bet-ghost/40 disabled:opacity-35"
             >
               <Minus className="size-5" strokeWidth={2.5} />
-            </button>
+            </Button>
             <input
               inputMode="decimal"
               aria-label="Valor da aposta"
               value={value}
               disabled={locked}
               onChange={(event) => onValue(event.target.value)}
-              className="min-w-0 flex-1 bg-transparent text-center font-display text-[19px] font-medium tabular-nums text-bet-foreground outline-none disabled:opacity-45"
+              className="min-w-0 flex-1 bg-transparent text-center font-display text-base font-semibold tabular-nums text-bet-foreground outline-none disabled:opacity-45"
             />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               type="button"
-              aria-label="Aumentar aposta"
               disabled={locked}
               onClick={() => step(1)}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-bet-foreground transition hover:bg-bet-ghost/40 disabled:opacity-35"
+              className="size-7 shrink-0 rounded-full text-bet-foreground hover:bg-bet-ghost/40 disabled:opacity-35"
             >
               <Plus className="size-5" strokeWidth={2.5} />
-            </button>
+            </Button>
           </div>
-          <div className="mt-2 grid grid-cols-4 gap-1.5">
+          <div className="mt-1.5 grid grid-cols-4 gap-1">
             {CHIPS.map((chip) => (
-              <button
+              <Button
                 key={chip}
                 type="button"
                 disabled={locked}
                 onClick={() => onValue(String(Math.min(maxBet, Math.max(minBet, chip))))}
-                className="h-9 rounded-full border border-bet-line bg-bet-chip text-xs font-medium tabular-nums text-bet-foreground transition hover:bg-bet-ghost/70 disabled:opacity-40"
+                variant="ghost"
+                className="h-7 rounded-full border border-bet-line bg-bet-chip px-1 text-[11px] font-semibold tabular-nums text-bet-foreground hover:bg-bet-ghost/70 disabled:opacity-40"
               >
                 {chip}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
         {mode === "cashout" ? (
-          <button
+          <Button
             type="button"
             disabled={actionDisabled}
             onClick={onCashout}
-            className="min-h-[95px] rounded-[18px] border border-bet-amber/50 bg-bet-amber px-2 text-center font-display text-bet-surface shadow-[0_4px_0_var(--bet-surface)] transition active:translate-y-0.5 disabled:opacity-45"
+            className="h-[73px] rounded-xl border border-bet-amber/50 bg-bet-amber px-2 text-center font-display text-bet-surface shadow-[0_3px_0_var(--bet-surface)] hover:bg-bet-amber active:translate-y-0.5 disabled:opacity-45"
           >
             <span className="block text-[15px] font-medium">Levantar</span>
             <span className="mt-0.5 block text-[19px] font-black tabular-nums">
               {NUM.format(cashoutValue ?? 0)} MZN
             </span>
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             type="button"
             disabled={actionDisabled}
             onClick={onPlace}
-            className="min-h-[95px] rounded-[18px] border border-bet-green/60 bg-bet-green px-2 text-center font-display text-bet-green-foreground shadow-[0_4px_0_var(--bet-surface)] transition active:translate-y-0.5 disabled:opacity-45"
+            className="h-[73px] rounded-xl border border-bet-green/60 bg-bet-green px-2 text-center font-display text-bet-green-foreground shadow-[0_3px_0_var(--bet-surface)] hover:bg-bet-green active:translate-y-0.5 disabled:opacity-45"
           >
             <span className="block text-[15px] font-medium">Aposta</span>
             <span className="mt-0.5 block text-[19px] font-black tabular-nums">
               {NUM.format(amount)} MZN
             </span>
-          </button>
+          </Button>
         )}
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          disabled={locked}
-          onClick={onToggleAutoPlay}
-          aria-pressed={autoPlay}
-          className={`flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-full border px-2 text-[11px] font-medium transition disabled:opacity-40 ${
-            autoPlay ? "border-bet-green bg-bet-green text-bet-green-foreground" : "border-bet-line bg-bet-ghost text-bet-ghost-foreground"
-          }`}
-        >
-          <CirclePlay className="size-4 shrink-0" />
-          <span className="truncate">Jogo Automático</span>
-        </button>
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+        <div className={`flex h-8 min-w-0 items-center rounded-full border px-1 ${autoPlay ? "border-bet-green bg-bet-green" : "border-bet-line bg-bet-ghost"}`}>
+          <Button
+            variant="ghost"
+            type="button"
+            disabled={locked && !autoPlay}
+            onClick={onToggleAutoPlay}
+            aria-pressed={autoPlay}
+            className={`h-7 min-w-0 flex-1 justify-center gap-1 px-1 text-[10px] font-semibold hover:bg-transparent disabled:opacity-40 ${autoPlay ? "text-bet-green-foreground" : "text-bet-ghost-foreground"}`}
+          >
+            <CirclePlay className="size-4 shrink-0" />
+            <span className="truncate">{autoPlay ? `Auto (${autoPlayRemaining ?? 0})` : "Jogo Auto."}</span>
+          </Button>
+          {!autoPlay && (
+            <input
+              inputMode="numeric"
+              aria-label="Rondas automáticas"
+              value={autoPlayRounds ?? "5"}
+              onChange={(event) => onAutoPlayRounds?.(event.target.value)}
+              className="h-6 w-8 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
+            />
+          )}
+        </div>
+        
         {autoCashout ? (
-          <div className="flex h-9 min-w-0 items-center gap-1 rounded-full border border-bet-amber bg-bet-amber px-1.5">
-            <button
+          <div className="flex h-8 min-w-0 items-center gap-1 rounded-full border border-bet-amber bg-bet-amber px-1">
+            <Button
+              variant="ghost"
               type="button"
               disabled={locked}
               onClick={onToggleAutoCashout}
               aria-pressed
-              className="min-w-0 flex-1 truncate text-[11px] font-medium text-bet-surface"
+              className="h-7 min-w-0 flex-1 truncate px-1 text-[10px] font-semibold text-bet-surface hover:bg-transparent"
             >
-              Levantamento Auto.
-            </button>
+              Auto Cashout
+            </Button>
             <input
               inputMode="decimal"
-              aria-label="Multiplicador de levantamento automático"
-              value={autoCashoutValue ?? "2"}
-              onChange={(event) => onAutoCashoutValue?.(event.target.value)}
-              className="h-7 w-11 shrink-0 rounded-full border border-bet-line bg-bet-pill px-1 text-center text-[11px] font-bold tabular-nums text-bet-foreground outline-none"
+              aria-label="Multiplicador"
+              value={autoCashoutValue ?? "2.00"}
+              disabled={locked}
+              onChange={(e) => onAutoCashoutValue?.(e.target.value)}
+              className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
             />
           </div>
         ) : (
-          <button
+          <Button
+            variant="ghost"
             type="button"
             disabled={locked}
             onClick={onToggleAutoCashout}
             aria-pressed={false}
-            className="flex h-9 min-w-0 items-center justify-center rounded-full border border-bet-line bg-bet-ghost px-2 text-[11px] font-medium text-bet-ghost-foreground transition disabled:opacity-40"
+            className="h-8 min-w-0 rounded-full border border-bet-line bg-bet-ghost px-1.5 text-[10px] font-semibold text-bet-ghost-foreground hover:bg-bet-ghost disabled:opacity-40"
           >
-            <span className="truncate">Levantamento Automático</span>
-          </button>
+            Auto Cashout
+          </Button>
         )}
       </div>
     </section>
