@@ -132,6 +132,8 @@ const slipInput = z.object({
   stake: z.number().min(SLIP_LIMITS.minStake).max(SLIP_LIMITS.maxStake),
   selections: z.array(selectionSchema).min(1).max(SLIP_LIMITS.maxSelections),
   idempotencyKey: z.string().uuid(),
+  funding: z.enum(["wallet", "free_bet"]).default("wallet"),
+  freeBetId: z.string().uuid().nullable().optional(),
 });
 
 /** Registo do bilhete. Cotação, estado do jogo e saldo são validados no servidor. */
@@ -141,10 +143,12 @@ export const placeBetSlip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: slip, error } = await supabaseAdmin.rpc("place_bet_slip", {
+    const args = {
       _user_id: context.userId,
       _stake: data.stake,
       _idempotency_key: data.idempotencyKey,
+      _funding: data.funding,
+      _free_bet_id: data.funding === "free_bet" ? (data.freeBetId ?? null) : null,
       _selections: data.selections.map((item) => ({
         event_id: item.eventId,
         market: item.market,
@@ -152,7 +156,18 @@ export const placeBetSlip = createServerFn({ method: "POST" })
         line: item.line,
         price: item.price,
       })),
-    });
+    };
+
+    const { data: slip, error } = await supabaseAdmin.rpc(
+      "place_bet_slip",
+      args as unknown as {
+        _user_id: string;
+        _stake: number;
+        _idempotency_key: string;
+        _selections: never;
+      },
+    );
+
 
     if (error) return { ok: false as const, error: error.message };
     return {
