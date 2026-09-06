@@ -71,6 +71,13 @@ function keyOf(item: { eventId: string; market: string; selection: string; line:
   return `${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`;
 }
 
+/** Logótipo oficial da competição a partir da chave `af_<id>` (CDN público do fornecedor). */
+function competitionLogo(key: string): string | null {
+  const match = /^af_(\d+)$/.exec(key);
+  if (!match) return null;
+  return `https://media.api-sports.io/football/leagues/${match[1]}.png`;
+}
+
 function SportsPage() {
   const board = Route.useLoaderData() as SportsBoard;
   const navigate = useNavigate();
@@ -222,25 +229,56 @@ function SportsPage() {
           <section className="min-w-0">
             {board.competitions.length > 0 && (
               <div className="-mx-3 mb-4 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
-                <Button
-                  variant={competition === "all" ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 shrink-0 rounded-full text-xs"
+                <button
+                  type="button"
                   onClick={() => setCompetition("all")}
+                  className={`flex w-20 shrink-0 flex-col items-center gap-1 rounded-xl border p-2 transition-colors ${
+                    competition === "all"
+                      ? "border-primary bg-primary/10"
+                      : "border-border/60 bg-card hover:bg-muted"
+                  }`}
                 >
-                  Todos ({board.events.length})
-                </Button>
-                {board.competitions.map((item) => (
-                  <Button
-                    key={item.key}
-                    variant={competition === item.key ? "default" : "outline"}
-                    size="sm"
-                    className="h-8 shrink-0 rounded-full text-xs"
-                    onClick={() => setCompetition(item.key)}
-                  >
-                    {item.name} ({item.events})
-                  </Button>
-                ))}
+                  <span className="flex size-11 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">
+                    {board.events.length}
+                  </span>
+                  <span className="w-full truncate text-center text-[10px] font-semibold leading-tight">
+                    Todos
+                  </span>
+                </button>
+                {board.competitions.map((item) => {
+                  const logo = competitionLogo(item.key);
+                  const activeComp = competition === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setCompetition(item.key)}
+                      className={`flex w-20 shrink-0 flex-col items-center gap-1 rounded-xl border p-2 transition-colors ${
+                        activeComp
+                          ? "border-primary bg-primary/10"
+                          : "border-border/60 bg-card hover:bg-muted"
+                      }`}
+                    >
+                      <span className="flex size-11 items-center justify-center overflow-hidden rounded-lg bg-white p-1">
+                        {logo ? (
+                          <img
+                            src={logo}
+                            alt={item.name}
+                            loading="lazy"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs font-black text-slate-700">
+                            {item.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </span>
+                      <span className="w-full truncate text-center text-[10px] font-semibold leading-tight">
+                        {item.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 

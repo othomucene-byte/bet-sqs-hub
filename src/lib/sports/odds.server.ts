@@ -23,6 +23,10 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
   { id: 71, name: "Brasileirão Série A", region: "Brasil" },
   { id: 88, name: "Eredivisie", region: "Países Baixos" },
   { id: 253, name: "Major League Soccer", region: "EUA" },
+  { id: 1, name: "Mundial", region: "FIFA" },
+  { id: 15, name: "Mundial de Clubes", region: "FIFA" },
+  { id: 3, name: "Liga Europa", region: "UEFA" },
+  { id: 848, name: "Liga Conferência", region: "UEFA" },
 ];
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
