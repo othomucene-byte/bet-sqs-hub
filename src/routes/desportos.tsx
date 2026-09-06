@@ -122,6 +122,7 @@ function SportsPage() {
     onSuccess: (result) => {
       setSelections([]);
       setError(null);
+      setSlipOpen(false);
       toast.success("Bilhete registado", { description: `Referência ${result.reference ?? "—"}` });
     },
     onError: (err: Error) => setError(err.message),
