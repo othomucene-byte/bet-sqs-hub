@@ -32,7 +32,7 @@ export type SportsBoard = {
 /** Quadro público de desportos — lido da nossa base, nunca do fornecedor. */
 export const getSportsBoard = createServerFn({ method: "GET" }).handler(
   async (): Promise<SportsBoard> => {
-    const configured = Boolean(process.env["ODDS_API_KEY"]?.trim());
+    const configured = Boolean(process.env["API_FOOTBALL_KEY"]?.trim());
     const { publicClient } = await import("@/lib/investments/public-client.server");
     const supabase = publicClient();
 

@@ -6,7 +6,7 @@ import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
  * Sincronização agendada de desportos.
  *
  *  - Autenticada pelo segredo de cron (Bearer). Sem ele responde 401.
- *  - Sem `ODDS_API_KEY` responde 503 e nada é inventado.
+ *  - Sem `API_FOOTBALL_KEY` responde 503 e nada é inventado.
  *  - Atualiza jogos e cotações, depois busca resultados finais e liquida os
  *    bilhetes através das funções de base de dados (ledger imutável).
  */
@@ -19,7 +19,7 @@ async function handle(request: Request): Promise<Response> {
   );
 
   if (!oddsApiKey()) {
-    return Response.json({ ok: false, error: "ODDS_API_KEY não configurado" }, { status: 503 });
+    return Response.json({ ok: false, error: "API_FOOTBALL_KEY não configurado" }, { status: 503 });
   }
 
   try {
