@@ -291,7 +291,7 @@ function TransactionForm({
               {methods.map((m) => (
                 <option key={m.id} value={m.id} disabled={!enabled[m.id]}>
                   {m.name} — {m.provider}
-                  {enabled[m.id] ? "" : " (wallet não configurada)"}
+                  {enabled[m.id] ? "" : " (indisponível de momento)"}
                 </option>
               ))}
             </select>
