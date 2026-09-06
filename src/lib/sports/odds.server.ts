@@ -30,6 +30,11 @@ const DAYS_AHEAD = 3;
 const MAX_EVENTS = 24;
 const MAX_ODDS_CALLS = 24;
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
 
 export function oddsApiKey(): string | null {
   const key = process.env["API_FOOTBALL_KEY"];
