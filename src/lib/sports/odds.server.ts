@@ -194,7 +194,6 @@ export async function syncSportsCatalog(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const errors: string[] = [];
-  const season = currentSeason();
 
   const { data: sportRow, error: sportError } = await supabaseAdmin
     .from("sports")
@@ -209,6 +208,8 @@ export async function syncSportsCatalog(): Promise<{
   let oddsCount = 0;
   let compCount = 0;
 
+  // Competições acompanhadas
+  const compIds = new Map<number, string>();
   for (const league of LEAGUES) {
     const { data: compRow, error: compError } = await supabaseAdmin
       .from("sport_competitions")
@@ -228,79 +229,99 @@ export async function syncSportsCatalog(): Promise<{
       errors.push(`competição ${league.name}: ${compError?.message ?? "falhou"}`);
       continue;
     }
+    compIds.set(league.id, compRow.id);
     compCount += 1;
+  }
 
+  // Jogos por dia (o parâmetro `date` está disponível em qualquer plano)
+  const selected: ApiFixture[] = [];
+  for (const date of upcomingDates(DAYS_AHEAD)) {
+    if (selected.length >= MAX_EVENTS) break;
     let fixtures: ApiFixture[] = [];
     try {
-      fixtures = await call<ApiFixture[]>("/fixtures", {
-        league: String(league.id),
-        season: String(season),
-        next: String(FIXTURES_PER_LEAGUE),
+      fixtures = await fixturesByDate(date);
+    } catch (error) {
+      errors.push(`jogos de ${date}: ${(error as Error).message}`);
+      continue;
+    }
+    for (const fixture of fixtures) {
+      if (selected.length >= MAX_EVENTS) break;
+      if (!compIds.has(fixture.league?.id)) continue;
+      if (fixture.fixture?.status?.short !== "NS") continue;
+      const commence = new Date(fixture.fixture.date);
+      if (Number.isNaN(commence.getTime()) || commence.getTime() <= Date.now()) continue;
+      selected.push(fixture);
+    }
+  }
+
+  selected.sort(
+    (a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
+  );
+
+  let oddsCalls = 0;
+
+  for (const fixture of selected) {
+    const compId = compIds.get(fixture.league.id);
+    if (!compId) continue;
+    const home = fixture.teams?.home?.name;
+    const away = fixture.teams?.away?.name;
+    if (!home || !away) continue;
+    const commence = new Date(fixture.fixture.date);
+
+    const { data: eventRow, error: eventError } = await supabaseAdmin
+      .from("sport_events")
+      .upsert(
+        {
+          competition_id: compId,
+          provider_event_id: String(fixture.fixture.id),
+          home_team: home,
+          away_team: away,
+          commence_at: commence.toISOString(),
+          status: "scheduled",
+          odds_updated_at: new Date().toISOString(),
+        },
+        { onConflict: "provider_event_id" },
+      )
+      .select("id, status")
+      .single();
+    if (eventError || !eventRow) {
+      errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
+      continue;
+    }
+    eventCount += 1;
+
+    // Cotações por jogo. Sem cotações do fornecedor o jogo fica visível sem
+    // botões de aposta — nunca com cotações inventadas.
+    if (oddsCalls >= MAX_ODDS_CALLS) continue;
+    oddsCalls += 1;
+    let oddsEntries: ApiOddsFixture[] = [];
+    try {
+      oddsEntries = await call<ApiOddsFixture[]>("/odds", {
+        fixture: String(fixture.fixture.id),
       });
     } catch (error) {
-      errors.push(`jogos ${league.name}: ${(error as Error).message}`);
+      errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
       continue;
     }
 
-    for (const fixture of fixtures) {
-      const home = fixture.teams?.home?.name;
-      const away = fixture.teams?.away?.name;
-      if (!home || !away) continue;
-      const commence = new Date(fixture.fixture.date);
-      if (Number.isNaN(commence.getTime())) continue;
+    const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
+    await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
+    if (!rows.length) continue;
 
-      const { data: eventRow, error: eventError } = await supabaseAdmin
-        .from("sport_events")
-        .upsert(
-          {
-            competition_id: compRow.id,
-            provider_event_id: String(fixture.fixture.id),
-            home_team: home,
-            away_team: away,
-            commence_at: commence.toISOString(),
-            status: commence.getTime() <= Date.now() ? "live" : "scheduled",
-            odds_updated_at: new Date().toISOString(),
-          },
-          { onConflict: "provider_event_id" },
-        )
-        .select("id, status")
-        .single();
-      if (eventError || !eventRow) {
-        errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
-        continue;
-      }
-      eventCount += 1;
-
-      // Cotações por jogo (o plano gratuito pode não incluir odds — nesse caso
-      // o jogo fica visível sem botões de aposta, nunca com cotações inventadas)
-      let oddsEntries: ApiOddsFixture[] = [];
-      try {
-        oddsEntries = await call<ApiOddsFixture[]>("/odds", {
-          fixture: String(fixture.fixture.id),
-        });
-      } catch (error) {
-        errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
-        continue;
-      }
-
-      const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
-      await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
-      if (!rows.length) continue;
-
-      const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
-        rows.map((row) => ({
-          event_id: eventRow.id,
-          market: row.market,
-          selection: row.selection,
-          line: row.line,
-          price: row.price,
-          active: true,
-        })),
-      );
-      if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
-      else oddsCount += rows.length;
-    }
+    const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
+      rows.map((row) => ({
+        event_id: eventRow.id,
+        market: row.market,
+        selection: row.selection,
+        line: row.line,
+        price: row.price,
+        active: true,
+      })),
+    );
+    if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
+    else oddsCount += rows.length;
   }
+
 
   return { competitions: compCount, events: eventCount, odds: oddsCount, errors };
 }
