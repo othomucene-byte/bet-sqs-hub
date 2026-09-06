@@ -26,6 +26,9 @@ export function BetPad({
   onToggleAutoPlay,
   onToggleAutoCashout,
   onAutoCashoutValue,
+  funding,
+  fundingOptions,
+  onFunding,
 }: {
   title?: string;
   value: string;
@@ -48,12 +51,16 @@ export function BetPad({
   onToggleAutoPlay?: () => void;
   onToggleAutoCashout?: () => void;
   onAutoCashoutValue?: (next: string) => void;
+  funding?: BetFunding;
+  fundingOptions?: { key: BetFunding; label: string }[];
+  onFunding?: (next: BetFunding) => void;
 }) {
   const amount = Number(value) || 0;
   const step = (delta: number) =>
     onValue(String(Math.min(maxBet, Math.max(minBet, Math.round((amount + delta) * 100) / 100))));
   const locked = disabled || mode === "locked";
   const actionDisabled = mode === "cashout" ? Boolean(busy) : locked || Boolean(busy);
+  const sources = fundingOptions ?? [];
 
   return (
     <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-sm">
@@ -63,6 +70,32 @@ export function BetPad({
         </span>
         <span className="truncate text-[9px] font-bold text-bet-muted">{stateLabel}</span>
       </div>
+
+      {sources.length > 1 && (
+        <div className="mb-1.5 flex gap-1">
+          {sources.map((option) => {
+            const on = (funding ?? "wallet") === option.key;
+            return (
+              <Button
+                key={option.key}
+                type="button"
+                variant="ghost"
+                disabled={locked}
+                onClick={() => onFunding?.(option.key)}
+                aria-pressed={on}
+                className={`h-6 flex-1 rounded-full border px-1 text-[9px] font-bold uppercase tracking-wide disabled:opacity-40 ${
+                  on
+                    ? "border-bet-green bg-bet-green text-bet-green-foreground hover:bg-bet-green"
+                    : "border-bet-line bg-bet-chip text-bet-muted hover:bg-bet-ghost/70"
+                }`}
+              >
+                {option.label}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
 
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] gap-1.5">
         <div className="min-w-0">
