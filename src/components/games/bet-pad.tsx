@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const CHIPS = [3, 5, 10, 20];
 
+/** Origem do valor apostado. O servidor revalida sempre a origem escolhida. */
+export type BetFunding = "wallet" | "bonus" | "free_bet";
+
 export function BetPad({
   title,
   value,
