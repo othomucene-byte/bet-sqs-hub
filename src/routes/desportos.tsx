@@ -71,6 +71,13 @@ function keyOf(item: { eventId: string; market: string; selection: string; line:
   return `${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`;
 }
 
+/** Logótipo oficial da competição a partir da chave `af_<id>` (CDN público do fornecedor). */
+function competitionLogo(key: string): string | null {
+  const match = /^af_(\d+)$/.exec(key);
+  if (!match) return null;
+  return `https://media.api-sports.io/football/leagues/${match[1]}.png`;
+}
+
 function SportsPage() {
   const board = Route.useLoaderData() as SportsBoard;
   const navigate = useNavigate();
