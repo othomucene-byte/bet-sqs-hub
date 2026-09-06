@@ -19,9 +19,11 @@ export type NetshopMethod = "card" | "mpesa" | "emola" | "mkesh";
 type NetshopCredentials = { walletId: string; apiKey: string };
 
 /**
- * Cada método tem a sua própria wallet NetShop (Visa/cartão, M-Pesa, mKesh).
- * `NETSHOP_WALLET_ID` continua a servir de fallback (e-Mola ou instalações
- * com uma única wallet).
+ * Cada método tem a sua própria wallet NetShop (Visa/cartão, M-Pesa, mKesh,
+ * e-Mola). `NETSHOP_WALLET_ID` só serve de fallback em instalações com uma
+ * única wallet — se existir pelo menos uma wallet específica, um método sem a
+ * sua própria wallet é considerado indisponível (usar a wallet de outro método
+ * faz a API responder `method_disabled`).
  */
 const WALLET_ENV: Record<NetshopMethod, string> = {
   card: "NETSHOP_WALLET_ID_CARD",
@@ -30,9 +32,17 @@ const WALLET_ENV: Record<NetshopMethod, string> = {
   mkesh: "NETSHOP_WALLET_ID_MKESH",
 };
 
-export function walletIdFor(method: NetshopMethod): string | null {
-  return process.env[WALLET_ENV[method]] || process.env["NETSHOP_WALLET_ID"] || null;
+function hasPerMethodWallets(): boolean {
+  return Object.values(WALLET_ENV).some((name) => Boolean(process.env[name]));
 }
+
+export function walletIdFor(method: NetshopMethod): string | null {
+  const own = process.env[WALLET_ENV[method]];
+  if (own) return own;
+  if (hasPerMethodWallets()) return null;
+  return process.env["NETSHOP_WALLET_ID"] || null;
+}
+
 
 /** Métodos com wallet + API key presentes no servidor. */
 export function configuredMethods(): Record<NetshopMethod, boolean> {
