@@ -139,7 +139,7 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
 
         const { data: intent } = await supabaseAdmin
           .from("payment_intents")
-          .select("id, wallet_id, direction, method, amount, status")
+          .select("id, user_id, wallet_id, direction, method, amount, status")
           .eq("reference", reference)
           .maybeSingle();
 
