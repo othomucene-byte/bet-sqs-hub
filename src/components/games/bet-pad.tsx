@@ -144,7 +144,7 @@ export function BetPad({
           <Button
             variant="ghost"
             type="button"
-            disabled={locked}
+            disabled={locked && !autoPlay}
             onClick={onToggleAutoPlay}
             aria-pressed={autoPlay}
             className={`h-7 min-w-0 flex-1 justify-center gap-1 px-1 text-[10px] font-semibold hover:bg-transparent disabled:opacity-40 ${autoPlay ? "text-bet-green-foreground" : "text-bet-ghost-foreground"}`}
