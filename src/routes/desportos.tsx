@@ -72,7 +72,7 @@ function SportsPage() {
   const [signedIn, setSignedIn] = useState(false);
   const [competition, setCompetition] = useState<string>("all");
   const [selections, setSelections] = useState<SlipSelection[]>([]);
-  const [stake, setStake] = useState(SLIP_LIMITS.minStake);
+  const [stake, setStake] = useState<number>(SLIP_LIMITS.minStake);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
