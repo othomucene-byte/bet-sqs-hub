@@ -7,10 +7,17 @@ import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { SlipPanel, type SlipSelection } from "@/components/sports/slip-panel";
+import { SlipPanel, totalOdds, type SlipSelection } from "@/components/sports/slip-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { MARKET_NAMES, shortLabel, SLIP_LIMITS, type Market } from "@/lib/sports/markets";
 import {
@@ -74,6 +81,7 @@ function SportsPage() {
   const [selections, setSelections] = useState<SlipSelection[]>([]);
   const [stake, setStake] = useState<number>(SLIP_LIMITS.minStake);
   const [error, setError] = useState<string | null>(null);
+  const [slipOpen, setSlipOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -114,6 +122,7 @@ function SportsPage() {
     onSuccess: (result) => {
       setSelections([]);
       setError(null);
+      setSlipOpen(false);
       toast.success("Bilhete registado", { description: `Referência ${result.reference ?? "—"}` });
     },
     onError: (err: Error) => setError(err.message),
@@ -142,22 +151,44 @@ function SportsPage() {
 
   const selectedKeys = new Set(selections.map(keyOf));
 
+  const slip = (
+    <SlipPanel
+      selections={selections}
+      stake={stake}
+      signedIn={signedIn}
+      pending={mutation.isPending}
+      error={error}
+      onStake={setStake}
+      onRemove={(item) =>
+        setSelections((current) => current.filter((entry) => keyOf(entry) !== keyOf(item)))
+      }
+      onClear={() => setSelections([])}
+      onSubmit={() => {
+        if (!signedIn) {
+          void navigate({ to: "/auth" });
+          return;
+        }
+        mutation.mutate();
+      }}
+    />
+  );
+
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-        <header className="mb-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-4 sm:py-8">
+        <header className="mb-5">
           <Badge variant="secondary" className="mb-2">
             SQs Apostas
           </Badge>
-          <h1 className="text-3xl font-bold tracking-tight">Desportos</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Desportos</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
             Jogos e cotações de mercado em meticais. O bilhete, o saldo e a liquidação são sempre
             decididos no servidor.
           </p>
           {board.updatedAt && (
             <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-              <RefreshCw className="size-3" />
+              <RefreshCw className="size-3 shrink-0" />
               Cotações atualizadas em {dateFormatter.format(new Date(board.updatedAt))}
             </p>
           )}
@@ -187,14 +218,14 @@ function SportsPage() {
           </Card>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-          <section>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <section className="min-w-0">
             {board.competitions.length > 0 && (
-              <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+              <div className="-mx-3 mb-4 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
                 <Button
                   variant={competition === "all" ? "default" : "outline"}
                   size="sm"
-                  className="shrink-0 rounded-full"
+                  className="h-8 shrink-0 rounded-full text-xs"
                   onClick={() => setCompetition("all")}
                 >
                   Todos ({board.events.length})
@@ -204,7 +235,7 @@ function SportsPage() {
                     key={item.key}
                     variant={competition === item.key ? "default" : "outline"}
                     size="sm"
-                    className="shrink-0 rounded-full"
+                    className="h-8 shrink-0 rounded-full text-xs"
                     onClick={() => setCompetition(item.key)}
                   >
                     {item.name} ({item.events})
@@ -213,7 +244,7 @@ function SportsPage() {
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {events.map((event) => {
                 const grouped = MARKET_ORDER.map((market) => ({
                   market,
@@ -224,28 +255,29 @@ function SportsPage() {
 
                 return (
                   <Card key={event.id} className="overflow-hidden">
-                    <CardContent className="space-y-4 py-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <CardContent className="space-y-3 p-3 sm:p-4">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                             {event.sportName} · {event.competitionName}
                           </p>
-                          <p className="text-base font-semibold">
-                            {event.homeTeam} <span className="text-muted-foreground">vs</span>{" "}
+                          <p className="mt-0.5 text-sm font-bold leading-snug sm:text-base">
+                            {event.homeTeam}
+                            <span className="mx-1 font-normal text-muted-foreground">vs</span>
                             {event.awayTeam}
                           </p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="shrink-0 rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground">
                           {dateFormatter.format(new Date(event.commenceAt))}
                         </p>
                       </div>
 
                       {grouped.map((group) => (
                         <div key={group.market}>
-                          <p className="mb-2 text-xs font-medium text-muted-foreground">
+                          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                             {MARKET_NAMES[group.market]}
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6">
                             {group.odds.slice(0, 6).map((odd) => {
                               const key = keyOf({
                                 eventId: event.id,
@@ -261,16 +293,16 @@ function SportsPage() {
                                   onClick={() =>
                                     toggle(event, group.market, odd.selection, odd.line, odd.price)
                                   }
-                                  className={`flex min-w-[86px] flex-col items-center rounded-xl border px-3 py-2 text-sm transition-colors ${
+                                  className={`flex min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 transition-colors ${
                                     active
                                       ? "border-primary bg-primary text-primary-foreground"
-                                      : "bg-muted/50 hover:bg-muted"
+                                      : "border-border/60 bg-muted/40 hover:bg-muted active:bg-muted"
                                   }`}
                                 >
-                                  <span className="text-xs opacity-80">
+                                  <span className="w-full truncate text-center text-[11px] opacity-80">
                                     {shortLabel(group.market, odd.selection, odd.line)}
                                   </span>
-                                  <span className="font-mono font-semibold">
+                                  <span className="font-mono text-sm font-bold">
                                     {odd.price.toFixed(2)}
                                   </span>
                                 </button>
@@ -286,26 +318,8 @@ function SportsPage() {
             </div>
           </section>
 
-          <aside className="lg:sticky lg:top-24 lg:h-fit">
-            <SlipPanel
-              selections={selections}
-              stake={stake}
-              signedIn={signedIn}
-              pending={mutation.isPending}
-              error={error}
-              onStake={setStake}
-              onRemove={(item) =>
-                setSelections((current) => current.filter((entry) => keyOf(entry) !== keyOf(item)))
-              }
-              onClear={() => setSelections([])}
-              onSubmit={() => {
-                if (!signedIn) {
-                  void navigate({ to: "/auth" });
-                  return;
-                }
-                mutation.mutate();
-              }}
-            />
+          <aside className="hidden lg:sticky lg:top-24 lg:block lg:h-fit">
+            {slip}
             {signedIn && (
               <Button asChild variant="outline" className="mt-3 w-full">
                 <Link to="/bilhetes">
@@ -315,8 +329,56 @@ function SportsPage() {
             )}
           </aside>
         </div>
+
+        {/* Espaço para a barra fixa do bilhete no telemóvel */}
+        <div className="h-24 lg:hidden" aria-hidden />
       </main>
+
+      {/* Barra fixa do bilhete (telemóvel e tablet) */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-xs text-muted-foreground">
+              {selections.length === 0
+                ? "Bilhete vazio"
+                : `${selections.length} seleç${selections.length === 1 ? "ão" : "ões"} · cotação ${totalOdds(selections).toFixed(2)}`}
+            </p>
+            <p className="truncate text-sm font-bold">
+              Ganho possível{" "}
+              <span className="font-mono text-primary">
+                {new Intl.NumberFormat("pt-PT", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Math.min(stake * totalOdds(selections), SLIP_LIMITS.maxPayout))}{" "}
+                MZN
+              </span>
+            </p>
+          </div>
+          <Sheet open={slipOpen} onOpenChange={setSlipOpen}>
+            <SheetTrigger asChild>
+              <Button className="h-11 shrink-0 rounded-xl px-4 font-bold">
+                <Ticket className="size-4" /> Bilhete ({selections.length})
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[90dvh] gap-0 overflow-y-auto rounded-t-2xl p-3">
+              <SheetHeader className="pb-2 text-left">
+                <SheetTitle className="text-base">O meu bilhete</SheetTitle>
+              </SheetHeader>
+              {slip}
+              {signedIn && (
+                <Button asChild variant="outline" className="mt-3 w-full">
+                  <Link to="/bilhetes" onClick={() => setSlipOpen(false)}>
+                    <Ticket className="size-4" /> Os meus bilhetes
+                  </Link>
+                </Button>
+              )}
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
       <SiteFooter />
     </div>
   );
 }
+

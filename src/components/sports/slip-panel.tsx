@@ -2,8 +2,8 @@ import { Minus, Plus, Ticket, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { selectionLabel, SLIP_LIMITS } from "@/lib/sports/markets";
+import { selectionLabel, MARKET_NAMES, SLIP_LIMITS, type Market } from "@/lib/sports/markets";
+import { cn } from "@/lib/utils";
 
 export type SlipSelection = {
   eventId: string;
@@ -32,6 +32,7 @@ type Props = {
   onRemove: (selection: SlipSelection) => void;
   onClear: () => void;
   onSubmit: () => void;
+  className?: string;
 };
 
 export function SlipPanel({
@@ -44,84 +45,102 @@ export function SlipPanel({
   onRemove,
   onClear,
   onSubmit,
+  className,
 }: Props) {
   const odds = totalOdds(selections);
   const payout = Math.min(stake * odds, SLIP_LIMITS.maxPayout);
   const capped = stake * odds > SLIP_LIMITS.maxPayout;
+  const multiple = selections.length > 1;
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <Ticket className="size-4" />
-          Bilhete
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{selections.length}</span>
+    <div className={cn("flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm", className)}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b bg-muted/40 px-3 py-2.5">
+        <p className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+          <Ticket className="size-4 shrink-0 text-primary" />
+          <span className="truncate">{multiple ? "Bilhete múltiplo" : "Bilhete"}</span>
+          <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 font-mono text-xs text-primary">
+            {selections.length}
+          </span>
         </p>
         {selections.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={onClear}>
-            <Trash2 className="size-4" /> Limpar
+          <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={onClear}>
+            <Trash2 className="size-3.5" /> Limpar
           </Button>
         )}
       </div>
 
       {selections.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-muted-foreground">
-          Escolha uma cotação para começar o bilhete. Aposta mínima {money(SLIP_LIMITS.minStake)} MZN.
+        <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+          Toque numa cotação para começar.
+          <br />
+          Aposta mínima {money(SLIP_LIMITS.minStake)} MZN.
         </p>
       ) : (
-        <div className="max-h-[38vh] space-y-3 overflow-y-auto px-4 py-3">
+        <ul className="max-h-[34vh] divide-y overflow-y-auto lg:max-h-[38vh]">
           {selections.map((item) => (
-            <div key={`${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`} className="text-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-medium">
-                    {selectionLabel(item.market, item.selection, item.line, item.homeTeam, item.awayTeam)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.homeTeam} — {item.awayTeam}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-semibold">{item.price.toFixed(2)}</span>
-                  <button
-                    type="button"
-                    aria-label="Remover seleção"
-                    className="text-muted-foreground hover:text-foreground"
-                    onClick={() => onRemove(item)}
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
+            <li
+              key={`${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`}
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-3 py-2.5"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">
+                  {selectionLabel(item.market, item.selection, item.line, item.homeTeam, item.awayTeam)}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {item.homeTeam} — {item.awayTeam}
+                </p>
+                <p className="mt-0.5 truncate text-[11px] uppercase tracking-wide text-muted-foreground/80">
+                  {MARKET_NAMES[item.market as Market]}
+                </p>
               </div>
-              <Separator className="mt-3" />
-            </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="rounded-md bg-muted px-2 py-1 font-mono text-sm font-bold">
+                  {item.price.toFixed(2)}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Remover seleção"
+                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  onClick={() => onRemove(item)}
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
-      <div className="space-y-3 px-4 py-3">
-        <div className="flex items-center gap-2">
+      <div className="space-y-3 border-t px-3 py-3">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
           <Button
             variant="secondary"
             size="icon"
+            className="size-10 shrink-0 rounded-xl"
             aria-label="Diminuir valor"
             onClick={() => onStake(Math.max(SLIP_LIMITS.minStake, stake - 5))}
           >
             <Minus className="size-4" />
           </Button>
-          <Input
-            inputMode="decimal"
-            value={String(stake)}
-            aria-label="Valor da aposta em meticais"
-            className="text-center font-mono text-base font-semibold"
-            onChange={(event) => {
-              const next = Number(event.target.value.replace(",", "."));
-              if (Number.isFinite(next)) onStake(next);
-            }}
-          />
+          <div className="relative min-w-0">
+            <Input
+              inputMode="decimal"
+              value={String(stake)}
+              aria-label="Valor da aposta em meticais"
+              className="h-10 rounded-xl pr-12 text-center font-mono text-base font-bold"
+              onChange={(event) => {
+                const next = Number(event.target.value.replace(",", "."));
+                if (Number.isFinite(next)) onStake(next);
+              }}
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+              MZN
+            </span>
+          </div>
           <Button
             variant="secondary"
             size="icon"
+            className="size-10 shrink-0 rounded-xl"
             aria-label="Aumentar valor"
             onClick={() => onStake(Math.min(SLIP_LIMITS.maxStake, stake + 5))}
           >
@@ -129,22 +148,28 @@ export function SlipPanel({
           </Button>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-5 gap-1.5">
           {[3, 5, 10, 20, 50].map((value) => (
-            <Button key={value} variant="outline" size="sm" onClick={() => onStake(value)}>
+            <Button
+              key={value}
+              variant={stake === value ? "default" : "outline"}
+              size="sm"
+              className="h-8 rounded-lg px-0 font-mono text-xs"
+              onClick={() => onStake(value)}
+            >
               {value}
             </Button>
           ))}
         </div>
 
-        <div className="space-y-1 rounded-xl bg-muted/60 p-3 text-sm">
-          <div className="flex justify-between">
+        <div className="space-y-1.5 rounded-xl bg-muted/60 p-3 text-sm">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">Cotação total</span>
-            <span className="font-mono font-semibold">{odds.toFixed(2)}</span>
+            <span className="font-mono font-bold">{odds.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">Ganho possível</span>
-            <span className="font-mono font-semibold">{money(payout)} MZN</span>
+            <span className="font-mono font-bold text-primary">{money(payout)} MZN</span>
           </div>
           {capped && (
             <p className="text-xs text-muted-foreground">
@@ -156,13 +181,13 @@ export function SlipPanel({
         {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
         <Button
-          className="h-12 w-full text-base font-bold"
+          className="h-12 w-full rounded-xl text-base font-bold"
           disabled={pending || selections.length === 0 || stake < SLIP_LIMITS.minStake}
           onClick={onSubmit}
         >
           {!signedIn ? "Entrar para apostar" : pending ? "A registar…" : "Apostar"}
         </Button>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] leading-snug text-muted-foreground">
           O valor é debitado e validado no servidor. Apostar envolve risco de perda total do valor
           apostado.
         </p>
