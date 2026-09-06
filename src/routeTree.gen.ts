@@ -17,6 +17,7 @@ import { Route as EmpresasRouteImport } from './routes/empresas'
 import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
@@ -66,6 +67,11 @@ const PagamentosRoute = PagamentosRouteImport.update({
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBilhetesRoute = AuthenticatedBilhetesRouteImport.update({
+  id: '/bilhetes',
+  path: '/bilhetes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/fish': typeof AuthenticatedFishRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/pagamentos'
     | '/admin'
+    | '/bilhetes'
     | '/carteira'
     | '/crash'
     | '/fish'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/pagamentos'
     | '/admin'
+    | '/bilhetes'
     | '/carteira'
     | '/crash'
     | '/fish'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/investimentos'
     | '/pagamentos'
     | '/_authenticated/admin'
+    | '/_authenticated/bilhetes'
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
     | '/_authenticated/fish'
@@ -324,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bilhetes': {
+      id: '/_authenticated/bilhetes'
+      path: '/bilhetes'
+      fullPath: '/bilhetes'
+      preLoaderRoute: typeof AuthenticatedBilhetesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/carteira': {
@@ -408,6 +427,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
@@ -421,6 +441,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,

@@ -47,6 +47,10 @@ type NavGroup = { title: string; links: NavLink[] };
 /** Navegação pública — visível a quem não tem sessão. */
 const publicGroups: NavGroup[] = [
   {
+    title: "Apostas",
+    links: [{ href: "/desportos", label: "Desportos", icon: Trophy }],
+  },
+  {
     title: "Investimentos",
     links: [
       { href: "/investimentos", label: "Investimentos", icon: LineChart },
