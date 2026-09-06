@@ -11,6 +11,7 @@ import { GameTopBar, HistoryStrip, TotalsBar } from "@/components/games/game-chr
 import { RoundStats } from "@/components/crash/round-stats";
 import { useClock } from "@/lib/games/use-clock";
 import { useAutoRounds } from "@/lib/games/use-auto-rounds";
+import { useBetFunding } from "@/lib/promotions/use-bet-funding";
 import { multiplierAt } from "@/lib/crash/fair";
 import * as sound from "@/lib/crash/sound";
 import {
@@ -107,12 +108,14 @@ function FishPage() {
   };
 
   const placeMutation = useMutation({
-    mutationFn: async (input: { slot: 1 | 2; amount: number }) =>
+    mutationFn: async (input: { slot: 1 | 2; amount: number; funding: "wallet" | "bonus" | "free_bet"; freeBetId: string | null }) =>
       submitBet({
         data: {
           roundId: round!.id,
           amount: input.amount,
           slot: input.slot,
+          funding: input.funding,
+          freeBetId: input.freeBetId,
           autoCashout: autoEnabled[input.slot] && Number(autoValues[input.slot]) > 1 ? Number(autoValues[input.slot]) : null,
         },
       }),
