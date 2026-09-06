@@ -19,9 +19,17 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
   { id: 2, name: "Liga dos Campeões", region: "UEFA" },
   { id: 94, name: "Primeira Liga", region: "Portugal" },
   { id: 78, name: "Bundesliga", region: "Alemanha" },
+  { id: 61, name: "Ligue 1", region: "França" },
+  { id: 71, name: "Brasileirão Série A", region: "Brasil" },
+  { id: 88, name: "Eredivisie", region: "Países Baixos" },
+  { id: 253, name: "Major League Soccer", region: "EUA" },
 ];
 
-const FIXTURES_PER_LEAGUE = 8;
+/** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
+const DAYS_AHEAD = 3;
+const MAX_EVENTS = 24;
+const MAX_ODDS_CALLS = 24;
+
 
 export function oddsApiKey(): string | null {
   const key = process.env["API_FOOTBALL_KEY"];
