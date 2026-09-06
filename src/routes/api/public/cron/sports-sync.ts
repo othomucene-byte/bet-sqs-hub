@@ -28,7 +28,10 @@ async function handle(request: Request): Promise<Response> {
     return Response.json({ ok: true, catalog, results });
   } catch (error) {
     console.error("[sports-sync]", error);
-    return Response.json({ ok: false, error: "sincronização falhou" }, { status: 502 });
+    return Response.json(
+      { ok: false, error: (error as Error).message.slice(0, 300) },
+      { status: 502 },
+    );
   }
 }
 
