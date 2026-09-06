@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
+import { syncSportsNow } from "@/lib/sports/sports.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,6 +118,7 @@ function AdminPage() {
             <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
             <TabsTrigger value="risco">Risco</TabsTrigger>
             <TabsTrigger value="empresas">Candidaturas</TabsTrigger>
+            <TabsTrigger value="desportos">Desportos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="kyc" className="mt-4">
@@ -137,9 +139,53 @@ function AdminPage() {
           <TabsContent value="empresas" className="mt-4">
             <ApplicationsTable />
           </TabsContent>
+          <TabsContent value="desportos" className="mt-4">
+            <SportsSyncCard />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
+  );
+}
+
+function SportsSyncCard() {
+  const runSync = useServerFn(syncSportsNow);
+  const mutation = useMutation({
+    mutationFn: () => runSync(),
+    onSuccess: (result) => {
+      if (!result.ok) {
+        toast.error("Sincronização não realizada", { description: result.error });
+        return;
+      }
+      toast.success("Desportos sincronizados", {
+        description: `${result.catalog.events} jogos, ${result.catalog.odds} cotações, ${result.results.settled} jogos liquidados`,
+      });
+    },
+    onError: (error: Error) => toast.error("Sincronização falhou", { description: error.message }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Desportos</CardTitle>
+        <CardDescription>
+          Atualiza jogos e cotações do fornecedor e liquida os bilhetes com resultados finais. A
+          sincronização também corre automaticamente pelo agendador.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+          {mutation.isPending ? "A sincronizar…" : "Sincronizar agora"}
+        </Button>
+        {mutation.data && mutation.data.ok && mutation.data.catalog.errors.length > 0 && (
+          <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+            {mutation.data.catalog.errors.slice(0, 6).map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
