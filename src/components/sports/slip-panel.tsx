@@ -33,6 +33,10 @@ type Props = {
   onClear: () => void;
   onSubmit: () => void;
   className?: string;
+  /** Apostas grátis disponíveis (válidas apenas em bilhetes simples). */
+  freeBets?: { id: string; minAmount: number; maxAmount: number }[];
+  freeBetId?: string | null;
+  onFreeBet?: (id: string | null) => void;
 };
 
 export function SlipPanel({
@@ -46,11 +50,17 @@ export function SlipPanel({
   onClear,
   onSubmit,
   className,
+  freeBets = [],
+  freeBetId = null,
+  onFreeBet,
 }: Props) {
   const odds = totalOdds(selections);
   const payout = Math.min(stake * odds, SLIP_LIMITS.maxPayout);
   const capped = stake * odds > SLIP_LIMITS.maxPayout;
   const multiple = selections.length > 1;
+  const freeBet = freeBets[0] ?? null;
+  const freeBetAvailable = Boolean(freeBet) && !multiple;
+  const usingFreeBet = Boolean(freeBetId) && freeBetAvailable;
 
   return (
     <div className={cn("flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm", className)}>
@@ -161,6 +171,38 @@ export function SlipPanel({
             </Button>
           ))}
         </div>
+
+        {freeBetAvailable && freeBet && (
+          <button
+            type="button"
+            aria-pressed={usingFreeBet}
+            onClick={() => {
+              const next = usingFreeBet ? null : freeBet.id;
+              onFreeBet?.(next);
+              if (next) onStake(Math.min(Math.max(stake, freeBet.minAmount), freeBet.maxAmount));
+            }}
+            className={cn(
+              "flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors",
+              usingFreeBet
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-dashed text-muted-foreground hover:bg-muted/60",
+            )}
+          >
+            <span>
+              Usar aposta grátis ({freeBets.length}) — {money(freeBet.minAmount)} a{" "}
+              {money(freeBet.maxAmount)} MZN
+            </span>
+            <span className="shrink-0 rounded-full bg-background px-2 py-0.5 font-mono">
+              {usingFreeBet ? "ON" : "OFF"}
+            </span>
+          </button>
+        )}
+
+        {usingFreeBet && (
+          <p className="text-[11px] text-muted-foreground">
+            Com aposta grátis recebes apenas o lucro, sem o valor apostado.
+          </p>
+        )}
 
         <div className="space-y-1.5 rounded-xl bg-muted/60 p-3 text-sm">
           <div className="flex items-center justify-between gap-2">
