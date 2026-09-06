@@ -79,11 +79,21 @@ async function call<T>(path: string, params: Record<string, string>): Promise<T>
   return (body?.response ?? ([] as unknown)) as T;
 }
 
-function currentSeason(): number {
-  const now = new Date();
-  // época europeia começa em agosto
-  return now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+/** Datas UTC (YYYY-MM-DD) a cobrir, a partir de hoje. */
+function upcomingDates(days: number): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < days; i += 1) {
+    const d = new Date(Date.now() + i * 86_400_000);
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
 }
+
+/** Jogos de um dia (endpoint disponível em qualquer plano). */
+async function fixturesByDate(date: string): Promise<ApiFixture[]> {
+  return call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+}
+
 
 function clampPrice(price: number): number | null {
   if (!Number.isFinite(price)) return null;
