@@ -89,10 +89,17 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
           request.headers.get("x-netshop-signature") ??
           request.headers.get("x-signature") ??
           request.headers.get("x-webhook-signature");
+        const timestamp =
+          request.headers.get("x-netshop-timestamp") ?? request.headers.get("x-timestamp");
 
-        if (!verifySignature(rawBody, signature, secret)) {
+        if (!verifySignature(rawBody, signature, secret, timestamp)) {
+          console.error(
+            "netshop webhook signature mismatch; headers:",
+            [...request.headers.keys()].join(","),
+          );
           return Response.json({ error: "invalid_signature" }, { status: 401 });
         }
+
 
         let body: unknown;
         try {
