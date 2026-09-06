@@ -19,6 +19,7 @@ export function BetPad({
   onCashout,
   autoPlay,
   autoPlayRounds,
+  autoPlayRemaining,
   onAutoPlayRounds,
   autoCashout,
   autoCashoutValue,
@@ -39,8 +40,9 @@ export function BetPad({
   onPlace?: () => void;
   onCashout?: () => void;
   autoPlay?: boolean;
-  autoPlayRounds?: number;
-  onAutoPlayRounds?: (next: number) => void;
+  autoPlayRounds?: string;
+  autoPlayRemaining?: number;
+  onAutoPlayRounds?: (next: string) => void;
   autoCashout?: boolean;
   autoCashoutValue?: string;
   onToggleAutoPlay?: () => void;
@@ -54,7 +56,7 @@ export function BetPad({
   const actionDisabled = mode === "cashout" ? Boolean(busy) : locked || Boolean(busy);
 
   return (
-    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-sm">
       <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-bet-foreground">
           {title ?? "Aposta"}
@@ -148,16 +150,14 @@ export function BetPad({
             className={`h-7 min-w-0 flex-1 justify-center gap-1 px-1 text-[10px] font-semibold hover:bg-transparent disabled:opacity-40 ${autoPlay ? "text-bet-green-foreground" : "text-bet-ghost-foreground"}`}
           >
             <CirclePlay className="size-4 shrink-0" />
-            <span className="truncate">{autoPlay ? `Auto (${autoPlayRounds})` : "Jogo Auto."}</span>
+            <span className="truncate">{autoPlay ? `Auto (${autoPlayRemaining ?? 0})` : "Jogo Auto."}</span>
           </Button>
           {!autoPlay && (
             <input
-              type="number"
-              min="1"
-              max="100"
+              inputMode="numeric"
               aria-label="Rondas automáticas"
-              value={autoPlayRounds ?? 10}
-              onChange={(e) => onAutoPlayRounds?.(Math.max(1, parseInt(e.target.value) || 1))}
+              value={autoPlayRounds ?? "5"}
+              onChange={(event) => onAutoPlayRounds?.(event.target.value)}
               className="h-6 w-8 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
             />
           )}
@@ -179,6 +179,7 @@ export function BetPad({
               inputMode="decimal"
               aria-label="Multiplicador"
               value={autoCashoutValue ?? "2.00"}
+              disabled={locked}
               onChange={(e) => onAutoCashoutValue?.(e.target.value)}
               className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
             />
