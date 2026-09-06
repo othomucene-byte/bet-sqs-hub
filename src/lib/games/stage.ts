@@ -131,11 +131,16 @@ export function startStage(
   let previous: StageStatus | null = null;
   let raf = 0;
 
-  /** Progresso 0..1 da curva em função do multiplicador (escala logarítmica). */
+  /**
+   * Progresso 0..1 da curva. Curva assintótica: nunca atinge o limite do palco,
+   * por isso o voo continua a avançar suavemente enquanto o multiplicador sobe.
+   */
   const progressFor = (m: number) => {
-    const p = Math.log(Math.max(1, m)) / Math.log(50);
-    return Math.min(0.92, Math.pow(Math.min(1, p), 0.9) * 0.92);
+    const l = Math.log(Math.max(1, m));
+    const p = l / (l + Math.log(6));
+    return Math.min(0.88, p * 0.9);
   };
+
 
   const geometry = () => {
     const padX = Math.max(52, width * 0.09);
