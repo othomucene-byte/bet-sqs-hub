@@ -214,7 +214,9 @@ function TransactionForm({
 
       if (!result.ok) {
         const base = ERROR_LABEL[result.error] ?? "Operação recusada.";
-        toast.error(result.message ? `${base} (${result.message})` : base);
+        const reason = providerReason(result.message);
+        toast.error(reason ? `${base} ${reason}` : base);
+
         return;
       }
 
