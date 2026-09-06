@@ -59,10 +59,16 @@ const WALLET_ENV: Record<Method, string> = {
 };
 
 function walletIdFor(method: Method): string | null {
-  return process.env[WALLET_ENV[method]] || process.env["NETSHOP_WALLET_ID"] || null;
+  const own = process.env[WALLET_ENV[method]];
+  if (own) return own;
+  // Com wallets específicas configuradas, um método sem a sua wallet fica
+  // indisponível — reutilizar a wallet de outro método faz a API recusar.
+  if (Object.values(WALLET_ENV).some((name) => Boolean(process.env[name]))) return null;
+  return process.env["NETSHOP_WALLET_ID"] || null;
 }
 
 /** Método utilizável = wallet própria (ou fallback) + API key + webhook secret. */
+
 function isMethodConfigured(method: Method): boolean {
   return Boolean(
     walletIdFor(method) &&
