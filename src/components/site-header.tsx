@@ -16,6 +16,8 @@ import {
   Plane,
   ShieldCheck,
   ShieldHalf,
+  Ticket,
+  Trophy,
   UserRound,
   Wallet,
 } from "lucide-react";
@@ -76,8 +78,10 @@ const memberGroups: NavGroup[] = [
     ],
   },
   {
-    title: "Jogos",
+    title: "Apostas",
     links: [
+      { href: "/desportos", label: "Desportos", icon: Trophy },
+      { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
       { href: "/crash", label: "Aviator", icon: Plane },
       { href: "/fish", label: "Fish Crash", icon: Fish },
     ],
