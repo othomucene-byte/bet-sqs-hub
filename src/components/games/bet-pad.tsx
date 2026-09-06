@@ -54,7 +54,7 @@ export function BetPad({
   const actionDisabled = mode === "cashout" ? Boolean(busy) : locked || Boolean(busy);
 
   return (
-    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-[0 dream-shadow]">
+    <section className="rounded-2xl border border-bet-line bg-bet-panel p-2 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
       <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-bet-foreground">
           {title ?? "Aposta"}
@@ -152,7 +152,9 @@ export function BetPad({
           </Button>
           {!autoPlay && (
             <input
-              inputMode="numeric"
+              type="number"
+              min="1"
+              max="100"
               aria-label="Rondas automáticas"
               value={autoPlayRounds ?? 10}
               onChange={(e) => onAutoPlayRounds?.(Math.max(1, parseInt(e.target.value) || 1))}
