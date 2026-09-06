@@ -182,7 +182,7 @@ export async function createCharge(input: {
   returnUrl?: string;
   metadata?: Json;
 }): Promise<NetshopResult> {
-  return request("POST", "/charges", {
+  const result = await request("POST", "/charges", {
     walletMethod: input.method,
     idempotencyKey: input.reference,
     body: {
@@ -195,7 +195,17 @@ export async function createCharge(input: {
       ...(input.metadata ? { metadata: input.metadata } : {}),
     },
   });
+
+  // Recusas imediatas do operador vêm sem motivo no POST; o GET já expõe
+  // `failed_reason` / `provider.responseDesc`. Buscamos para explicar ao cliente.
+  if (!result.ok && !result.message && result.httpStatus > 0) {
+    const detail = await getCharge(input.reference, input.method);
+    if (detail.ok && detail.message) return { ...result, message: detail.message };
+    if (!detail.ok && detail.message) return { ...result, message: detail.message };
+  }
+  return result;
 }
+
 
 /** Payout B2C (levantamento) — apenas M-Pesa e e-Mola. */
 export async function createPayout(input: {
