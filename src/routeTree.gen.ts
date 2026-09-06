@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DesportosRouteImport } from './routes/desportos'
 import { Route as EmpresasRouteImport } from './routes/empresas'
 import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
@@ -40,6 +41,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesportosRoute = DesportosRouteImport.update({
+  id: '/desportos',
+  path: '/desportos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpresasRoute = EmpresasRouteImport.update({
@@ -127,6 +133,7 @@ const ApiPublicWebhooksNetshopRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DesportosRoute: typeof DesportosRoute
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
@@ -276,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desportos': {
+      id: '/desportos'
+      path: '/desportos'
+      fullPath: '/desportos'
+      preLoaderRoute: typeof DesportosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empresas': {
@@ -420,6 +440,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DesportosRoute: DesportosRoute,
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
