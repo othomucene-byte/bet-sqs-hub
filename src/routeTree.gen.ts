@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DesportosRouteImport } from './routes/desportos'
 import { Route as EmpresasRouteImport } from './routes/empresas'
 import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
+import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -39,6 +41,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesportosRoute = DesportosRouteImport.update({
+  id: '/desportos',
+  path: '/desportos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpresasRoute = EmpresasRouteImport.update({
@@ -111,6 +118,11 @@ const AuthenticatedInvestidorRendimentosRoute =
     path: '/investidor/rendimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
+  id: '/api/public/cron/sports-sync',
+  path: '/api/public/cron/sports-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -121,6 +133,7 @@ const ApiPublicWebhooksNetshopRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -134,11 +147,13 @@ export interface FileRoutesByFullPath {
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -152,6 +167,7 @@ export interface FileRoutesByTo {
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRoutesById {
@@ -159,6 +175,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
@@ -172,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
+  '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +197,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -192,11 +211,13 @@ export interface FileRouteTypes {
     | '/investidor/ordens'
     | '/investidor/rendimentos'
     | '/investidor/'
+    | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -210,12 +231,14 @@ export interface FileRouteTypes {
     | '/investidor/ordens'
     | '/investidor/rendimentos'
     | '/investidor'
+    | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/desportos'
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
@@ -229,6 +252,7 @@ export interface FileRouteTypes {
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
     | '/_authenticated/investidor/'
+    | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
 }
@@ -236,9 +260,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DesportosRoute: typeof DesportosRoute
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
+  ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
 }
 
@@ -263,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desportos': {
+      id: '/desportos'
+      path: '/desportos'
+      fullPath: '/desportos'
+      preLoaderRoute: typeof DesportosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empresas': {
@@ -356,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/cron/sports-sync': {
+      id: '/api/public/cron/sports-sync'
+      path: '/api/public/cron/sports-sync'
+      fullPath: '/api/public/cron/sports-sync'
+      preLoaderRoute: typeof ApiPublicCronSportsSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -400,9 +440,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DesportosRoute: DesportosRoute,
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
+  ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
 }
 export const routeTree = rootRouteImport
