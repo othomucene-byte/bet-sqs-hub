@@ -293,7 +293,9 @@ export async function syncSportsCatalog(): Promise<{
     // Cotações por jogo. Sem cotações do fornecedor o jogo fica visível sem
     // botões de aposta — nunca com cotações inventadas.
     if (oddsCalls >= MAX_ODDS_CALLS) continue;
+    if (oddsCalls > 0) await sleep(7000); // limite de 10 pedidos/minuto no plano gratuito
     oddsCalls += 1;
+
     let oddsEntries: ApiOddsFixture[] = [];
     try {
       oddsEntries = await call<ApiOddsFixture[]>("/odds", {
