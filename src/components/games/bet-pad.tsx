@@ -163,39 +163,38 @@ export function BetPad({
           )}
         </div>
         
-        {autoCashout ? (
-          <div className="flex h-8 min-w-0 items-center gap-1 rounded-full border border-bet-amber bg-bet-amber px-1">
-            <Button
-              variant="ghost"
-              type="button"
-              disabled={locked}
-              onClick={onToggleAutoCashout}
-              aria-pressed
-              className="h-7 min-w-0 flex-1 truncate px-1 text-[10px] font-semibold text-bet-surface hover:bg-transparent"
-            >
-              Auto Cashout
-            </Button>
+        <div
+          className={`flex h-8 min-w-0 items-center gap-1 rounded-full border px-1 ${autoCashout ? "border-bet-amber bg-bet-amber" : "border-bet-line bg-bet-ghost"}`}
+        >
+          <span
+            className={`min-w-0 flex-1 truncate px-1 text-[10px] font-semibold ${autoCashout ? "text-bet-surface" : "text-bet-ghost-foreground"}`}
+          >
+            Cash Out
+          </span>
+          {autoCashout && (
             <input
               inputMode="decimal"
-              aria-label="Multiplicador"
+              aria-label="Multiplicador de cash out automático"
               value={autoCashoutValue ?? "2.00"}
               disabled={locked}
               onChange={(e) => onAutoCashoutValue?.(e.target.value)}
-              className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none"
+              className="h-6 w-10 shrink-0 rounded-full border border-bet-line bg-bet-pill px-0.5 text-center text-[10px] font-bold text-bet-foreground outline-none disabled:opacity-50"
             />
-          </div>
-        ) : (
+          )}
           <Button
             variant="ghost"
+            size="icon"
             type="button"
             disabled={locked}
             onClick={onToggleAutoCashout}
-            aria-pressed={false}
-            className="h-8 min-w-0 rounded-full border border-bet-line bg-bet-ghost px-1.5 text-[10px] font-semibold text-bet-ghost-foreground hover:bg-bet-ghost disabled:opacity-40"
+            aria-pressed={Boolean(autoCashout)}
+            aria-label={autoCashout ? "Desativar cash out automático" : "Ativar cash out automático"}
+            className={`size-6 shrink-0 rounded-full border text-[8px] font-black hover:bg-transparent disabled:opacity-40 ${autoCashout ? "border-bet-surface/40 bg-bet-surface text-bet-amber" : "border-bet-line bg-bet-pill text-bet-muted"}`}
           >
-            Auto Cashout
+            {autoCashout ? "ON" : "OFF"}
           </Button>
-        )}
+        </div>
+
       </div>
     </section>
   );
