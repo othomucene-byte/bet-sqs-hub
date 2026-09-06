@@ -345,18 +345,29 @@ export async function syncSportsResults(): Promise<{
     .in("status", ["scheduled", "live", "closed"])
     .lt("commence_at", new Date().toISOString());
 
+  // Uma chamada por dia (o plano gratuito não permite consultar por id/next)
+  const byProvider = new Map<string, ApiFixture>();
+  const dates = new Set(
+    (pending ?? []).map((event) =>
+      new Date(event.commence_at as string).toISOString().slice(0, 10),
+    ),
+  );
+  for (const date of dates) {
+    try {
+      for (const fixture of await fixturesByDate(date)) {
+        byProvider.set(String(fixture.fixture.id), fixture);
+      }
+    } catch (error) {
+      errors.push(`resultados de ${date}: ${(error as Error).message}`);
+    }
+  }
+
   for (const event of pending ?? []) {
     const startedAgoHours =
       (Date.now() - new Date(event.commence_at as string).getTime()) / 3_600_000;
 
-    let fixtures: ApiFixture[] = [];
-    try {
-      fixtures = await call<ApiFixture[]>("/fixtures", { id: event.provider_event_id });
-    } catch (error) {
-      errors.push(`resultado ${event.provider_event_id}: ${(error as Error).message}`);
-      continue;
-    }
-    const fixture = fixtures[0];
+    const fixture = byProvider.get(String(event.provider_event_id));
+
 
     if (!fixture) {
       if (startedAgoHours > 48) {
