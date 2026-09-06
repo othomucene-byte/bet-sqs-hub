@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { SlipPanel, type SlipSelection } from "@/components/sports/slip-panel";
+import { SlipPanel, totalOdds, type SlipSelection } from "@/components/sports/slip-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
