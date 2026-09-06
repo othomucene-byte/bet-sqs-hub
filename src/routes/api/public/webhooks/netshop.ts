@@ -201,6 +201,15 @@ export const Route = createFileRoute("/api/public/webhooks/netshop")({
             console.error("netshop webhook ledger error", error.message);
             return Response.json({ error: "ledger_error" }, { status: 500 });
           }
+
+          // Bónus do primeiro depósito: idempotente e uma única vez por utilizador.
+          const { error: bonusError } = await supabaseAdmin.rpc("grant_first_deposit_bonus", {
+            _user_id: intent.user_id as string,
+            _payment_reference: reference,
+          });
+          if (bonusError) {
+            console.error("netshop webhook bonus error", bonusError.message);
+          }
         }
 
         await supabaseAdmin
