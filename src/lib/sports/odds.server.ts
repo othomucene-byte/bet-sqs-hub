@@ -19,9 +19,22 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
   { id: 2, name: "Liga dos Campeões", region: "UEFA" },
   { id: 94, name: "Primeira Liga", region: "Portugal" },
   { id: 78, name: "Bundesliga", region: "Alemanha" },
+  { id: 61, name: "Ligue 1", region: "França" },
+  { id: 71, name: "Brasileirão Série A", region: "Brasil" },
+  { id: 88, name: "Eredivisie", region: "Países Baixos" },
+  { id: 253, name: "Major League Soccer", region: "EUA" },
 ];
 
-const FIXTURES_PER_LEAGUE = 8;
+/** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
+const DAYS_AHEAD = 3;
+const MAX_EVENTS = 24;
+const MAX_ODDS_CALLS = 24;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
 
 export function oddsApiKey(): string | null {
   const key = process.env["API_FOOTBALL_KEY"];
@@ -71,11 +84,21 @@ async function call<T>(path: string, params: Record<string, string>): Promise<T>
   return (body?.response ?? ([] as unknown)) as T;
 }
 
-function currentSeason(): number {
-  const now = new Date();
-  // época europeia começa em agosto
-  return now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+/** Datas UTC (YYYY-MM-DD) a cobrir, a partir de hoje. */
+function upcomingDates(days: number): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < days; i += 1) {
+    const d = new Date(Date.now() + i * 86_400_000);
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
 }
+
+/** Jogos de um dia (endpoint disponível em qualquer plano). */
+async function fixturesByDate(date: string): Promise<ApiFixture[]> {
+  return call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+}
+
 
 function clampPrice(price: number): number | null {
   if (!Number.isFinite(price)) return null;
@@ -176,7 +199,6 @@ export async function syncSportsCatalog(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const errors: string[] = [];
-  const season = currentSeason();
 
   const { data: sportRow, error: sportError } = await supabaseAdmin
     .from("sports")
@@ -191,6 +213,8 @@ export async function syncSportsCatalog(): Promise<{
   let oddsCount = 0;
   let compCount = 0;
 
+  // Competições acompanhadas
+  const compIds = new Map<number, string>();
   for (const league of LEAGUES) {
     const { data: compRow, error: compError } = await supabaseAdmin
       .from("sport_competitions")
@@ -210,79 +234,101 @@ export async function syncSportsCatalog(): Promise<{
       errors.push(`competição ${league.name}: ${compError?.message ?? "falhou"}`);
       continue;
     }
+    compIds.set(league.id, compRow.id);
     compCount += 1;
+  }
 
+  // Jogos por dia (o parâmetro `date` está disponível em qualquer plano)
+  const selected: ApiFixture[] = [];
+  for (const date of upcomingDates(DAYS_AHEAD)) {
+    if (selected.length >= MAX_EVENTS) break;
     let fixtures: ApiFixture[] = [];
     try {
-      fixtures = await call<ApiFixture[]>("/fixtures", {
-        league: String(league.id),
-        season: String(season),
-        next: String(FIXTURES_PER_LEAGUE),
+      fixtures = await fixturesByDate(date);
+    } catch (error) {
+      errors.push(`jogos de ${date}: ${(error as Error).message}`);
+      continue;
+    }
+    for (const fixture of fixtures) {
+      if (selected.length >= MAX_EVENTS) break;
+      if (!compIds.has(fixture.league?.id)) continue;
+      if (fixture.fixture?.status?.short !== "NS") continue;
+      const commence = new Date(fixture.fixture.date);
+      if (Number.isNaN(commence.getTime()) || commence.getTime() <= Date.now()) continue;
+      selected.push(fixture);
+    }
+  }
+
+  selected.sort(
+    (a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
+  );
+
+  let oddsCalls = 0;
+
+  for (const fixture of selected) {
+    const compId = compIds.get(fixture.league.id);
+    if (!compId) continue;
+    const home = fixture.teams?.home?.name;
+    const away = fixture.teams?.away?.name;
+    if (!home || !away) continue;
+    const commence = new Date(fixture.fixture.date);
+
+    const { data: eventRow, error: eventError } = await supabaseAdmin
+      .from("sport_events")
+      .upsert(
+        {
+          competition_id: compId,
+          provider_event_id: String(fixture.fixture.id),
+          home_team: home,
+          away_team: away,
+          commence_at: commence.toISOString(),
+          status: "scheduled",
+          odds_updated_at: new Date().toISOString(),
+        },
+        { onConflict: "provider_event_id" },
+      )
+      .select("id, status")
+      .single();
+    if (eventError || !eventRow) {
+      errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
+      continue;
+    }
+    eventCount += 1;
+
+    // Cotações por jogo. Sem cotações do fornecedor o jogo fica visível sem
+    // botões de aposta — nunca com cotações inventadas.
+    if (oddsCalls >= MAX_ODDS_CALLS) continue;
+    if (oddsCalls > 0) await sleep(7000); // limite de 10 pedidos/minuto no plano gratuito
+    oddsCalls += 1;
+
+    let oddsEntries: ApiOddsFixture[] = [];
+    try {
+      oddsEntries = await call<ApiOddsFixture[]>("/odds", {
+        fixture: String(fixture.fixture.id),
       });
     } catch (error) {
-      errors.push(`jogos ${league.name}: ${(error as Error).message}`);
+      errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
       continue;
     }
 
-    for (const fixture of fixtures) {
-      const home = fixture.teams?.home?.name;
-      const away = fixture.teams?.away?.name;
-      if (!home || !away) continue;
-      const commence = new Date(fixture.fixture.date);
-      if (Number.isNaN(commence.getTime())) continue;
+    const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
+    await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
+    if (!rows.length) continue;
 
-      const { data: eventRow, error: eventError } = await supabaseAdmin
-        .from("sport_events")
-        .upsert(
-          {
-            competition_id: compRow.id,
-            provider_event_id: String(fixture.fixture.id),
-            home_team: home,
-            away_team: away,
-            commence_at: commence.toISOString(),
-            status: commence.getTime() <= Date.now() ? "live" : "scheduled",
-            odds_updated_at: new Date().toISOString(),
-          },
-          { onConflict: "provider_event_id" },
-        )
-        .select("id, status")
-        .single();
-      if (eventError || !eventRow) {
-        errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
-        continue;
-      }
-      eventCount += 1;
-
-      // Cotações por jogo (o plano gratuito pode não incluir odds — nesse caso
-      // o jogo fica visível sem botões de aposta, nunca com cotações inventadas)
-      let oddsEntries: ApiOddsFixture[] = [];
-      try {
-        oddsEntries = await call<ApiOddsFixture[]>("/odds", {
-          fixture: String(fixture.fixture.id),
-        });
-      } catch (error) {
-        errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
-        continue;
-      }
-
-      const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
-      await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
-      if (!rows.length) continue;
-
-      const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
-        rows.map((row) => ({
-          event_id: eventRow.id,
-          market: row.market,
-          selection: row.selection,
-          line: row.line,
-          price: row.price,
-          active: true,
-        })),
-      );
-      if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
-      else oddsCount += rows.length;
-    }
+    const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
+      rows.map((row) => ({
+        event_id: eventRow.id,
+        market: row.market,
+        selection: row.selection,
+        line: row.line,
+        price: row.price,
+        active: true,
+      })),
+    );
+    if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
+    else oddsCount += rows.length;
   }
+
 
   return { competitions: compCount, events: eventCount, odds: oddsCount, errors };
 }
@@ -306,18 +352,29 @@ export async function syncSportsResults(): Promise<{
     .in("status", ["scheduled", "live", "closed"])
     .lt("commence_at", new Date().toISOString());
 
+  // Uma chamada por dia (o plano gratuito não permite consultar por id/next)
+  const byProvider = new Map<string, ApiFixture>();
+  const dates = new Set(
+    (pending ?? []).map((event) =>
+      new Date(event.commence_at as string).toISOString().slice(0, 10),
+    ),
+  );
+  for (const date of dates) {
+    try {
+      for (const fixture of await fixturesByDate(date)) {
+        byProvider.set(String(fixture.fixture.id), fixture);
+      }
+    } catch (error) {
+      errors.push(`resultados de ${date}: ${(error as Error).message}`);
+    }
+  }
+
   for (const event of pending ?? []) {
     const startedAgoHours =
       (Date.now() - new Date(event.commence_at as string).getTime()) / 3_600_000;
 
-    let fixtures: ApiFixture[] = [];
-    try {
-      fixtures = await call<ApiFixture[]>("/fixtures", { id: event.provider_event_id });
-    } catch (error) {
-      errors.push(`resultado ${event.provider_event_id}: ${(error as Error).message}`);
-      continue;
-    }
-    const fixture = fixtures[0];
+    const fixture = byProvider.get(String(event.provider_event_id));
+
 
     if (!fixture) {
       if (startedAgoHours > 48) {
