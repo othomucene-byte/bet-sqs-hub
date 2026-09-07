@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { MARKET_NAMES, shortLabel, SLIP_LIMITS, type Market } from "@/lib/sports/markets";
+import { getBonusState } from "@/lib/promotions/promotions.functions";
 import {
   getSportsBoard,
   placeBetSlip,
@@ -108,11 +109,24 @@ function SportsPage() {
     [board.events, competition],
   );
 
+  const fetchBonus = useServerFn(getBonusState);
+  const bonusQuery = useQuery({
+    queryKey: ["bonus-state"],
+    queryFn: () => fetchBonus(),
+    enabled: signedIn,
+  });
+  const [freeBetId, setFreeBetId] = useState<string | null>(null);
+  const freeBets = bonusQuery.data?.freeBets ?? [];
+  const activeFreeBet =
+    selections.length === 1 ? (freeBets.find((item) => item.id === freeBetId) ?? null) : null;
+
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await submit({
         data: {
           stake,
+          funding: activeFreeBet ? ("free_bet" as const) : ("wallet" as const),
+          freeBetId: activeFreeBet?.id ?? null,
           idempotencyKey: crypto.randomUUID(),
           selections: selections.map((item) => ({
             eventId: item.eventId,
@@ -128,6 +142,8 @@ function SportsPage() {
     },
     onSuccess: (result) => {
       setSelections([]);
+      setFreeBetId(null);
+      void bonusQuery.refetch();
       setError(null);
       setSlipOpen(false);
       toast.success("Bilhete registado", { description: `Referência ${result.reference ?? "—"}` });
@@ -169,7 +185,13 @@ function SportsPage() {
       onRemove={(item) =>
         setSelections((current) => current.filter((entry) => keyOf(entry) !== keyOf(item)))
       }
-      onClear={() => setSelections([])}
+      onClear={() => {
+        setSelections([]);
+        setFreeBetId(null);
+      }}
+      freeBets={freeBets}
+      freeBetId={freeBetId}
+      onFreeBet={setFreeBetId}
       onSubmit={() => {
         if (!signedIn) {
           void navigate({ to: "/auth" });
