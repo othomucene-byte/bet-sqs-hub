@@ -31,12 +31,24 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
 const DAYS_AHEAD = 3;
-const MAX_EVENTS = 24;
-const MAX_ODDS_CALLS = 24;
+const MAX_EVENTS = 60;
+/** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
+const MAX_ODDS_CALLS = 6;
+const ODDS_SPACING_MS = 1200;
+/** Orçamento de tempo por execução (o servidor tem limite por pedido). */
+const TIME_BUDGET_MS = 25_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Cache curta dos jogos por dia: catálogo e resultados correm na mesma
+ * execução e assim não gastam o pedido duas vezes.
+ */
+const fixtureCache = new Map<string, { at: number; rows: ApiFixture[] }>();
+const FIXTURE_TTL_MS = 120_000;
+
 
 
 
