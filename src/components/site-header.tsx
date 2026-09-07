@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRouter } from "@tanstack/react-router";
 import {
+  Gift,
   Banknote,
   Bell,
   Building2,
@@ -84,6 +85,7 @@ const memberGroups: NavGroup[] = [
       { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
       { href: "/crash", label: "Aviator", icon: Plane },
       { href: "/fish", label: "Fish Crash", icon: Fish },
+      { href: "/promocoes", label: "Promoções", icon: Gift },
     ],
   },
   {
