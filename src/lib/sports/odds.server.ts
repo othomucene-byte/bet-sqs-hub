@@ -110,10 +110,15 @@ function upcomingDates(days: number): string[] {
   return out;
 }
 
-/** Jogos de um dia (endpoint disponível em qualquer plano). */
+/** Jogos de um dia (endpoint disponível em qualquer plano), com cache curta. */
 async function fixturesByDate(date: string): Promise<ApiFixture[]> {
-  return call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+  const cached = fixtureCache.get(date);
+  if (cached && Date.now() - cached.at < FIXTURE_TTL_MS) return cached.rows;
+  const rows = await call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+  fixtureCache.set(date, { at: Date.now(), rows });
+  return rows;
 }
+
 
 
 function clampPrice(price: number): number | null {
