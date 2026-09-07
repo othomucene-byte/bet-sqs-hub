@@ -23,6 +23,7 @@ import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
+import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
@@ -101,6 +102,11 @@ const AuthenticatedNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
+  id: '/promocoes',
+  path: '/promocoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInvestidorIndexRoute =
   AuthenticatedInvestidorIndexRouteImport.update({
     id: '/investidor/',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/promocoes': typeof AuthenticatedPromocoesRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/promocoes': typeof AuthenticatedPromocoesRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/fish'
     | '/kyc'
     | '/notificacoes'
+    | '/promocoes'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/fish'
     | '/kyc'
     | '/notificacoes'
+    | '/promocoes'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
     | '/_authenticated/notificacoes'
+    | '/_authenticated/promocoes'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
@@ -394,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/promocoes': {
+      id: '/_authenticated/promocoes'
+      path: '/promocoes'
+      fullPath: '/promocoes'
+      preLoaderRoute: typeof AuthenticatedPromocoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/investidor/': {
       id: '/_authenticated/investidor/'
       path: '/investidor'
@@ -454,6 +473,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
+  AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
   AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
   AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
@@ -468,6 +488,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
+  AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
   AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
   AuthenticatedInvestidorRendimentosRoute:
