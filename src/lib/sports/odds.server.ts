@@ -31,12 +31,24 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
 const DAYS_AHEAD = 3;
-const MAX_EVENTS = 24;
-const MAX_ODDS_CALLS = 24;
+const MAX_EVENTS = 60;
+/** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
+const MAX_ODDS_CALLS = 6;
+const ODDS_SPACING_MS = 1200;
+/** Orçamento de tempo por execução (o servidor tem limite por pedido). */
+const TIME_BUDGET_MS = 25_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Cache curta dos jogos por dia: catálogo e resultados correm na mesma
+ * execução e assim não gastam o pedido duas vezes.
+ */
+const fixtureCache = new Map<string, { at: number; rows: ApiFixture[] }>();
+const FIXTURE_TTL_MS = 120_000;
+
 
 
 
@@ -98,10 +110,15 @@ function upcomingDates(days: number): string[] {
   return out;
 }
 
-/** Jogos de um dia (endpoint disponível em qualquer plano). */
+/** Jogos de um dia (endpoint disponível em qualquer plano), com cache curta. */
 async function fixturesByDate(date: string): Promise<ApiFixture[]> {
-  return call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+  const cached = fixtureCache.get(date);
+  if (cached && Date.now() - cached.at < FIXTURE_TTL_MS) return cached.rows;
+  const rows = await call<ApiFixture[]>("/fixtures", { date, timezone: "UTC" });
+  fixtureCache.set(date, { at: Date.now(), rows });
+  return rows;
 }
+
 
 
 function clampPrice(price: number): number | null {
@@ -277,51 +294,65 @@ export async function syncSportsCatalog(): Promise<{
     if (!home || !away) continue;
     const commence = new Date(fixture.fixture.date);
 
-    const { data: eventRow, error: eventError } = await supabaseAdmin
-      .from("sport_events")
-      .upsert(
-        {
-          competition_id: compId,
-          provider_event_id: String(fixture.fixture.id),
-          home_team: home,
-          away_team: away,
-          commence_at: commence.toISOString(),
-          status: "scheduled",
-          odds_updated_at: new Date().toISOString(),
-        },
-        { onConflict: "provider_event_id" },
-      )
-      .select("id, status")
-      .single();
-    if (eventError || !eventRow) {
-      errors.push(`jogo ${fixture.fixture.id}: ${eventError?.message ?? "falhou"}`);
+    const { error: eventError } = await supabaseAdmin.from("sport_events").upsert(
+      {
+        competition_id: compId,
+        provider_event_id: String(fixture.fixture.id),
+        home_team: home,
+        away_team: away,
+        commence_at: commence.toISOString(),
+        status: "scheduled",
+        // `odds_updated_at` fica como está: é a marca de quando as cotações
+        // foram realmente buscadas e serve para escolher o próximo lote.
+      },
+      { onConflict: "provider_event_id" },
+    );
+    if (eventError) {
+      errors.push(`jogo ${fixture.fixture.id}: ${eventError.message}`);
       continue;
     }
     eventCount += 1;
+  }
 
-    // Cotações por jogo. Sem cotações do fornecedor o jogo fica visível sem
-    // botões de aposta — nunca com cotações inventadas.
-    if (oddsCalls >= MAX_ODDS_CALLS) continue;
-    if (oddsCalls > 0) await sleep(7000); // limite de 10 pedidos/minuto no plano gratuito
+  // Cotações: lote pequeno, dos jogos há mais tempo sem atualização.
+  // O fornecedor só aceita 10 pedidos por minuto, por isso nunca pedimos
+  // tudo de uma vez — cada execução completa uma parte.
+  const { data: staleEvents } = await supabaseAdmin
+    .from("sport_events")
+    .select("id, provider_event_id, odds_updated_at")
+    .eq("status", "scheduled")
+    .gt("commence_at", new Date().toISOString())
+    .order("odds_updated_at", { ascending: true, nullsFirst: true })
+    .limit(MAX_ODDS_CALLS);
+
+  let oddsCalls = 0;
+  for (const event of staleEvents ?? []) {
+    if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+    if (oddsCalls >= MAX_ODDS_CALLS) break;
+    if (oddsCalls > 0) await sleep(ODDS_SPACING_MS);
     oddsCalls += 1;
 
     let oddsEntries: ApiOddsFixture[] = [];
     try {
       oddsEntries = await call<ApiOddsFixture[]>("/odds", {
-        fixture: String(fixture.fixture.id),
+        fixture: String(event.provider_event_id),
       });
     } catch (error) {
-      errors.push(`cotações ${fixture.fixture.id}: ${(error as Error).message}`);
+      errors.push(`cotações ${event.provider_event_id}: ${(error as Error).message}`);
       continue;
     }
 
     const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
-    await supabaseAdmin.from("sport_odds").delete().eq("event_id", eventRow.id);
+    await supabaseAdmin
+      .from("sport_events")
+      .update({ odds_updated_at: new Date().toISOString() })
+      .eq("id", event.id);
+    await supabaseAdmin.from("sport_odds").delete().eq("event_id", event.id);
     if (!rows.length) continue;
 
     const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
       rows.map((row) => ({
-        event_id: eventRow.id,
+        event_id: event.id,
         market: row.market,
         selection: row.selection,
         line: row.line,
@@ -329,13 +360,13 @@ export async function syncSportsCatalog(): Promise<{
         active: true,
       })),
     );
-    if (oddsError) errors.push(`cotações do jogo ${fixture.fixture.id}: ${oddsError.message}`);
+    if (oddsError) errors.push(`cotações do jogo ${event.provider_event_id}: ${oddsError.message}`);
     else oddsCount += rows.length;
   }
 
-
   return { competitions: compCount, events: eventCount, odds: oddsCount, errors };
 }
+
 
 /** Busca resultados finais e liquida jogos e bilhetes no servidor. */
 export async function syncSportsResults(): Promise<{
