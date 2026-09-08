@@ -217,6 +217,34 @@ function SportsPage() {
 
   const selectedKeys = new Set(selections.map(keyOf));
 
+  function oddButton(event: SportEvent, market: Market, odd: SportEvent["odds"][number]) {
+    const key = keyOf({
+      eventId: event.id,
+      market,
+      selection: odd.selection,
+      line: odd.line,
+    });
+    const active = selectedKeys.has(key);
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => toggle(event, market, odd.selection, odd.line, odd.price)}
+        className={`flex min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 transition-colors ${
+          active
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border/60 bg-muted/40 hover:bg-muted active:bg-muted"
+        }`}
+      >
+        <span className="w-full truncate text-center text-[11px] opacity-80">
+          {shortLabel(market, odd.selection, odd.line)}
+        </span>
+        <span className="font-mono text-sm font-bold">{odd.price.toFixed(2)}</span>
+      </button>
+    );
+  }
+
+
   const slip = (
     <SlipPanel
       selections={selections}
