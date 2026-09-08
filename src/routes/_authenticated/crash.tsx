@@ -147,7 +147,9 @@ function CrashPage() {
     round?.serverNow ?? null,
     round?.multiplier ?? 1,
     round?.crashMultiplier ?? null,
+    round?.phaseMsRemaining ?? 0,
   );
+
 
   useCrashAudio(status, displayMultiplier, round?.phaseMsRemaining ?? 0);
 
