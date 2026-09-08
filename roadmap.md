@@ -1,4 +1,4 @@
 # Roadmap
 
-- [ ] Desportos: sincronização em lotes pequenos (tempo + 10 pedidos/min do fornecedor) — em curso
-- [ ] Aviator/Fish: o multiplicador deve parar exatamente no valor do crash (não continuar até x5 depois de a ronda terminar)
+- [x] Desportos: sincronização em lotes pequenos (tempo + 10 pedidos/min do fornecedor); 2 dias de jogos (limite do plano gratuito)
+- [x] Aviator/Fish: o multiplicador congela no instante exato do fim da ronda
