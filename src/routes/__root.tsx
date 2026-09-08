@@ -88,6 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Betfcom SQs" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "nzze_GuDzrvvs724mcQSB_sllbUiRR_KwJKIhbHYCUc" },
     ],
     links: [
       {
