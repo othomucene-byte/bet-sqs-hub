@@ -286,7 +286,6 @@ export async function syncSportsCatalog(): Promise<{
     (a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
   );
 
-  let oddsCalls = 0;
 
   for (const fixture of selected) {
     const compId = compIds.get(fixture.league.id);
