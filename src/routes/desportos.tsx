@@ -12,12 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import { supabase } from "@/integrations/supabase/client";
 import { MARKET_NAMES, shortLabel, SLIP_LIMITS, type Market } from "@/lib/sports/markets";
 import { getBonusState } from "@/lib/promotions/promotions.functions";
