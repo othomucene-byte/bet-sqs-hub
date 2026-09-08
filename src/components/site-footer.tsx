@@ -45,7 +45,7 @@ export function SiteFooter() {
 
       <div className="border-t border-border/60 px-4 py-6">
         <p className="mx-auto max-w-6xl text-xs text-muted-foreground">
-          BETFCOM SQs não apresenta retornos garantidos. Investir envolve risco de perda de capital.
+          Betfcom SQs não apresenta retornos garantidos. Investir envolve risco de perda de capital.
           Apostas destinam-se a maiores de 18 anos. Jogue com responsabilidade.
         </p>
       </div>

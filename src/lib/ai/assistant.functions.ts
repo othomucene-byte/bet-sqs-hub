@@ -10,7 +10,7 @@ const ChatInput = z.object({
   messages: z.array(MessageSchema).min(1).max(30),
 });
 
-const SYSTEM_PROMPT = `És o assistente da BETFCOM SQs, uma plataforma moçambicana com dois produtos:
+const SYSTEM_PROMPT = `És o assistente da Betfcom SQs, uma plataforma moçambicana com dois produtos:
 - SQs Investimentos: produtos de investimento em empresas moçambicanas, carteira, ordens, rendimentos e resgates.
 - SQs Apostas: jogos crash (Aviator e Fish Crash) e carteira de apostas separada da carteira de investimentos.
 Ambos assentam na SQs Core Platform: contas, KYC, carteira, pagamentos (NetShop: M-Pesa, e-Mola, mKesh, Visa/Mastercard), ledger imutável e backoffice.

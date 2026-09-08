@@ -25,13 +25,13 @@ export const Route = createFileRoute("/empresas")({
   notFoundComponent: () => <p className="p-8">Página não encontrada.</p>,
   head: () => ({
     meta: [
-      { title: "Empresas na BETFCOM SQs — perfis e candidaturas" },
+      { title: "Empresas na Betfcom SQs — perfis e candidaturas" },
       {
         name: "description",
         content:
-          "Empresas moçambicanas com perfil na BETFCOM SQs e formulário real de candidatura para empresas que procuram financiamento.",
+          "Empresas moçambicanas com perfil na Betfcom SQs e formulário real de candidatura para empresas que procuram financiamento.",
       },
-      { property: "og:title", content: "Empresas na BETFCOM SQs" },
+      { property: "og:title", content: "Empresas na Betfcom SQs" },
       {
         property: "og:description",
         content: "Perfis de empresas moçambicanas e submissão de candidatura com estado acompanhado.",

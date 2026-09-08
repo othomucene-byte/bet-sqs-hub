@@ -35,13 +35,13 @@ import { runKycReview, type KycReviewOutcome } from "@/lib/investments/kyc-revie
 export const Route = createFileRoute("/_authenticated/kyc")({
   head: () => ({
     meta: [
-      { title: "Verificação de identidade (KYC) — BETFCOM SQs" },
+      { title: "Verificação de identidade (KYC) — Betfcom SQs" },
       {
         name: "description",
         content:
           "Submete os teus dados e documentos para verificação de identidade. A aprovação do KYC é obrigatória antes de subscrever produtos de investimento.",
       },
-      { property: "og:title", content: "Verificação de identidade — BETFCOM SQs" },
+      { property: "og:title", content: "Verificação de identidade — Betfcom SQs" },
       {
         property: "og:description",
         content: "Dados e documentos revistos pelo backoffice antes de qualquer subscrição.",

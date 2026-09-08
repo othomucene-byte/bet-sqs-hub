@@ -80,13 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BETFCOM SQs" },
+      { title: "Betfcom SQs" },
       {
         name: "description",
-        content: "Plataforma modular de investimentos e apostas BETFCOM SQs.",
+        content: "Plataforma modular de investimentos e apostas Betfcom SQs.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "BETFCOM SQs" },
+      { property: "og:site_name", content: "Betfcom SQs" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -109,13 +109,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "BETFCOM SQs",
-          alternateName: ["BETFCOM", "Betfcom SQs"],
+          name: "Betfcom SQs",
+          alternateName: ["Betfcom", "Betfcom SQs"],
           url: "https://betfcom.com",
           logo: "https://betfcom.com/apple-touch-icon.png",
           image: "https://betfcom.com/og-image.jpg",
           description:
-            "BETFCOM SQs — plataforma de investimentos e apostas em Moçambique, com carteiras separadas, KYC e registo completo de movimentos.",
+            "Betfcom SQs — plataforma de investimentos e apostas em Moçambique, com carteiras separadas, KYC e registo completo de movimentos.",
           areaServed: "MZ",
         }),
       },

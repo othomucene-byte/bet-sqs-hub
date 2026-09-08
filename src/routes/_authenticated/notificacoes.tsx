@@ -14,13 +14,13 @@ import { listNotifications, markNotificationsRead } from "@/lib/investments/port
 export const Route = createFileRoute("/_authenticated/notificacoes")({
   head: () => ({
     meta: [
-      { title: "Notificações — BETFCOM SQs" },
+      { title: "Notificações — Betfcom SQs" },
       {
         name: "description",
         content:
           "Avisos sobre investimentos, pagamentos e verificação de identidade, gerados no servidor a cada operação registada.",
       },
-      { property: "og:title", content: "Notificações — BETFCOM SQs" },
+      { property: "og:title", content: "Notificações — Betfcom SQs" },
       {
         property: "og:description",
         content: "Cada operação relevante gera um aviso associado à tua conta.",

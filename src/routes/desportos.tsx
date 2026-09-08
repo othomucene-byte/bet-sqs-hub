@@ -53,7 +53,7 @@ export const Route = createFileRoute("/desportos")({
         content:
           "Jogos e cotações atualizadas de futebol e outros desportos em meticais: resultado final, dupla chance e mais/menos golos, com bilhetes simples e múltiplos validados no servidor.",
       },
-      { property: "og:title", content: "SQs Apostas Desportivas — BETFCOM SQs" },
+      { property: "og:title", content: "SQs Apostas Desportivas — Betfcom SQs" },
       {
         property: "og:description",
         content:

@@ -29,13 +29,13 @@ import { getWallet } from "@/lib/wallet/wallet.functions";
 export const Route = createFileRoute("/_authenticated/crash")({
   head: () => ({
     meta: [
-      { title: "Aviator Crash BETFCOM SQs — jogo verificável em meticais" },
+      { title: "Aviator Crash Betfcom SQs — jogo verificável em meticais" },
       {
         name: "description",
         content:
           "Ronda de Crash com resultado gerado no servidor, compromisso criptográfico publicado antes de cada ronda e carteira em meticais com histórico imutável.",
       },
-      { property: "og:title", content: "Aviator Crash BETFCOM SQs" },
+      { property: "og:title", content: "Aviator Crash Betfcom SQs" },
       {
         property: "og:description",
         content:

@@ -19,16 +19,16 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Entrar na BETFCOM SQs — conta e carteira" },
+      { title: "Entrar na Betfcom SQs — conta e carteira" },
       {
         name: "description",
         content:
-          "Entre ou crie a sua conta BETFCOM SQs para acessar a carteira em meticais, o histórico de movimentos e o Crash.",
+          "Entre ou crie a sua conta Betfcom SQs para acessar a carteira em meticais, o histórico de movimentos e o Crash.",
       },
-      { property: "og:title", content: "Entrar na BETFCOM SQs" },
+      { property: "og:title", content: "Entrar na Betfcom SQs" },
       {
         property: "og:description",
-        content: "Conta BETFCOM SQs: carteira em MZN, histórico imutável e jogo verificável.",
+        content: "Conta Betfcom SQs: carteira em MZN, histórico imutável e jogo verificável.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

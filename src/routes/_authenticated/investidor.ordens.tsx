@@ -19,13 +19,13 @@ import { listOrders } from "@/lib/investments/orders.functions";
 export const Route = createFileRoute("/_authenticated/investidor/ordens")({
   head: () => ({
     meta: [
-      { title: "Ordens de investimento — BETFCOM SQs" },
+      { title: "Ordens de investimento — Betfcom SQs" },
       {
         name: "description",
         content:
           "Histórico de ordens de subscrição e resgate, com estado, referência e montante executado validados no servidor.",
       },
-      { property: "og:title", content: "Ordens de investimento — BETFCOM SQs" },
+      { property: "og:title", content: "Ordens de investimento — Betfcom SQs" },
       {
         property: "og:description",
         content: "Cada ordem tem chave de idempotência e histórico de estados.",

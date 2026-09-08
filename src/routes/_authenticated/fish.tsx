@@ -26,13 +26,13 @@ import { getWallet } from "@/lib/wallet/wallet.functions";
 export const Route = createFileRoute("/_authenticated/fish")({
   head: () => ({
     meta: [
-      { title: "Fish Crash BETFCOM SQs — ronda verificável em meticais" },
+      { title: "Fish Crash Betfcom SQs — ronda verificável em meticais" },
       {
         name: "description",
         content:
           "Fish Crash: o peixe sobe com o multiplicador e o servidor decide a ronda, a aposta e o cash-out. Saldo real da carteira de apostas em meticais.",
       },
-      { property: "og:title", content: "Fish Crash BETFCOM SQs" },
+      { property: "og:title", content: "Fish Crash Betfcom SQs" },
       {
         property: "og:description",
         content:

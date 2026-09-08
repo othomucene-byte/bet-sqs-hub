@@ -39,9 +39,9 @@ const payLogos = [
 ];
 
 
-const title = "BETFCOM SQs — Investimentos, Apostas e Casino em Moçambique";
+const title = "Betfcom SQs — Investimentos, Apostas e Casino em Moçambique";
 const description =
-  "BETFCOM SQs: plataforma de investimentos, apostas desportivas e jogos de casino em meticais, com carteiras separadas, KYC e registo completo de cada movimento. Investir e apostar envolve risco.";
+  "Betfcom SQs: plataforma de investimentos, apostas desportivas e jogos de casino em meticais, com carteiras separadas, KYC e registo completo de cada movimento. Investir e apostar envolve risco.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/")({
       {
         name: "keywords",
         content:
-          "Betfcom, BETFCOM SQs, plataforma de investimentos, apostas desportivas, casino online, Moçambique, meticais",
+          "Betfcom, Betfcom SQs, plataforma de investimentos, apostas desportivas, casino online, Moçambique, meticais",
       },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "BETFCOM SQs",
+          name: "Betfcom SQs",
           alternateName: "Betfcom",
           url: "https://betfcom.com/",
           inLanguage: "pt-MZ",
@@ -138,7 +138,7 @@ const seguranca = [
 
 const faq = [
   {
-    q: "A BETFCOM SQs garante rentabilidade?",
+    q: "A Betfcom SQs garante rentabilidade?",
     a: "Não. A rentabilidade depende sempre das condições de cada produto e dos riscos envolvidos. Não apresentamos retornos garantidos nem promessas de lucro.",
   },
   {
