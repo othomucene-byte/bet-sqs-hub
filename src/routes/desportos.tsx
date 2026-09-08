@@ -379,8 +379,39 @@ function SportsPage() {
               </div>
             )}
 
+            <div className="mb-4 flex gap-1.5">
+              {(
+                [
+                  ["all", "Todos"],
+                  ["today", "Hoje"],
+                  ["tomorrow", "Amanhã"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setDay(value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    day === value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border/60 bg-card text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div className="space-y-3">
+              {events.length === 0 && board.events.length > 0 && (
+                <Card className="border-dashed">
+                  <CardContent className="py-5 text-sm text-muted-foreground">
+                    Não há jogos para este dia nesta seleção.
+                  </CardContent>
+                </Card>
+              )}
               {events.map((event) => {
+
                 const grouped = MARKET_ORDER.map((market) => ({
                   market,
                   odds: event.odds
