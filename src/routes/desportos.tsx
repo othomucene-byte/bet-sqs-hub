@@ -79,12 +79,6 @@ const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
   timeZone: MZ_TZ,
 });
 
-const timeFormatter = new Intl.DateTimeFormat("pt-PT", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: MZ_TZ,
-});
-
 const fullFormatter = new Intl.DateTimeFormat("pt-PT", {
   weekday: "long",
   day: "2-digit",
@@ -217,6 +211,34 @@ function SportsPage() {
 
   const selectedKeys = new Set(selections.map(keyOf));
 
+  function oddButton(event: SportEvent, market: Market, odd: SportEvent["odds"][number]) {
+    const key = keyOf({
+      eventId: event.id,
+      market,
+      selection: odd.selection,
+      line: odd.line,
+    });
+    const active = selectedKeys.has(key);
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => toggle(event, market, odd.selection, odd.line, odd.price)}
+        className={`flex min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 transition-colors ${
+          active
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border/60 bg-muted/40 hover:bg-muted active:bg-muted"
+        }`}
+      >
+        <span className="w-full truncate text-center text-[11px] opacity-80">
+          {shortLabel(market, odd.selection, odd.line)}
+        </span>
+        <span className="font-mono text-sm font-bold">{odd.price.toFixed(2)}</span>
+      </button>
+    );
+  }
+
+
   const slip = (
     <SlipPanel
       selections={selections}
@@ -258,12 +280,16 @@ function SportsPage() {
             Jogos e cotações de mercado em meticais. O bilhete, o saldo e a liquidação são sempre
             decididos no servidor.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Todas as horas mostradas são a hora de Maputo (Moçambique).
+          </p>
           {board.updatedAt && (
             <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
               <RefreshCw className="size-3 shrink-0" />
               Cotações atualizadas em {dateFormatter.format(new Date(board.updatedAt))}
             </p>
           )}
+
         </header>
 
         {!board.configured && (
@@ -347,8 +373,39 @@ function SportsPage() {
               </div>
             )}
 
+            <div className="mb-4 flex gap-1.5">
+              {(
+                [
+                  ["all", "Todos"],
+                  ["today", "Hoje"],
+                  ["tomorrow", "Amanhã"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setDay(value)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    day === value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border/60 bg-card text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div className="space-y-3">
+              {events.length === 0 && board.events.length > 0 && (
+                <Card className="border-dashed">
+                  <CardContent className="py-5 text-sm text-muted-foreground">
+                    Não há jogos para este dia nesta seleção.
+                  </CardContent>
+                </Card>
+              )}
               {events.map((event) => {
+
                 const grouped = MARKET_ORDER.map((market) => ({
                   market,
                   odds: event.odds
