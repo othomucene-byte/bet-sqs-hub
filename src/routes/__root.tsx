@@ -86,6 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Plataforma modular de investimentos e apostas BETFCOM SQs.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "BETFCOM SQs" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -101,6 +102,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "BETFCOM SQs",
+          alternateName: ["BETFCOM", "Betfcom SQs"],
+          url: "https://betfcom.com",
+          logo: "https://betfcom.com/apple-touch-icon.png",
+          image: "https://betfcom.com/og-image.jpg",
+          description:
+            "BETFCOM SQs — plataforma de investimentos e apostas em Moçambique, com carteiras separadas, KYC e registo completo de movimentos.",
+          areaServed: "MZ",
+        }),
+      },
     ],
   }),
 
