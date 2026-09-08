@@ -286,12 +286,16 @@ function SportsPage() {
             Jogos e cotações de mercado em meticais. O bilhete, o saldo e a liquidação são sempre
             decididos no servidor.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Todas as horas mostradas são a hora de Maputo (Moçambique).
+          </p>
           {board.updatedAt && (
             <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
               <RefreshCw className="size-3 shrink-0" />
               Cotações atualizadas em {dateFormatter.format(new Date(board.updatedAt))}
             </p>
           )}
+
         </header>
 
         {!board.configured && (
