@@ -128,6 +128,7 @@ function SportsPage() {
   const [stake, setStake] = useState<number>(SLIP_LIMITS.minStake);
   const [error, setError] = useState<string | null>(null);
   const [slipOpen, setSlipOpen] = useState(false);
+  const [day, setDay] = useState<"all" | "today" | "tomorrow">("all");
 
   useEffect(() => {
     let active = true;
@@ -139,13 +140,17 @@ function SportsPage() {
     };
   }, []);
 
-  const events = useMemo(
-    () =>
-      competition === "all"
-        ? board.events
-        : board.events.filter((event) => event.competitionKey === competition),
-    [board.events, competition],
-  );
+  const todayKey = mzDayKey(Date.now());
+  const tomorrowKey = mzDayKey(Date.now() + 86_400_000);
+
+  const events = useMemo(() => {
+    let list = board.events;
+    if (competition !== "all") list = list.filter((e) => e.competitionKey === competition);
+    if (day === "today") list = list.filter((e) => mzDayKey(e.commenceAt) === todayKey);
+    if (day === "tomorrow") list = list.filter((e) => mzDayKey(e.commenceAt) === tomorrowKey);
+    return list;
+  }, [board.events, competition, day, todayKey, tomorrowKey]);
+
 
   const fetchBonus = useServerFn(getBonusState);
   const bonusQuery = useQuery({
