@@ -93,7 +93,9 @@ function FishPage() {
     round?.serverNow ?? null,
     round?.multiplier ?? 1,
     round?.crashMultiplier ?? null,
+    round?.phaseMsRemaining ?? 0,
   );
+
   useFishAudio(status, multiplier);
 
   useEffect(() => {
@@ -333,13 +335,17 @@ function FishPage() {
   );
 }
 
-/** Interpola o multiplicador entre respostas do servidor. */
+/**
+ * Interpola o multiplicador entre respostas do servidor e congela no instante
+ * exato do fim da ronda (o servidor diz quanto tempo falta).
+ */
 function useLiveMultiplier(
   status: string,
   startedAt: string | null,
   serverNow: string | null,
   serverMultiplier: number,
   crashMultiplier: number | null,
+  phaseMsRemaining: number,
 ) {
   const [value, setValue] = useState(serverMultiplier);
   const offsetRef = useRef(0);
@@ -354,17 +360,20 @@ function useLiveMultiplier(
       return;
     }
     const started = Date.parse(startedAt);
+    const deadline = Date.now() + offsetRef.current + Math.max(0, phaseMsRemaining);
     let frame = 0;
     const tick = () => {
-      setValue(multiplierAt(Date.now() + offsetRef.current - started));
+      const serverTime = Math.min(Date.now() + offsetRef.current, deadline);
+      setValue(multiplierAt(serverTime - started));
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [status, startedAt, serverMultiplier, crashMultiplier]);
+  }, [status, startedAt, serverMultiplier, crashMultiplier, phaseMsRemaining]);
 
   return value;
 }
+
 
 /** Som sintetizado ligado às transições da rodada. */
 function useFishAudio(status: FishStatus, multiplier: number) {

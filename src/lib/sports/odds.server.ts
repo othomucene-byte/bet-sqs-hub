@@ -30,7 +30,7 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 ];
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
-const DAYS_AHEAD = 3;
+const DAYS_AHEAD = 2;
 const MAX_EVENTS = 60;
 /** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
 const MAX_ODDS_CALLS = 6;
@@ -220,6 +220,8 @@ export async function syncSportsCatalog(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const errors: string[] = [];
+  const startedAt = Date.now();
+
 
   const { data: sportRow, error: sportError } = await supabaseAdmin
     .from("sports")
@@ -284,7 +286,6 @@ export async function syncSportsCatalog(): Promise<{
     (a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime(),
   );
 
-  let oddsCalls = 0;
 
   for (const fixture of selected) {
     const compId = compIds.get(fixture.league.id);
