@@ -30,7 +30,7 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 ];
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
-const DAYS_AHEAD = 3;
+const DAYS_AHEAD = 2;
 const MAX_EVENTS = 60;
 /** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
 const MAX_ODDS_CALLS = 6;
