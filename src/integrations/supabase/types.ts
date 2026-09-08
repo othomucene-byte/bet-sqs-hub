@@ -1306,11 +1306,13 @@ export type Database = {
       }
       sport_events: {
         Row: {
+          away_logo: string | null
           away_score: number | null
           away_team: string
           commence_at: string
           competition_id: string
           created_at: string
+          home_logo: string | null
           home_score: number | null
           home_team: string
           id: string
@@ -1321,11 +1323,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          away_logo?: string | null
           away_score?: number | null
           away_team: string
           commence_at: string
           competition_id: string
           created_at?: string
+          home_logo?: string | null
           home_score?: number | null
           home_team: string
           id?: string
@@ -1336,11 +1340,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          away_logo?: string | null
           away_score?: number | null
           away_team?: string
           commence_at?: string
           competition_id?: string
           created_at?: string
+          home_logo?: string | null
           home_score?: number | null
           home_team?: string
           id?: string

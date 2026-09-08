@@ -1,0 +1,1 @@
+ALTER TABLE public.sport_events ADD COLUMN IF NOT EXISTS home_logo text, ADD COLUMN IF NOT EXISTS away_logo text;
