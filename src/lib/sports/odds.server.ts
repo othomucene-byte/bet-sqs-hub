@@ -220,6 +220,8 @@ export async function syncSportsCatalog(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const errors: string[] = [];
+  const startedAt = Date.now();
+
 
   const { data: sportRow, error: sportError } = await supabaseAdmin
     .from("sports")
