@@ -38,7 +38,7 @@ export const Route = createFileRoute("/investimentos")({
         content:
           "Produtos de investimento em meticais ligados a empresas moçambicanas: prazo, taxa alvo indicativa, nível de risco e capacidade — tudo validado no servidor.",
       },
-      { property: "og:title", content: "SQs Investimentos — BETFCOM SQs" },
+      { property: "og:title", content: "SQs Investimentos — Betfcom SQs" },
       {
         property: "og:description",
         content:

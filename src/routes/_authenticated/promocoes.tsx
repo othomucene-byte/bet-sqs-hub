@@ -13,13 +13,13 @@ import { claimLossRecovery, getBonusState } from "@/lib/promotions/promotions.fu
 export const Route = createFileRoute("/_authenticated/promocoes")({
   head: () => ({
     meta: [
-      { title: "Promoções — bónus e apostas grátis | BETFCOM SQs" },
+      { title: "Promoções — bónus e apostas grátis | Betfcom SQs" },
       {
         name: "description",
         content:
           "Bónus de primeiro depósito de 20 MZN apenas jogável e quatro apostas grátis por perdas do dia, atribuídos e validados no servidor.",
       },
-      { property: "og:title", content: "Promoções BETFCOM SQs" },
+      { property: "og:title", content: "Promoções Betfcom SQs" },
       {
         property: "og:description",
         content: "Bónus de boas-vindas e apostas grátis com regras claras e sem retorno garantido.",

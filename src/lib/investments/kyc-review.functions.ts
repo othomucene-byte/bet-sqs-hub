@@ -33,7 +33,7 @@ const DecisionSchema = z.object({
   issues: z.array(z.string().max(240)).max(8).default([]),
 });
 
-const SYSTEM_PROMPT = `Chamas-te Oséias e és o analista automático de KYC da BETFCOM SQs (Moçambique).
+const SYSTEM_PROMPT = `Chamas-te Oséias e és o analista automático de KYC da Betfcom SQs (Moçambique).
 Analisas dados declarados e as imagens da frente e do verso do documento de identidade (BI, passaporte, DIRE, carta de condução).
 
 Verifica, por esta ordem:

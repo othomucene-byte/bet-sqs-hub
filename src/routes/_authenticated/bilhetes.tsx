@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/bilhetes")({
         content:
           "Histórico dos seus bilhetes desportivos: seleções, cotação total, estado e ganhos liquidados pelo servidor.",
       },
-      { property: "og:title", content: "Os meus bilhetes — BETFCOM SQs" },
+      { property: "og:title", content: "Os meus bilhetes — Betfcom SQs" },
       {
         property: "og:description",
         content: "Seleções, cotações e estado de liquidação de cada bilhete desportivo.",

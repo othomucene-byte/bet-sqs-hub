@@ -13,7 +13,7 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 const WELCOME: ChatMessage = {
   role: "assistant",
   content:
-    "Olá! Sou o assistente da **BETFCOM SQs**. Posso explicar investimentos, KYC, carteira, pagamentos e os jogos. Como posso ajudar?",
+    "Olá! Sou o assistente da **Betfcom SQs**. Posso explicar investimentos, KYC, carteira, pagamentos e os jogos. Como posso ajudar?",
 };
 
 export function AssistantWidget() {
@@ -68,10 +68,10 @@ export function AssistantWidget() {
         <div
           className="fixed bottom-20 right-2 left-2 z-50 flex max-h-[70vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:left-auto sm:w-[26rem]"
           role="dialog"
-          aria-label="Assistente BETFCOM SQs"
+          aria-label="Assistente Betfcom SQs"
         >
           <div className="border-b border-border px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">Assistente BETFCOM SQs</p>
+            <p className="text-sm font-semibold text-foreground">Assistente Betfcom SQs</p>
             <p className="text-xs text-muted-foreground">
               Informativo — não substitui o teu extrato nem constitui conselho financeiro.
             </p>

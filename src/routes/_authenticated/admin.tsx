@@ -45,13 +45,13 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Backoffice — BETFCOM SQs" },
+      { title: "Backoffice — Betfcom SQs" },
       {
         name: "description",
         content:
           "Backoffice com controlo de acesso por papel: revisão de KYC, ordens, investimentos, resultados declarados, pagamentos, risco e candidaturas de empresas.",
       },
-      { property: "og:title", content: "Backoffice BETFCOM SQs" },
+      { property: "og:title", content: "Backoffice Betfcom SQs" },
       {
         property: "og:description",
         content: "Todas as leituras e acções verificam o papel de administrador no servidor.",

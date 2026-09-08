@@ -33,13 +33,13 @@ export const Route = createFileRoute("/_authenticated/carteira")({
   validateSearch: z.object({ produto: z.string().uuid().optional() }),
   head: () => ({
     meta: [
-      { title: "Carteira de investimentos — BETFCOM SQs" },
+      { title: "Carteira de investimentos — Betfcom SQs" },
       {
         name: "description",
         content:
           "Carteira de investimentos em meticais: saldo validado no servidor, posições activas, evolução do histórico imutável e projecção indicativa por produto.",
       },
-      { property: "og:title", content: "Carteira de investimentos BETFCOM SQs" },
+      { property: "og:title", content: "Carteira de investimentos Betfcom SQs" },
       {
         property: "og:description",
         content: "Saldo, subscrições e cancelamentos decididos apenas no servidor.",

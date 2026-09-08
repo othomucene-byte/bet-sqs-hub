@@ -13,13 +13,13 @@ import { getInvestorOverview } from "@/lib/investments/portfolio.functions";
 export const Route = createFileRoute("/_authenticated/investidor/rendimentos")({
   head: () => ({
     meta: [
-      { title: "Rendimentos e resultados — BETFCOM SQs" },
+      { title: "Rendimentos e resultados — Betfcom SQs" },
       {
         name: "description",
         content:
           "Resultados declarados por período em cada investimento: rendimento ou prejuízo, sempre registados no servidor e no extrato imutável.",
       },
-      { property: "og:title", content: "Rendimentos declarados — BETFCOM SQs" },
+      { property: "og:title", content: "Rendimentos declarados — Betfcom SQs" },
       {
         property: "og:description",
         content: "Nenhum retorno é garantido; os resultados podem ser negativos.",

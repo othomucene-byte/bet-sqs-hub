@@ -34,7 +34,7 @@ import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
 import logoEmola from "@/assets/logo-emola.png.asset.json";
 import logoMkesh from "@/assets/logo-mkesh.png.asset.json";
 
-const TITLE = "Pagamentos Netshop — BETFCOM SQs";
+const TITLE = "Pagamentos Netshop — Betfcom SQs";
 const DESCRIPTION =
   "Depósitos e levantamentos em MZN via Netshop: M-Pesa, e-Mola, mKesh, cartão Visa/Mastercard e transferência bancária, com validação no servidor e ledger imutável.";
 

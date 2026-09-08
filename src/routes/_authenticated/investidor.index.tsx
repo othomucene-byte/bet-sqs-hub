@@ -37,13 +37,13 @@ import { listProducts } from "@/lib/investments/investments.functions";
 export const Route = createFileRoute("/_authenticated/investidor/")({
   head: () => ({
     meta: [
-      { title: "Painel do investidor — BETFCOM SQs" },
+      { title: "Painel do investidor — Betfcom SQs" },
       {
         name: "description",
         content:
           "Património, capital investido, resultado declarado e ordens em processamento — todos os valores lidos e validados no servidor.",
       },
-      { property: "og:title", content: "Painel do investidor — BETFCOM SQs" },
+      { property: "og:title", content: "Painel do investidor — Betfcom SQs" },
       {
         property: "og:description",
         content: "Subscrições, resgates e resultados com extrato imutável.",

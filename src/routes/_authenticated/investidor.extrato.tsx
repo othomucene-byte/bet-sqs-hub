@@ -19,13 +19,13 @@ import { getInvestmentStatement } from "@/lib/investments/portfolio.functions";
 export const Route = createFileRoute("/_authenticated/investidor/extrato")({
   head: () => ({
     meta: [
-      { title: "Extrato da carteira de investimentos — BETFCOM SQs" },
+      { title: "Extrato da carteira de investimentos — Betfcom SQs" },
       {
         name: "description",
         content:
           "Extrato imutável da carteira de investimentos: cada movimento tem tipo, montante, saldo resultante e referência única.",
       },
-      { property: "og:title", content: "Extrato imutável — BETFCOM SQs" },
+      { property: "og:title", content: "Extrato imutável — Betfcom SQs" },
       {
         property: "og:description",
         content: "Registos append-only: não podem ser alterados nem apagados.",
