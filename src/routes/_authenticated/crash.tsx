@@ -367,13 +367,20 @@ function CrashPage() {
   );
 }
 
-/** Anima o multiplicador entre pedidos, alinhado ao relógio do servidor. */
+/**
+ * Anima o multiplicador entre pedidos, alinhado ao relógio do servidor.
+ *
+ * O servidor diz quanto tempo falta para o fim da ronda (`phaseMsRemaining`),
+ * por isso a contagem congela no instante exato do fim — nunca continua a subir
+ * depois de a ronda ter terminado.
+ */
 function useLiveMultiplier(
   status: string,
   startedAt: string | null,
   serverNow: string | null,
   serverMultiplier: number,
   crashMultiplier: number | null,
+  phaseMsRemaining: number,
 ) {
   const [value, setValue] = useState(serverMultiplier);
   const offsetRef = useRef(0);
@@ -388,18 +395,20 @@ function useLiveMultiplier(
       return;
     }
     const started = Date.parse(startedAt);
+    const deadline = Date.now() + offsetRef.current + Math.max(0, phaseMsRemaining);
     let frame = 0;
     const tick = () => {
-      const serverTime = Date.now() + offsetRef.current;
+      const serverTime = Math.min(Date.now() + offsetRef.current, deadline);
       setValue(multiplierAt(serverTime - started));
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [status, startedAt, serverMultiplier, crashMultiplier]);
+  }, [status, startedAt, serverMultiplier, crashMultiplier, phaseMsRemaining]);
 
   return value;
 }
+
 
 /** Liga o som sintetizado às transições de estado da ronda. */
 function useCrashAudio(status: FlightStatus, multiplier: number, phaseMsRemaining: number) {
