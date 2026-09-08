@@ -79,12 +79,6 @@ const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
   timeZone: MZ_TZ,
 });
 
-const timeFormatter = new Intl.DateTimeFormat("pt-PT", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: MZ_TZ,
-});
-
 const fullFormatter = new Intl.DateTimeFormat("pt-PT", {
   weekday: "long",
   day: "2-digit",
