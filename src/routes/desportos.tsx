@@ -60,13 +60,43 @@ export const Route = createFileRoute("/desportos")({
 
 const MARKET_ORDER: Market[] = ["h2h", "dc", "totals", "btts"];
 
+const MZ_TZ = "Africa/Maputo";
+
 const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
   weekday: "short",
   day: "2-digit",
   month: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: MZ_TZ,
 });
+
+const timeFormatter = new Intl.DateTimeFormat("pt-PT", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: MZ_TZ,
+});
+
+const fullFormatter = new Intl.DateTimeFormat("pt-PT", {
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: MZ_TZ,
+});
+
+/** Dia em Moçambique (AAAA-MM-DD) para um instante qualquer. */
+function mzDayKey(iso: string | number | Date): string {
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: MZ_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 
 function keyOf(item: { eventId: string; market: string; selection: string; line: number | null }) {
   return `${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`;
