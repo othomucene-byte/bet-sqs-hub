@@ -39,19 +39,42 @@ const payLogos = [
 ];
 
 
-const title = "BETFCOM SQs — Investimentos e Apostas numa só plataforma";
+const title = "BETFCOM SQs — Investimentos, Apostas e Casino em Moçambique";
 const description =
-  "Plataforma modular BETFCOM SQs: SQs Investimentos e SQs Apostas, com wallet, ledger imutável, KYC e backoffice preparados para conformidade regulatória.";
+  "BETFCOM SQs: plataforma de investimentos, apostas desportivas e jogos de casino em meticais, com carteiras separadas, KYC e registo completo de cada movimento. Investir e apostar envolve risco.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title },
       { name: "description", content: description },
+      {
+        name: "keywords",
+        content:
+          "Betfcom, BETFCOM SQs, plataforma de investimentos, apostas desportivas, casino online, Moçambique, meticais",
+      },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://betfcom.com/" },
+      { property: "og:image", content: "https://betfcom.com/og-image.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://betfcom.com/og-image.jpg" },
+    ],
+    links: [{ rel: "canonical", href: "https://betfcom.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "BETFCOM SQs",
+          alternateName: "Betfcom",
+          url: "https://betfcom.com/",
+          inLanguage: "pt-MZ",
+          description,
+        }),
+      },
     ],
   }),
   component: Landing,
