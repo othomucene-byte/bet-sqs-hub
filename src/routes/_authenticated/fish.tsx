@@ -93,7 +93,9 @@ function FishPage() {
     round?.serverNow ?? null,
     round?.multiplier ?? 1,
     round?.crashMultiplier ?? null,
+    round?.phaseMsRemaining ?? 0,
   );
+
   useFishAudio(status, multiplier);
 
   useEffect(() => {
