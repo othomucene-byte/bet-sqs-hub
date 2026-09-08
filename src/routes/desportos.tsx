@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, Info, RefreshCw, Ticket } from "lucide-react";
+import { CalendarClock, Info, Maximize2, RefreshCw, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site-header";
