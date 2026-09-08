@@ -16,6 +16,8 @@ export type SportEvent = {
   homeTeam: string;
   awayTeam: string;
   commenceAt: string;
+  homeLogo: string | null;
+  awayLogo: string | null;
   competitionKey: string;
   competitionName: string;
   sportName: string;
@@ -39,7 +41,7 @@ export const getSportsBoard = createServerFn({ method: "GET" }).handler(
     const { data: rows } = await supabase
       .from("sport_events")
       .select(
-        "id, home_team, away_team, commence_at, odds_updated_at, sport_competitions!inner(key, name, sports!inner(name))",
+        "id, home_team, away_team, home_logo, away_logo, commence_at, odds_updated_at, sport_competitions!inner(key, name, sports!inner(name))",
       )
       .eq("status", "scheduled")
       .gt("commence_at", new Date().toISOString())
@@ -58,6 +60,8 @@ export const getSportsBoard = createServerFn({ method: "GET" }).handler(
         homeTeam: row.home_team as string,
         awayTeam: row.away_team as string,
         commenceAt: row.commence_at as string,
+        homeLogo: (row as { home_logo?: string | null }).home_logo ?? null,
+        awayLogo: (row as { away_logo?: string | null }).away_logo ?? null,
         competitionKey: competition.key,
         competitionName: competition.name,
         sportName: sport?.name ?? "Desporto",
