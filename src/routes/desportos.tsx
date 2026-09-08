@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, Info, RefreshCw, Ticket } from "lucide-react";
+import { CalendarClock, Info, Maximize2, RefreshCw, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site-header";
@@ -12,12 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import { supabase } from "@/integrations/supabase/client";
 import { MARKET_NAMES, shortLabel, SLIP_LIMITS, type Market } from "@/lib/sports/markets";
 import { getBonusState } from "@/lib/promotions/promotions.functions";
@@ -60,13 +68,43 @@ export const Route = createFileRoute("/desportos")({
 
 const MARKET_ORDER: Market[] = ["h2h", "dc", "totals", "btts"];
 
+const MZ_TZ = "Africa/Maputo";
+
 const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
   weekday: "short",
   day: "2-digit",
   month: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: MZ_TZ,
 });
+
+const timeFormatter = new Intl.DateTimeFormat("pt-PT", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: MZ_TZ,
+});
+
+const fullFormatter = new Intl.DateTimeFormat("pt-PT", {
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: MZ_TZ,
+});
+
+/** Dia em Moçambique (AAAA-MM-DD) para um instante qualquer. */
+function mzDayKey(iso: string | number | Date): string {
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: MZ_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 
 function keyOf(item: { eventId: string; market: string; selection: string; line: number | null }) {
   return `${item.eventId}:${item.market}:${item.selection}:${item.line ?? ""}`;
@@ -90,6 +128,7 @@ function SportsPage() {
   const [stake, setStake] = useState<number>(SLIP_LIMITS.minStake);
   const [error, setError] = useState<string | null>(null);
   const [slipOpen, setSlipOpen] = useState(false);
+  const [day, setDay] = useState<"all" | "today" | "tomorrow">("all");
 
   useEffect(() => {
     let active = true;
@@ -101,13 +140,17 @@ function SportsPage() {
     };
   }, []);
 
-  const events = useMemo(
-    () =>
-      competition === "all"
-        ? board.events
-        : board.events.filter((event) => event.competitionKey === competition),
-    [board.events, competition],
-  );
+  const todayKey = mzDayKey(Date.now());
+  const tomorrowKey = mzDayKey(Date.now() + 86_400_000);
+
+  const events = useMemo(() => {
+    let list = board.events;
+    if (competition !== "all") list = list.filter((e) => e.competitionKey === competition);
+    if (day === "today") list = list.filter((e) => mzDayKey(e.commenceAt) === todayKey);
+    if (day === "tomorrow") list = list.filter((e) => mzDayKey(e.commenceAt) === tomorrowKey);
+    return list;
+  }, [board.events, competition, day, todayKey, tomorrowKey]);
+
 
   const fetchBonus = useServerFn(getBonusState);
   const bonusQuery = useQuery({
@@ -327,9 +370,51 @@ function SportsPage() {
                             {event.awayTeam}
                           </p>
                         </div>
-                        <p className="shrink-0 rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground">
-                          {dateFormatter.format(new Date(event.commenceAt))}
-                        </p>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <p className="rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                            {dateFormatter.format(new Date(event.commenceAt))}
+                          </p>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 rounded-md border border-border/60"
+                                aria-label={`Ver todos os mercados de ${event.homeTeam} contra ${event.awayTeam}`}
+                              >
+                                <Maximize2 className="size-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
+                              <DialogHeader className="text-left">
+                                <DialogTitle className="text-base">
+                                  {event.homeTeam} vs {event.awayTeam}
+                                </DialogTitle>
+                              </DialogHeader>
+                              <p className="text-xs text-muted-foreground">
+                                {event.sportName} · {event.competitionName}
+                              </p>
+                              <p className="text-sm font-semibold">
+                                Início {fullFormatter.format(new Date(event.commenceAt))}{" "}
+                                <span className="font-normal text-muted-foreground">
+                                  (hora de Maputo)
+                                </span>
+                              </p>
+                              <div className="space-y-3">
+                                {grouped.map((group) => (
+                                  <div key={group.market}>
+                                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                      {MARKET_NAMES[group.market]}
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                                      {group.odds.map((odd) => oddButton(event, group.market, odd))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
 
                       {grouped.map((group) => (
@@ -338,42 +423,14 @@ function SportsPage() {
                             {MARKET_NAMES[group.market]}
                           </p>
                           <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6">
-                            {group.odds.slice(0, 6).map((odd) => {
-                              const key = keyOf({
-                                eventId: event.id,
-                                market: group.market,
-                                selection: odd.selection,
-                                line: odd.line,
-                              });
-                              const active = selectedKeys.has(key);
-                              return (
-                                <button
-                                  key={key}
-                                  type="button"
-                                  onClick={() =>
-                                    toggle(event, group.market, odd.selection, odd.line, odd.price)
-                                  }
-                                  className={`flex min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 transition-colors ${
-                                    active
-                                      ? "border-primary bg-primary text-primary-foreground"
-                                      : "border-border/60 bg-muted/40 hover:bg-muted active:bg-muted"
-                                  }`}
-                                >
-                                  <span className="w-full truncate text-center text-[11px] opacity-80">
-                                    {shortLabel(group.market, odd.selection, odd.line)}
-                                  </span>
-                                  <span className="font-mono text-sm font-bold">
-                                    {odd.price.toFixed(2)}
-                                  </span>
-                                </button>
-                              );
-                            })}
+                            {group.odds.slice(0, 6).map((odd) => oddButton(event, group.market, odd))}
                           </div>
                         </div>
                       ))}
                     </CardContent>
                   </Card>
                 );
+
               })}
             </div>
           </section>
