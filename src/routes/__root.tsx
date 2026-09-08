@@ -111,9 +111,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "Betfcom SQs",
-          alternateName: ["Betfcom", "Betfcom SQs"],
+          alternateName: ["Betfcom", "Betfcom SQs Moçambique", "BetfcomSQs", "Betf com SQs"],
           url: "https://betfcom.com",
-          logo: "https://betfcom.com/apple-touch-icon.png",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://betfcom.com/logo-512.png",
+            width: 512,
+            height: 512,
+          },
           image: "https://betfcom.com/og-image.jpg",
           description:
             "Betfcom SQs — plataforma de investimentos e apostas em Moçambique, com carteiras separadas, KYC e registo completo de movimentos.",
