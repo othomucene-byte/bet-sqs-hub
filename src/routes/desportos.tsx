@@ -111,6 +111,27 @@ function competitionLogo(key: string): string | null {
   return `https://media.api-sports.io/football/leagues/${match[1]}.png`;
 }
 
+/** Escudo oficial da equipa; sem logótipo mostra as iniciais. */
+function TeamCrest({ name, logo }: { name: string; logo: string | null }) {
+  if (!logo) {
+    return (
+      <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[9px] font-black text-muted-foreground">
+        {name.slice(0, 2).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={logo}
+      alt={`Logótipo do ${name}`}
+      loading="lazy"
+      width={24}
+      height={24}
+      className="inline-block size-6 shrink-0 rounded-full bg-white object-contain p-0.5"
+    />
+  );
+}
+
 function SportsPage() {
   const board = Route.useLoaderData() as SportsBoard;
   const navigate = useNavigate();
@@ -421,9 +442,11 @@ function SportsPage() {
                           <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                             {event.sportName} · {event.competitionName}
                           </p>
-                          <p className="mt-0.5 text-sm font-bold leading-snug sm:text-base">
+                          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm font-bold leading-snug sm:text-base">
+                            <TeamCrest name={event.homeTeam} logo={event.homeLogo} />
                             {event.homeTeam}
-                            <span className="mx-1 font-normal text-muted-foreground">vs</span>
+                            <span className="mx-0.5 font-normal text-muted-foreground">vs</span>
+                            <TeamCrest name={event.awayTeam} logo={event.awayLogo} />
                             {event.awayTeam}
                           </p>
                         </div>

@@ -64,7 +64,10 @@ type ApiFixture = {
     status: { short: string };
   };
   league: { id: number; name: string; season: number };
-  teams: { home: { name: string }; away: { name: string } };
+  teams: {
+    home: { id?: number; name: string; logo?: string };
+    away: { id?: number; name: string; logo?: string };
+  };
   goals: { home: number | null; away: number | null };
 };
 
@@ -301,6 +304,8 @@ export async function syncSportsCatalog(): Promise<{
         provider_event_id: String(fixture.fixture.id),
         home_team: home,
         away_team: away,
+        home_logo: fixture.teams?.home?.logo ?? null,
+        away_logo: fixture.teams?.away?.logo ?? null,
         commence_at: commence.toISOString(),
         status: "scheduled",
         // `odds_updated_at` fica como está: é a marca de quando as cotações
