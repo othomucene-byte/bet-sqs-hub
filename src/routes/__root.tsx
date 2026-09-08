@@ -100,8 +100,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap",
       },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
     scripts: [
       {
@@ -110,9 +111,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "Betfcom SQs",
-          alternateName: ["Betfcom", "Betfcom SQs"],
+          alternateName: ["Betfcom", "Betfcom SQs Moçambique", "BetfcomSQs", "Betf com SQs"],
           url: "https://betfcom.com",
-          logo: "https://betfcom.com/apple-touch-icon.png",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://betfcom.com/logo-512.png",
+            width: 512,
+            height: 512,
+          },
           image: "https://betfcom.com/og-image.jpg",
           description:
             "Betfcom SQs — plataforma de investimentos e apostas em Moçambique, com carteiras separadas, KYC e registo completo de movimentos.",

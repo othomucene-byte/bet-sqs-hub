@@ -32,7 +32,7 @@ export const Route = createFileRoute("/investimentos")({
   notFoundComponent: () => <p className="p-8">Página não encontrada.</p>,
   head: () => ({
     meta: [
-      { title: "SQs Investimentos — produtos ligados a empresas moçambicanas" },
+      { title: "Betfcom SQs Investimentos — produtos ligados a empresas moçambicanas" },
       {
         name: "description",
         content:
@@ -46,7 +46,11 @@ export const Route = createFileRoute("/investimentos")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://betfcom.com/investimentos" },
+      { property: "og:image", content: "https://betfcom.com/og-image.jpg" },
+      { name: "twitter:image", content: "https://betfcom.com/og-image.jpg" },
     ],
+    links: [{ rel: "canonical", href: "https://betfcom.com/investimentos" }],
   }),
   component: InvestimentosPage,
 });
