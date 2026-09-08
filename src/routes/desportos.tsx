@@ -47,7 +47,7 @@ export const Route = createFileRoute("/desportos")({
   notFoundComponent: () => <p className="p-8">Página não encontrada.</p>,
   head: () => ({
     meta: [
-      { title: "SQs Apostas Desportivas — jogos e cotações atualizadas" },
+      { title: "Betfcom SQs Apostas — jogos e cotações atualizadas" },
       {
         name: "description",
         content:
@@ -61,7 +61,11 @@ export const Route = createFileRoute("/desportos")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://betfcom.com/desportos" },
+      { property: "og:image", content: "https://betfcom.com/og-image.jpg" },
+      { name: "twitter:image", content: "https://betfcom.com/og-image.jpg" },
     ],
+    links: [{ rel: "canonical", href: "https://betfcom.com/desportos" }],
   }),
   component: SportsPage,
 });

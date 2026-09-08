@@ -47,7 +47,11 @@ export const Route = createFileRoute("/pagamentos")({
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://betfcom.com/pagamentos" },
+      { property: "og:image", content: "https://betfcom.com/og-image.jpg" },
+      { name: "twitter:image", content: "https://betfcom.com/og-image.jpg" },
     ],
+    links: [{ rel: "canonical", href: "https://betfcom.com/pagamentos" }],
   }),
   component: PagamentosPage,
 });
