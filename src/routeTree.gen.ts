@@ -25,10 +25,18 @@ import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/ky
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
+import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
+import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
+import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
+import { Route as AuthenticatedExchangePortfolioRouteImport } from './routes/_authenticated/exchange.portfolio'
+import { Route as AuthenticatedExchangeTradesRouteImport } from './routes/_authenticated/exchange.trades'
+import { Route as AuthenticatedExchangeWalletRouteImport } from './routes/_authenticated/exchange.wallet'
+import { Route as AuthenticatedExchangeWatchlistRouteImport } from './routes/_authenticated/exchange.watchlist'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
+import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
@@ -113,6 +121,48 @@ const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   path: '/exchange/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminExchangeRoute =
+  AuthenticatedAdminExchangeRouteImport.update({
+    id: '/exchange',
+    path: '/exchange',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedExchangeHistoryRoute =
+  AuthenticatedExchangeHistoryRouteImport.update({
+    id: '/exchange/history',
+    path: '/exchange/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedExchangeOrdersRoute =
+  AuthenticatedExchangeOrdersRouteImport.update({
+    id: '/exchange/orders',
+    path: '/exchange/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedExchangePortfolioRoute =
+  AuthenticatedExchangePortfolioRouteImport.update({
+    id: '/exchange/portfolio',
+    path: '/exchange/portfolio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedExchangeTradesRoute =
+  AuthenticatedExchangeTradesRouteImport.update({
+    id: '/exchange/trades',
+    path: '/exchange/trades',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedExchangeWalletRoute =
+  AuthenticatedExchangeWalletRouteImport.update({
+    id: '/exchange/wallet',
+    path: '/exchange/wallet',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedExchangeWatchlistRoute =
+  AuthenticatedExchangeWatchlistRouteImport.update({
+    id: '/exchange/watchlist',
+    path: '/exchange/watchlist',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvestidorIndexRoute =
   AuthenticatedInvestidorIndexRouteImport.update({
     id: '/investidor/',
@@ -137,6 +187,11 @@ const AuthenticatedInvestidorRendimentosRoute =
     path: '/investidor/rendimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ExchangeAssetSymbolRoute = ExchangeAssetSymbolRouteImport.update({
+  id: '/exchange/asset/$symbol',
+  path: '/exchange/asset/$symbol',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronBonusExpiryRoute =
   ApiPublicCronBonusExpiryRouteImport.update({
     id: '/api/public/cron/bonus-expiry',
@@ -162,7 +217,7 @@ export interface FileRoutesByFullPath {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
@@ -171,9 +226,17 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
+  '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
+  '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
+  '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
+  '/exchange/watchlist': typeof AuthenticatedExchangeWatchlistRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
@@ -186,7 +249,7 @@ export interface FileRoutesByTo {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
@@ -195,9 +258,17 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange': typeof ExchangeIndexRoute
+  '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
+  '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
+  '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
+  '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
+  '/exchange/watchlist': typeof AuthenticatedExchangeWatchlistRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
@@ -212,7 +283,7 @@ export interface FileRoutesById {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
@@ -221,9 +292,17 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
+  '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
+  '/_authenticated/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
+  '/_authenticated/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/_authenticated/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
+  '/_authenticated/exchange/watchlist': typeof AuthenticatedExchangeWatchlistRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
@@ -247,9 +326,17 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange/'
+    | '/admin/exchange'
+    | '/exchange/history'
+    | '/exchange/orders'
+    | '/exchange/portfolio'
+    | '/exchange/trades'
+    | '/exchange/wallet'
+    | '/exchange/watchlist'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
+    | '/exchange/asset/$symbol'
     | '/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
@@ -271,9 +358,17 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange'
+    | '/admin/exchange'
+    | '/exchange/history'
+    | '/exchange/orders'
+    | '/exchange/portfolio'
+    | '/exchange/trades'
+    | '/exchange/wallet'
+    | '/exchange/watchlist'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
+    | '/exchange/asset/$symbol'
     | '/investidor'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
@@ -296,9 +391,17 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/exchange/'
+    | '/_authenticated/admin/exchange'
+    | '/_authenticated/exchange/history'
+    | '/_authenticated/exchange/orders'
+    | '/_authenticated/exchange/portfolio'
+    | '/_authenticated/exchange/trades'
+    | '/_authenticated/exchange/wallet'
+    | '/_authenticated/exchange/watchlist'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
+    | '/exchange/asset/$symbol'
     | '/_authenticated/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/sports-sync'
@@ -314,6 +417,7 @@ export interface RootRouteChildren {
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
+  ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
@@ -433,6 +537,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExchangeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/exchange': {
+      id: '/_authenticated/admin/exchange'
+      path: '/exchange'
+      fullPath: '/admin/exchange'
+      preLoaderRoute: typeof AuthenticatedAdminExchangeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/exchange/history': {
+      id: '/_authenticated/exchange/history'
+      path: '/exchange/history'
+      fullPath: '/exchange/history'
+      preLoaderRoute: typeof AuthenticatedExchangeHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exchange/orders': {
+      id: '/_authenticated/exchange/orders'
+      path: '/exchange/orders'
+      fullPath: '/exchange/orders'
+      preLoaderRoute: typeof AuthenticatedExchangeOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exchange/portfolio': {
+      id: '/_authenticated/exchange/portfolio'
+      path: '/exchange/portfolio'
+      fullPath: '/exchange/portfolio'
+      preLoaderRoute: typeof AuthenticatedExchangePortfolioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exchange/trades': {
+      id: '/_authenticated/exchange/trades'
+      path: '/exchange/trades'
+      fullPath: '/exchange/trades'
+      preLoaderRoute: typeof AuthenticatedExchangeTradesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exchange/wallet': {
+      id: '/_authenticated/exchange/wallet'
+      path: '/exchange/wallet'
+      fullPath: '/exchange/wallet'
+      preLoaderRoute: typeof AuthenticatedExchangeWalletRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exchange/watchlist': {
+      id: '/_authenticated/exchange/watchlist'
+      path: '/exchange/watchlist'
+      fullPath: '/exchange/watchlist'
+      preLoaderRoute: typeof AuthenticatedExchangeWatchlistRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/investidor/': {
       id: '/_authenticated/investidor/'
       path: '/investidor'
@@ -461,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/exchange/asset/$symbol': {
+      id: '/exchange/asset/$symbol'
+      path: '/exchange/asset/$symbol'
+      fullPath: '/exchange/asset/$symbol'
+      preLoaderRoute: typeof ExchangeAssetSymbolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/bonus-expiry': {
       id: '/api/public/cron/bonus-expiry'
       path: '/api/public/cron/bonus-expiry'
@@ -485,8 +645,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminExchangeRoute: typeof AuthenticatedAdminExchangeRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminExchangeRoute: AuthenticatedAdminExchangeRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
@@ -494,6 +665,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
+  AuthenticatedExchangeHistoryRoute: typeof AuthenticatedExchangeHistoryRoute
+  AuthenticatedExchangeOrdersRoute: typeof AuthenticatedExchangeOrdersRoute
+  AuthenticatedExchangePortfolioRoute: typeof AuthenticatedExchangePortfolioRoute
+  AuthenticatedExchangeTradesRoute: typeof AuthenticatedExchangeTradesRoute
+  AuthenticatedExchangeWalletRoute: typeof AuthenticatedExchangeWalletRoute
+  AuthenticatedExchangeWatchlistRoute: typeof AuthenticatedExchangeWatchlistRoute
   AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
   AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
@@ -501,7 +678,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
@@ -509,6 +686,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
+  AuthenticatedExchangeHistoryRoute: AuthenticatedExchangeHistoryRoute,
+  AuthenticatedExchangeOrdersRoute: AuthenticatedExchangeOrdersRoute,
+  AuthenticatedExchangePortfolioRoute: AuthenticatedExchangePortfolioRoute,
+  AuthenticatedExchangeTradesRoute: AuthenticatedExchangeTradesRoute,
+  AuthenticatedExchangeWalletRoute: AuthenticatedExchangeWalletRoute,
+  AuthenticatedExchangeWatchlistRoute: AuthenticatedExchangeWatchlistRoute,
   AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
   AuthenticatedInvestidorRendimentosRoute:
@@ -528,6 +711,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
+  ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
