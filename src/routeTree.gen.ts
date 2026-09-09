@@ -25,6 +25,7 @@ import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/ky
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
+import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
 import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
 import { Route as AuthenticatedExchangePortfolioRouteImport } from './routes/_authenticated/exchange.portfolio'
@@ -120,6 +121,12 @@ const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   path: '/exchange/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminExchangeRoute =
+  AuthenticatedAdminExchangeRouteImport.update({
+    id: '/exchange',
+    path: '/exchange',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedExchangeHistoryRoute =
   AuthenticatedExchangeHistoryRouteImport.update({
     id: '/exchange/history',
@@ -210,7 +217,7 @@ export interface FileRoutesByFullPath {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
@@ -241,7 +249,7 @@ export interface FileRoutesByTo {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
@@ -250,6 +258,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange': typeof ExchangeIndexRoute
+  '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
@@ -274,7 +283,7 @@ export interface FileRoutesById {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
@@ -283,6 +292,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/_authenticated/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange/'
+    | '/admin/exchange'
     | '/exchange/history'
     | '/exchange/orders'
     | '/exchange/portfolio'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange'
+    | '/admin/exchange'
     | '/exchange/history'
     | '/exchange/orders'
     | '/exchange/portfolio'
@@ -379,6 +391,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/exchange/'
+    | '/_authenticated/admin/exchange'
     | '/_authenticated/exchange/history'
     | '/_authenticated/exchange/orders'
     | '/_authenticated/exchange/portfolio'
@@ -524,6 +537,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExchangeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/exchange': {
+      id: '/_authenticated/admin/exchange'
+      path: '/exchange'
+      fullPath: '/admin/exchange'
+      preLoaderRoute: typeof AuthenticatedAdminExchangeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/exchange/history': {
       id: '/_authenticated/exchange/history'
       path: '/exchange/history'
@@ -625,8 +645,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminExchangeRoute: typeof AuthenticatedAdminExchangeRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminExchangeRoute: AuthenticatedAdminExchangeRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
@@ -647,7 +678,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
