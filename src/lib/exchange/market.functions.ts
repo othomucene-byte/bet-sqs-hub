@@ -30,20 +30,25 @@ export type MarketOverview = {
 };
 
 /** Catálogo público do mercado. Sem negócios executados, o preço fica indisponível. */
-export const getMarketOverview = createServerFn({ method: "GET" }).handler(
-  async (): Promise<MarketOverview> => {
+export const getMarketOverview = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ environment: z.enum(["LIVE", "PAPER"]).default("LIVE") }).parse(input ?? {}),
+  )
+  .handler(async ({ data }): Promise<MarketOverview> => {
     const { publicClient } = await import("@/lib/investments/public-client.server");
     const db = publicClient();
+    const marketCode = data.environment === "LIVE" ? "SQSX-LIVE" : "SQSX-PAPER";
 
     const [marketRes, assetsRes, dataRes, tradesRes, bookRes] = await Promise.all([
       db
         .from("exchange_markets")
         .select("name, status, environment, opens_at, closes_at")
-        .eq("code", "SQSX-PAPER")
+        .eq("code", marketCode)
         .maybeSingle(),
       db
         .from("exchange_assets")
         .select("id, symbol, name, asset_type, status, is_demo, environment, logo_url")
+        .eq("environment", data.environment)
         .order("symbol"),
       db.from("market_data").select("asset_id, last_price, prev_close, volume"),
       db.from("trades").select("asset_id, price, executed_at").order("executed_at").limit(500),
@@ -103,14 +108,13 @@ export const getMarketOverview = createServerFn({ method: "GET" }).handler(
     return {
       marketStatus: (market?.status as MarketOverview["marketStatus"]) ?? "CLOSED",
       marketName: (market?.name as string) ?? "SQs Exchange",
-      environment: (market?.environment as "PAPER" | "LIVE") ?? "PAPER",
+      environment: (market?.environment as "PAPER" | "LIVE") ?? data.environment,
       opensAt: (market?.opens_at as string) ?? "09:00",
       closesAt: (market?.closes_at as string) ?? "15:00",
       marketDataProvider: "PlatformMarketDataProvider",
       assets,
     };
-  },
-);
+  });
 
 export type AssetDetail = {
   id: string;
