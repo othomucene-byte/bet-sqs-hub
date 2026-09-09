@@ -151,6 +151,16 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
     const autoApprove = item.confidence >= AUTO_APPROVE_CONFIDENCE && Boolean(item.source_url);
     const status = autoApprove ? "approved" : "pending";
 
+    const { data: previous } = await supabaseAdmin
+      .from("company_data_points")
+      .select("id")
+      .eq("asset_id", assetId)
+      .eq("kind", item.kind)
+      .eq("status", "approved")
+      .order("collected_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
     const { data: inserted, error: insErr } = await supabaseAdmin
       .from("company_data_points")
       .insert({
@@ -169,6 +179,7 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
         model: MISTRAL_MODEL,
         run_id: runId,
         content_hash: contentHash,
+        ...(autoApprove && previous?.id ? { supersedes_id: previous.id as string } : {}),
         collected_at: new Date().toISOString(),
         ...(autoApprove ? { reviewed_at: new Date().toISOString() } : {}),
         validation_note: autoApprove
@@ -185,7 +196,7 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
       // O registo anterior do mesmo tipo passa a histórico, sem ser apagado.
       await supabaseAdmin
         .from("company_data_points")
-        .update({ status: "superseded", supersedes_id: inserted?.id ?? null })
+        .update({ status: "superseded" })
         .eq("asset_id", assetId)
         .eq("kind", item.kind)
         .eq("status", "approved")
