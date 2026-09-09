@@ -38,6 +38,7 @@ import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_aut
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
 import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
+import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 
@@ -198,6 +199,11 @@ const ApiPublicCronBonusExpiryRoute =
     path: '/api/public/cron/bonus-expiry',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronExchangeAiRoute = ApiPublicCronExchangeAiRouteImport.update({
+  id: '/api/public/cron/exchange-ai',
+  path: '/api/public/cron/exchange-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   id: '/api/public/cron/sports-sync',
   path: '/api/public/cron/sports-sync',
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
+  '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -271,6 +278,7 @@ export interface FileRoutesByTo {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
+  '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
+  '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
 }
@@ -339,6 +348,7 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/investidor/'
     | '/api/public/cron/bonus-expiry'
+    | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesByTo: FileRoutesByTo
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/investidor'
     | '/api/public/cron/bonus-expiry'
+    | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   id:
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/_authenticated/investidor/'
     | '/api/public/cron/bonus-expiry'
+    | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
   fileRoutesById: FileRoutesById
@@ -419,6 +431,7 @@ export interface RootRouteChildren {
   ExchangeIndexRoute: typeof ExchangeIndexRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
+  ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
 }
@@ -628,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBonusExpiryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/exchange-ai': {
+      id: '/api/public/cron/exchange-ai'
+      path: '/api/public/cron/exchange-ai'
+      fullPath: '/api/public/cron/exchange-ai'
+      preLoaderRoute: typeof ApiPublicCronExchangeAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/sports-sync': {
       id: '/api/public/cron/sports-sync'
       path: '/api/public/cron/sports-sync'
@@ -713,6 +733,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExchangeIndexRoute: ExchangeIndexRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
+  ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
 }
