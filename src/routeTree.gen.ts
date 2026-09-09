@@ -25,6 +25,7 @@ import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/ky
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
+import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
 import { Route as AuthenticatedExchangePortfolioRouteImport } from './routes/_authenticated/exchange.portfolio'
 import { Route as AuthenticatedExchangeTradesRouteImport } from './routes/_authenticated/exchange.trades'
@@ -119,6 +120,12 @@ const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   path: '/exchange/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedExchangeHistoryRoute =
+  AuthenticatedExchangeHistoryRouteImport.update({
+    id: '/exchange/history',
+    path: '/exchange/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExchangeOrdersRoute =
   AuthenticatedExchangeOrdersRouteImport.update({
     id: '/exchange/orders',
@@ -212,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
@@ -242,6 +250,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange': typeof ExchangeIndexRoute
+  '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
@@ -274,6 +283,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/_authenticated/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/_authenticated/exchange/trades': typeof AuthenticatedExchangeTradesRoute
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange/'
+    | '/exchange/history'
     | '/exchange/orders'
     | '/exchange/portfolio'
     | '/exchange/trades'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange'
+    | '/exchange/history'
     | '/exchange/orders'
     | '/exchange/portfolio'
     | '/exchange/trades'
@@ -367,6 +379,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/exchange/'
+    | '/_authenticated/exchange/history'
     | '/_authenticated/exchange/orders'
     | '/_authenticated/exchange/portfolio'
     | '/_authenticated/exchange/trades'
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExchangeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/exchange/history': {
+      id: '/_authenticated/exchange/history'
+      path: '/exchange/history'
+      fullPath: '/exchange/history'
+      preLoaderRoute: typeof AuthenticatedExchangeHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/exchange/orders': {
       id: '/_authenticated/exchange/orders'
       path: '/exchange/orders'
@@ -614,6 +634,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
+  AuthenticatedExchangeHistoryRoute: typeof AuthenticatedExchangeHistoryRoute
   AuthenticatedExchangeOrdersRoute: typeof AuthenticatedExchangeOrdersRoute
   AuthenticatedExchangePortfolioRoute: typeof AuthenticatedExchangePortfolioRoute
   AuthenticatedExchangeTradesRoute: typeof AuthenticatedExchangeTradesRoute
@@ -634,6 +655,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
+  AuthenticatedExchangeHistoryRoute: AuthenticatedExchangeHistoryRoute,
   AuthenticatedExchangeOrdersRoute: AuthenticatedExchangeOrdersRoute,
   AuthenticatedExchangePortfolioRoute: AuthenticatedExchangePortfolioRoute,
   AuthenticatedExchangeTradesRoute: AuthenticatedExchangeTradesRoute,
