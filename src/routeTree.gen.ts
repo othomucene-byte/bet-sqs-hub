@@ -25,6 +25,7 @@ import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/ky
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
+import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
 import { Route as AuthenticatedExchangePortfolioRouteImport } from './routes/_authenticated/exchange.portfolio'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
@@ -115,6 +116,12 @@ const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   path: '/exchange/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedExchangeOrdersRoute =
+  AuthenticatedExchangeOrdersRouteImport.update({
+    id: '/exchange/orders',
+    path: '/exchange/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExchangePortfolioRoute =
   AuthenticatedExchangePortfolioRouteImport.update({
     id: '/exchange/portfolio',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange': typeof ExchangeIndexRoute
+  '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/_authenticated/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange/'
+    | '/exchange/orders'
     | '/exchange/portfolio'
     | '/investidor/extrato'
     | '/investidor/ordens'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/exchange'
+    | '/exchange/orders'
     | '/exchange/portfolio'
     | '/investidor/extrato'
     | '/investidor/ordens'
@@ -319,6 +331,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/exchange/'
+    | '/_authenticated/exchange/orders'
     | '/_authenticated/exchange/portfolio'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
@@ -459,6 +472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExchangeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/exchange/orders': {
+      id: '/_authenticated/exchange/orders'
+      path: '/exchange/orders'
+      fullPath: '/exchange/orders'
+      preLoaderRoute: typeof AuthenticatedExchangeOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/exchange/portfolio': {
       id: '/_authenticated/exchange/portfolio'
       path: '/exchange/portfolio'
@@ -534,6 +554,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
+  AuthenticatedExchangeOrdersRoute: typeof AuthenticatedExchangeOrdersRoute
   AuthenticatedExchangePortfolioRoute: typeof AuthenticatedExchangePortfolioRoute
   AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
@@ -550,6 +571,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
+  AuthenticatedExchangeOrdersRoute: AuthenticatedExchangeOrdersRoute,
   AuthenticatedExchangePortfolioRoute: AuthenticatedExchangePortfolioRoute,
   AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
