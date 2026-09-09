@@ -1,0 +1,13 @@
+revoke all on function public.exchange_audit(uuid, text, text, uuid, jsonb) from public, anon, authenticated;
+revoke all on function public.exchange_platform_account(text) from public, anon, authenticated;
+revoke all on function public.exchange_ensure_account(uuid, text) from public, anon, authenticated;
+revoke all on function public.exchange_ledger_account(uuid, text) from public, anon, authenticated;
+revoke all on function public.exchange_balance(uuid) from public, anon, authenticated;
+revoke all on function public.exchange_cash(uuid) from public, anon, authenticated;
+grant execute on function public.exchange_audit(uuid, text, text, uuid, jsonb) to service_role;
+grant execute on function public.exchange_platform_account(text) to service_role;
+grant execute on function public.exchange_ensure_account(uuid, text) to service_role;
+grant execute on function public.exchange_ledger_account(uuid, text) to service_role;
+grant execute on function public.exchange_balance(uuid) to service_role;
+grant execute on function public.exchange_cash(uuid) to service_role;
+grant execute on function public.exchange_order_book(uuid, integer) to anon, authenticated, service_role;

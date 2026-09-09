@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       bet_selections: {
         Row: {
           created_at: string
@@ -356,6 +386,296 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_assets: {
+        Row: {
+          asset_type: string
+          company_id: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          environment: string
+          id: string
+          is_demo: boolean
+          issuer_info: string | null
+          logo_url: string | null
+          lot_size: number
+          market_id: string
+          name: string
+          status: string
+          symbol: string
+          tick_size: number
+          updated_at: string
+        }
+        Insert: {
+          asset_type?: string
+          company_id?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          is_demo?: boolean
+          issuer_info?: string | null
+          logo_url?: string | null
+          lot_size?: number
+          market_id: string
+          name: string
+          status?: string
+          symbol: string
+          tick_size?: number
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          company_id?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          is_demo?: boolean
+          issuer_info?: string | null
+          logo_url?: string | null
+          lot_size?: number
+          market_id?: string
+          name?: string
+          status?: string
+          symbol?: string
+          tick_size?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_assets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_assets_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_markets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_markets: {
+        Row: {
+          closes_at: string
+          code: string
+          created_at: string
+          environment: string
+          id: string
+          name: string
+          opens_at: string
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          closes_at?: string
+          code: string
+          created_at?: string
+          environment?: string
+          id?: string
+          name: string
+          opens_at?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          closes_at?: string
+          code?: string
+          created_at?: string
+          environment?: string
+          id?: string
+          name?: string
+          opens_at?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exchange_orders: {
+        Row: {
+          account_id: string
+          asset_id: string
+          avg_fill_price: number | null
+          cancelled_at: string | null
+          created_at: string
+          environment: string
+          filled_quantity: number
+          id: string
+          idempotency_key: string
+          limit_price: number | null
+          order_type: string
+          quantity: number
+          reject_reason: string | null
+          remaining_quantity: number
+          reserved_amount: number
+          reserved_quantity: number
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          asset_id: string
+          avg_fill_price?: number | null
+          cancelled_at?: string | null
+          created_at?: string
+          environment?: string
+          filled_quantity?: number
+          id?: string
+          idempotency_key: string
+          limit_price?: number | null
+          order_type: string
+          quantity: number
+          reject_reason?: string | null
+          remaining_quantity: number
+          reserved_amount?: number
+          reserved_quantity?: number
+          side: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          asset_id?: string
+          avg_fill_price?: number | null
+          cancelled_at?: string | null
+          created_at?: string
+          environment?: string
+          filled_quantity?: number
+          id?: string
+          idempotency_key?: string
+          limit_price?: number | null
+          order_type?: string
+          quantity?: number
+          reject_reason?: string | null
+          remaining_quantity?: number
+          reserved_amount?: number
+          reserved_quantity?: number
+          side?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_orders_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_transfers: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          direction: string
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          reference: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          direction: string
+          failure_reason?: string | null
+          id?: string
+          idempotency_key: string
+          reference: string
+          source: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          direction?: string
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string
+          reference?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_transfers_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_configs: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          fixed: number
+          id: string
+          name: string
+          percent: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          fixed?: number
+          id?: string
+          name: string
+          percent?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          fixed?: number
+          id?: string
+          name?: string
+          percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       free_bets: {
         Row: {
           created_at: string
@@ -529,6 +849,39 @@ export type Database = {
           settled_at?: string | null
           started_at?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      investment_accounts: {
+        Row: {
+          account_type: string
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type?: string
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: string
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1072,6 +1425,116 @@ export type Database = {
         }
         Relationships: []
       }
+      ledger_accounts: {
+        Row: {
+          account_id: string | null
+          code: string
+          created_at: string
+          currency: string
+          id: string
+          kind: string
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          code: string
+          created_at?: string
+          currency?: string
+          id?: string
+          kind: string
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          code?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_accounts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_entries: {
+        Row: {
+          created_at: string
+          credit: number
+          currency: string
+          debit: number
+          id: string
+          ledger_account_id: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          credit?: number
+          currency?: string
+          debit?: number
+          id?: string
+          ledger_account_id: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          credit?: number
+          currency?: string
+          debit?: number
+          id?: string
+          ledger_account_id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_ledger_account_id_fkey"
+            columns: ["ledger_account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_transactions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reference: string
+          reference_id: string | null
+          reference_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference: string
+          reference_id?: string | null
+          reference_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference?: string
+          reference_id?: string | null
+          reference_type?: string
+        }
+        Relationships: []
+      }
       loss_streaks: {
         Row: {
           created_at: string
@@ -1101,6 +1564,82 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      market_data: {
+        Row: {
+          asset_id: string
+          day_high: number | null
+          day_low: number | null
+          last_price: number | null
+          prev_close: number | null
+          trades_count: number
+          updated_at: string
+          volume: number
+        }
+        Insert: {
+          asset_id: string
+          day_high?: number | null
+          day_low?: number | null
+          last_price?: number | null
+          prev_close?: number | null
+          trades_count?: number
+          updated_at?: string
+          volume?: number
+        }
+        Update: {
+          asset_id?: string
+          day_high?: number | null
+          day_low?: number | null
+          last_price?: number | null
+          prev_close?: number | null
+          trades_count?: number
+          updated_at?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_data_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_sessions: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          market_id: string
+          note: string | null
+          status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          market_id: string
+          note?: string | null
+          status: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          market_id?: string
+          note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_sessions_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_markets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -1134,6 +1673,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      order_events: {
+        Row: {
+          created_at: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          note: string | null
+          order_id: string
+          to_status: string
+        }
+        Insert: {
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          order_id: string
+          to_status: string
+        }
+        Update: {
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          order_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_intents: {
         Row: {
@@ -1193,6 +1770,60 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          account_id: string
+          asset_id: string
+          avg_price: number
+          created_at: string
+          id: string
+          quantity: number
+          realized_pnl: number
+          reserved_quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          asset_id: string
+          avg_price?: number
+          created_at?: string
+          id?: string
+          quantity?: number
+          realized_pnl?: number
+          reserved_quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          asset_id?: string
+          avg_price?: number
+          created_at?: string
+          id?: string
+          quantity?: number
+          realized_pnl?: number
+          reserved_quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "positions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
             referencedColumns: ["id"]
           },
         ]
@@ -1260,6 +1891,69 @@ export type Database = {
           params?: Json
           starts_at?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      risk_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          message: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      risk_limits: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          max_daily_volume: number
+          max_open_orders: number
+          max_order_value: number
+          max_position_value: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_daily_volume?: number
+          max_open_orders?: number
+          max_order_value?: number
+          max_position_value?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_daily_volume?: number
+          max_open_orders?: number
+          max_order_value?: number
+          max_position_value?: number
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1440,6 +2134,108 @@ export type Database = {
         }
         Relationships: []
       }
+      trades: {
+        Row: {
+          asset_id: string
+          buy_order_id: string
+          buyer_account_id: string
+          buyer_fee: number
+          buyer_id: string
+          environment: string
+          executed_at: string
+          gross_value: number
+          id: string
+          net_buyer_value: number
+          net_seller_value: number
+          price: number
+          quantity: number
+          reference: string
+          sell_order_id: string
+          seller_account_id: string
+          seller_fee: number
+          seller_id: string
+          settlement_status: string
+        }
+        Insert: {
+          asset_id: string
+          buy_order_id: string
+          buyer_account_id: string
+          buyer_fee?: number
+          buyer_id: string
+          environment?: string
+          executed_at?: string
+          gross_value: number
+          id?: string
+          net_buyer_value: number
+          net_seller_value: number
+          price: number
+          quantity: number
+          reference: string
+          sell_order_id: string
+          seller_account_id: string
+          seller_fee?: number
+          seller_id: string
+          settlement_status?: string
+        }
+        Update: {
+          asset_id?: string
+          buy_order_id?: string
+          buyer_account_id?: string
+          buyer_fee?: number
+          buyer_id?: string
+          environment?: string
+          executed_at?: string
+          gross_value?: number
+          id?: string
+          net_buyer_value?: number
+          net_seller_value?: number
+          price?: number
+          quantity?: number
+          reference?: string
+          sell_order_id?: string
+          seller_account_id?: string
+          seller_fee?: number
+          seller_id?: string
+          settlement_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_buy_order_id_fkey"
+            columns: ["buy_order_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_buyer_account_id_fkey"
+            columns: ["buyer_account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_sell_order_id_fkey"
+            columns: ["sell_order_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_seller_account_id_fkey"
+            columns: ["seller_account_id"]
+            isOneToOne: false
+            referencedRelation: "investment_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1550,6 +2346,35 @@ export type Database = {
         }
         Relationships: []
       }
+      watchlists: {
+        Row: {
+          asset_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlists_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1649,6 +2474,239 @@ export type Database = {
       ensure_wallet: {
         Args: { _kind: string; _user_id: string }
         Returns: string
+      }
+      exchange_audit: {
+        Args: {
+          _action: string
+          _entity: string
+          _entity_id: string
+          _metadata?: Json
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      exchange_balance: {
+        Args: { _ledger_account_id: string }
+        Returns: number
+      }
+      exchange_cancel_order: {
+        Args: { _admin?: boolean; _order_id: string; _user_id: string }
+        Returns: {
+          account_id: string
+          asset_id: string
+          avg_fill_price: number | null
+          cancelled_at: string | null
+          created_at: string
+          environment: string
+          filled_quantity: number
+          id: string
+          idempotency_key: string
+          limit_price: number | null
+          order_type: string
+          quantity: number
+          reject_reason: string | null
+          remaining_quantity: number
+          reserved_amount: number
+          reserved_quantity: number
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_cash: {
+        Args: { _account_id: string }
+        Returns: {
+          available: number
+          reserved: number
+          securities: number
+        }[]
+      }
+      exchange_create_order: {
+        Args: {
+          _asset_id: string
+          _env?: string
+          _idempotency_key: string
+          _limit_price: number
+          _order_type: string
+          _quantity: number
+          _side: string
+          _user_id: string
+        }
+        Returns: {
+          account_id: string
+          asset_id: string
+          avg_fill_price: number | null
+          cancelled_at: string | null
+          created_at: string
+          environment: string
+          filled_quantity: number
+          id: string
+          idempotency_key: string
+          limit_price: number | null
+          order_type: string
+          quantity: number
+          reject_reason: string | null
+          remaining_quantity: number
+          reserved_amount: number
+          reserved_quantity: number
+          side: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_ensure_account: {
+        Args: { _env?: string; _user_id: string }
+        Returns: string
+      }
+      exchange_execute_trade: {
+        Args: {
+          _buy_id: string
+          _price: number
+          _quantity: number
+          _sell_id: string
+        }
+        Returns: {
+          asset_id: string
+          buy_order_id: string
+          buyer_account_id: string
+          buyer_fee: number
+          buyer_id: string
+          environment: string
+          executed_at: string
+          gross_value: number
+          id: string
+          net_buyer_value: number
+          net_seller_value: number
+          price: number
+          quantity: number
+          reference: string
+          sell_order_id: string
+          seller_account_id: string
+          seller_fee: number
+          seller_id: string
+          settlement_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "trades"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_grant_paper_cash: {
+        Args: { _amount: number; _idempotency_key: string; _user_id: string }
+        Returns: {
+          account_id: string
+          amount: number
+          created_at: string
+          direction: string
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          reference: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_transfers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_ledger_account: {
+        Args: { _account_id: string; _kind: string }
+        Returns: string
+      }
+      exchange_ledger_post: {
+        Args: {
+          _description?: string
+          _entries: Json
+          _reference: string
+          _reference_id: string
+          _reference_type: string
+        }
+        Returns: string
+      }
+      exchange_order_book: {
+        Args: { _asset_id: string; _depth?: number }
+        Returns: {
+          orders: number
+          price: number
+          quantity: number
+          side: string
+        }[]
+      }
+      exchange_platform_account: { Args: { _kind: string }; Returns: string }
+      exchange_set_market_status: {
+        Args: {
+          _admin_id: string
+          _market_id: string
+          _note?: string
+          _status: string
+        }
+        Returns: {
+          closes_at: string
+          code: string
+          created_at: string
+          environment: string
+          id: string
+          name: string
+          opens_at: string
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_markets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_transfer_wallet: {
+        Args: {
+          _amount: number
+          _direction: string
+          _idempotency_key: string
+          _user_id: string
+        }
+        Returns: {
+          account_id: string
+          amount: number
+          created_at: string
+          direction: string
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          reference: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_transfers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       expire_bonuses: { Args: never; Returns: number }
       grant_first_deposit_bonus: {

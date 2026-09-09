@@ -24,6 +24,7 @@ import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/f
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
+import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
@@ -107,6 +108,11 @@ const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
   path: '/promocoes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
+  id: '/exchange/',
+  path: '/exchange/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedInvestidorIndexRoute =
   AuthenticatedInvestidorIndexRouteImport.update({
     id: '/investidor/',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/exchange/': typeof ExchangeIndexRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/exchange': typeof ExchangeIndexRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
+  '/exchange/': typeof ExchangeIndexRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notificacoes'
     | '/promocoes'
+    | '/exchange/'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notificacoes'
     | '/promocoes'
+    | '/exchange'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kyc'
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
+    | '/exchange/'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
+  ExchangeIndexRoute: typeof ExchangeIndexRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
@@ -413,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPromocoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/exchange/': {
+      id: '/exchange/'
+      path: '/exchange'
+      fullPath: '/exchange/'
+      preLoaderRoute: typeof ExchangeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/investidor/': {
       id: '/_authenticated/investidor/'
       path: '/investidor'
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
+  ExchangeIndexRoute: ExchangeIndexRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
