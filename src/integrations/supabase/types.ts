@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_jobs: {
+        Row: {
+          created_at: string
+          cursor_asset_id: string | null
+          failure_count: number
+          id: string
+          job_key: string
+          last_error: string | null
+          last_run_at: string | null
+          last_success_at: string | null
+          lease_until: string | null
+          paused_reason: string | null
+          processed_today: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cursor_asset_id?: string | null
+          failure_count?: number
+          id?: string
+          job_key: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_success_at?: string | null
+          lease_until?: string | null
+          paused_reason?: string | null
+          processed_today?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cursor_asset_id?: string | null
+          failure_count?: number
+          id?: string
+          job_key?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_success_at?: string | null
+          lease_until?: string | null
+          paused_reason?: string | null
+          processed_today?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -386,6 +434,106 @@ export type Database = {
         }
         Relationships: []
       }
+      company_data_points: {
+        Row: {
+          asset_id: string
+          collected_at: string
+          company_id: string | null
+          confidence: number
+          content_hash: string
+          created_at: string
+          event_date: string | null
+          id: string
+          kind: string
+          metrics: Json
+          model: string | null
+          provider: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          run_id: string | null
+          source_name: string
+          source_url: string | null
+          status: string
+          summary: string | null
+          supersedes_id: string | null
+          title: string
+          updated_at: string
+          validation_note: string | null
+        }
+        Insert: {
+          asset_id: string
+          collected_at?: string
+          company_id?: string | null
+          confidence?: number
+          content_hash: string
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          kind: string
+          metrics?: Json
+          model?: string | null
+          provider?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          source_name: string
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          supersedes_id?: string | null
+          title: string
+          updated_at?: string
+          validation_note?: string | null
+        }
+        Update: {
+          asset_id?: string
+          collected_at?: string
+          company_id?: string | null
+          confidence?: number
+          content_hash?: string
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          kind?: string
+          metrics?: Json
+          model?: string | null
+          provider?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          source_name?: string
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          supersedes_id?: string | null
+          title?: string
+          updated_at?: string
+          validation_note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_data_points_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_data_points_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_data_points_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "company_data_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_assets: {
         Row: {
           asset_type: string
@@ -463,6 +611,93 @@ export type Database = {
             columns: ["market_id"]
             isOneToOne: false
             referencedRelation: "exchange_markets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_listing_applications: {
+        Row: {
+          asset_id: string | null
+          asset_type: string
+          company_id: string | null
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          description: string | null
+          documents: Json
+          id: string
+          proposed_symbol: string
+          reference_price: number | null
+          sector: string | null
+          shares_offered: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          asset_type?: string
+          company_id?: string | null
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          description?: string | null
+          documents?: Json
+          id?: string
+          proposed_symbol: string
+          reference_price?: number | null
+          sector?: string | null
+          shares_offered?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          asset_type?: string
+          company_id?: string | null
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          description?: string | null
+          documents?: Json
+          id?: string
+          proposed_symbol?: string
+          reference_price?: number | null
+          sector?: string | null
+          shares_offered?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_listing_applications_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_listing_applications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -2380,6 +2615,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ai_job_acquire: {
+        Args: { _job_key: string; _lease_seconds?: number }
+        Returns: {
+          created_at: string
+          cursor_asset_id: string | null
+          failure_count: number
+          id: string
+          job_key: string
+          last_error: string | null
+          last_run_at: string | null
+          last_success_at: string | null
+          lease_until: string | null
+          paused_reason: string | null
+          processed_today: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ai_jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ai_job_release: {
+        Args: {
+          _error?: string
+          _job_key: string
+          _ok: boolean
+          _pause?: boolean
+          _processed?: number
+        }
+        Returns: undefined
+      }
       bonus_apply: {
         Args: {
           _amount: number
