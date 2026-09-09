@@ -293,7 +293,7 @@ export const setMarketStatus = createServerFn({ method: "POST" })
       _admin_id: context.userId,
       _market_id: data.marketId,
       _status: data.status,
-      _note: data.note ?? null,
+      _note: data.note ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { status: data.status };
