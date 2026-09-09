@@ -28,6 +28,7 @@ import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
 import { Route as AuthenticatedExchangePortfolioRouteImport } from './routes/_authenticated/exchange.portfolio'
 import { Route as AuthenticatedExchangeTradesRouteImport } from './routes/_authenticated/exchange.trades'
+import { Route as AuthenticatedExchangeWalletRouteImport } from './routes/_authenticated/exchange.wallet'
 import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_authenticated/investidor.index'
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
@@ -135,6 +136,12 @@ const AuthenticatedExchangeTradesRoute =
     path: '/exchange/trades',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedExchangeWalletRoute =
+  AuthenticatedExchangeWalletRouteImport.update({
+    id: '/exchange/wallet',
+    path: '/exchange/wallet',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvestidorIndexRoute =
   AuthenticatedInvestidorIndexRouteImport.update({
     id: '/investidor/',
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -229,6 +237,7 @@ export interface FileRoutesByTo {
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -259,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
   '/_authenticated/exchange/portfolio': typeof AuthenticatedExchangePortfolioRoute
   '/_authenticated/exchange/trades': typeof AuthenticatedExchangeTradesRoute
+  '/_authenticated/exchange/wallet': typeof AuthenticatedExchangeWalletRoute
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/exchange/orders'
     | '/exchange/portfolio'
     | '/exchange/trades'
+    | '/exchange/wallet'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/exchange/orders'
     | '/exchange/portfolio'
     | '/exchange/trades'
+    | '/exchange/wallet'
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
@@ -346,6 +358,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exchange/orders'
     | '/_authenticated/exchange/portfolio'
     | '/_authenticated/exchange/trades'
+    | '/_authenticated/exchange/wallet'
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
@@ -506,6 +519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExchangeTradesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/exchange/wallet': {
+      id: '/_authenticated/exchange/wallet'
+      path: '/exchange/wallet'
+      fullPath: '/exchange/wallet'
+      preLoaderRoute: typeof AuthenticatedExchangeWalletRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/investidor/': {
       id: '/_authenticated/investidor/'
       path: '/investidor'
@@ -577,6 +597,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedExchangeOrdersRoute: typeof AuthenticatedExchangeOrdersRoute
   AuthenticatedExchangePortfolioRoute: typeof AuthenticatedExchangePortfolioRoute
   AuthenticatedExchangeTradesRoute: typeof AuthenticatedExchangeTradesRoute
+  AuthenticatedExchangeWalletRoute: typeof AuthenticatedExchangeWalletRoute
   AuthenticatedInvestidorExtratoRoute: typeof AuthenticatedInvestidorExtratoRoute
   AuthenticatedInvestidorOrdensRoute: typeof AuthenticatedInvestidorOrdensRoute
   AuthenticatedInvestidorRendimentosRoute: typeof AuthenticatedInvestidorRendimentosRoute
@@ -595,6 +616,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedExchangeOrdersRoute: AuthenticatedExchangeOrdersRoute,
   AuthenticatedExchangePortfolioRoute: AuthenticatedExchangePortfolioRoute,
   AuthenticatedExchangeTradesRoute: AuthenticatedExchangeTradesRoute,
+  AuthenticatedExchangeWalletRoute: AuthenticatedExchangeWalletRoute,
   AuthenticatedInvestidorExtratoRoute: AuthenticatedInvestidorExtratoRoute,
   AuthenticatedInvestidorOrdensRoute: AuthenticatedInvestidorOrdensRoute,
   AuthenticatedInvestidorRendimentosRoute:
