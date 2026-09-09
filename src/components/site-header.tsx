@@ -56,11 +56,13 @@ const publicGroups: NavGroup[] = [
   {
     title: "Investimentos",
     links: [
+      { href: "/exchange", label: "SQs Exchange", icon: LineChart },
       { href: "/investimentos", label: "Investimentos", icon: LineChart },
       { href: "/empresas", label: "Empresas", icon: Building2 },
       { href: "/pagamentos", label: "Pagamentos", icon: CreditCard },
     ],
   },
+
   {
     title: "Plataforma",
     links: [{ href: "/#seguranca", label: "Segurança", icon: ShieldCheck }],
