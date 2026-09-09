@@ -88,7 +88,7 @@ export class PaperTradingAdapter implements ExchangeAdapter {
       _side: input.side,
       _order_type: input.orderType,
       _quantity: input.quantity,
-      _limit_price: input.limitPrice,
+      _limit_price: input.limitPrice as number,
       _idempotency_key: input.idempotencyKey,
       _env: input.environment,
     });
