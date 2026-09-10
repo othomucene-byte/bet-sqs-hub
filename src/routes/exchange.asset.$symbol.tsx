@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { EnvBadge, ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { getAssetDetail } from "@/lib/exchange/market.functions";
+import { getCompanyData } from "@/lib/exchange/company-data.functions";
 import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, pct, price, splitBook } from "@/lib/exchange/format";
 
 export const Route = createFileRoute("/exchange/asset/$symbol")({
@@ -35,6 +36,15 @@ export const Route = createFileRoute("/exchange/asset/$symbol")({
   }),
   component: AssetPage,
 });
+
+const KIND_LABEL: Record<string, string> = {
+  earnings: "Resultados",
+  news: "Notícia",
+  dividend: "Dividendo",
+  corporate_event: "Evento corporativo",
+  guidance: "Perspetivas",
+  other: "Outro",
+};
 
 const timeFmt = new Intl.DateTimeFormat("pt-PT", {
   hour: "2-digit",
@@ -69,6 +79,13 @@ function AssetPage() {
   }, [symbol, queryClient]);
 
   const asset = query.data;
+  const fetchCompanyData = useServerFn(getCompanyData);
+  const companyData = useQuery({
+    queryKey: ["exchange-company-data", asset?.id],
+    queryFn: () => fetchCompanyData({ data: { assetId: asset!.id, includeHistory: false } }),
+    enabled: Boolean(asset?.id),
+    refetchInterval: 300000,
+  });
   const { bids, asks } = splitBook(asset?.book ?? []);
   const change =
     asset?.quote.lastPrice != null && asset.quote.prevClose != null && asset.quote.prevClose > 0
@@ -99,7 +116,7 @@ function AssetPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold">{asset.symbol}</h1>
                 <Badge variant="outline">{ASSET_TYPE_LABEL[asset.assetType] ?? asset.assetType}</Badge>
-                {asset.isDemo && <PaperBadge />}
+                {asset.isDemo ? <PaperBadge /> : <EnvBadge environment="LIVE" />}
               </div>
               <p className="text-sm text-muted-foreground">{asset.name}</p>
               <div className="flex items-end gap-3">
@@ -124,11 +141,12 @@ function AssetPage() {
 
             <div className="grid gap-4 md:grid-cols-[1fr_320px]">
               <Tabs defaultValue="resumo">
-                <TabsList className="grid w-full grid-cols-5 text-xs">
+                <TabsList className="grid w-full grid-cols-6 text-xs">
                   <TabsTrigger value="resumo">Resumo</TabsTrigger>
                   <TabsTrigger value="grafico">Gráfico</TabsTrigger>
                   <TabsTrigger value="livro">Livro</TabsTrigger>
                   <TabsTrigger value="negocios">Negócios</TabsTrigger>
+                  <TabsTrigger value="empresa">Empresa</TabsTrigger>
                   <TabsTrigger value="info">Info</TabsTrigger>
                 </TabsList>
 
@@ -218,6 +236,58 @@ function AssetPage() {
                   </Card>
                 </TabsContent>
 
+                <TabsContent value="empresa" className="space-y-2 pt-3">
+                  {companyData.isLoading && <Skeleton className="h-24 w-full" />}
+                  {companyData.data?.length === 0 && (
+                    <Card>
+                      <CardContent className="p-4 text-sm text-muted-foreground">
+                        Ainda não há dados validados desta empresa. A atualização automática corre de
+                        hora a hora e cada registo é publicado com fonte e data.
+                      </CardContent>
+                    </Card>
+                  )}
+                  {(companyData.data ?? []).map((d) => (
+                    <Card key={d.id}>
+                      <CardContent className="space-y-1 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className="text-[10px] uppercase">
+                            {KIND_LABEL[d.kind] ?? d.kind}
+                          </Badge>
+                          <span className="text-[11px] text-muted-foreground">
+                            {new Date(d.collectedAt).toLocaleDateString("pt-PT")}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold">{d.title}</p>
+                        {d.summary && <p className="text-xs text-muted-foreground">{d.summary}</p>}
+                        {Object.keys(d.metrics).length > 0 && (
+                          <div className="grid grid-cols-2 gap-1 pt-1 text-xs">
+                            {Object.entries(d.metrics).map(([k, v]) => (
+                              <div key={k} className="flex justify-between gap-2">
+                                <span className="text-muted-foreground">{k}</span>
+                                <span className="font-medium">{String(v)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="pt-1 text-[11px] text-muted-foreground">
+                          Fonte: {d.sourceUrl ? (
+                            <a href={d.sourceUrl} target="_blank" rel="noreferrer noopener" className="underline">
+                              {d.sourceName}
+                            </a>
+                          ) : (
+                            d.sourceName
+                          )}{" "}
+                          · Confiança {(d.confidence * 100).toFixed(0)}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <p className="text-[11px] text-muted-foreground">
+                    Informação recolhida por inteligência artificial e validada antes de publicação.
+                    Não é recomendação de investimento.
+                  </p>
+                </TabsContent>
+
                 <TabsContent value="info" className="pt-3">
                   <Card>
                     <CardContent className="space-y-2 p-4 text-sm text-muted-foreground">
@@ -243,6 +313,7 @@ function AssetPage() {
                 bestAsk={asset.quote.ask}
                 lastPrice={asset.quote.lastPrice}
                 marketStatus={asset.marketStatus}
+                environment={asset.environment === "LIVE" ? "LIVE" : "PAPER"}
                 onDone={() => query.refetch()}
               />
             </div>

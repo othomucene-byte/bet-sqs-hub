@@ -15,6 +15,8 @@ import {
   setMarketStatus,
 } from "@/lib/exchange/admin.functions";
 import { MZN, MARKET_STATUS_LABEL, ORDER_STATUS_LABEL, price } from "@/lib/exchange/format";
+import { AdminListings } from "@/components/exchange/admin-listings";
+import { AdminAi } from "@/components/exchange/admin-ai";
 
 export const Route = createFileRoute("/_authenticated/admin/exchange")({
   head: () => ({
@@ -151,12 +153,14 @@ function AdminExchange() {
             </Card>
 
             <Tabs defaultValue="ordens">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+              <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
                 <TabsTrigger value="ordens">Ordens</TabsTrigger>
                 <TabsTrigger value="negocios">Negócios</TabsTrigger>
                 <TabsTrigger value="ativos">Instrumentos</TabsTrigger>
                 <TabsTrigger value="ledger">Ledger</TabsTrigger>
                 <TabsTrigger value="risco">Risco e taxas</TabsTrigger>
+                <TabsTrigger value="listagens">Listagens</TabsTrigger>
+                <TabsTrigger value="ia">Inteligência</TabsTrigger>
                 <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
               </TabsList>
 
@@ -288,6 +292,14 @@ function AdminExchange() {
                     ))}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="listagens" className="pt-3">
+                <AdminListings />
+              </TabsContent>
+
+              <TabsContent value="ia" className="pt-3">
+                <AdminAi />
               </TabsContent>
 
               <TabsContent value="auditoria" className="pt-3">

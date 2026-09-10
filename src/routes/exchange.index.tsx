@@ -6,7 +6,7 @@ import { Search, TrendingDown, TrendingUp } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { EnvBadge, ExchangeNav } from "@/components/exchange/exchange-nav";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,12 @@ const CATEGORIES = ["Todos", "EQUITY", "BOND", "COMMERCIAL_PAPER", "FUND", "OTHE
 
 function ExchangeMarket() {
   const fetchMarket = useServerFn(getMarketOverview);
-  const query = useQuery({ queryKey: ["exchange-market"], queryFn: () => fetchMarket() });
+  const [environment, setEnvironment] = useState<"LIVE" | "PAPER">("LIVE");
+  const query = useQuery({
+    queryKey: ["exchange-market", environment],
+    queryFn: () => fetchMarket({ data: { environment } }),
+    refetchInterval: 20000,
+  });
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<string>("Todos");
 
@@ -61,7 +66,23 @@ function ExchangeMarket() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">SQs Exchange</h1>
             <span className="text-sm text-muted-foreground">🇲🇿 Mercado Moçambicano · MZN</span>
-            <PaperBadge />
+            <EnvBadge environment={environment} />
+          </div>
+          <div className="flex gap-1 rounded-lg border border-border/60 bg-card/50 p-1">
+            {(["LIVE", "PAPER"] as const).map((env) => (
+              <button
+                key={env}
+                type="button"
+                onClick={() => setEnvironment(env)}
+                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  environment === env
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {env === "LIVE" ? "Mercado real" : "Simulação"}
+              </button>
+            ))}
           </div>
           <p className="text-sm text-muted-foreground">
             {query.data
@@ -118,7 +139,9 @@ function ExchangeMarket() {
         {query.data && assets.length === 0 && (
           <Card>
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Nenhum instrumento corresponde à pesquisa.
+              {(query.data.assets.length ?? 0) === 0 && environment === "LIVE"
+                ? "Ainda não há instrumentos listados no mercado real. As empresas aprovadas pela administração aparecem aqui."
+                : "Nenhum instrumento corresponde à pesquisa."}
             </CardContent>
           </Card>
         )}
@@ -197,10 +220,9 @@ function ExchangeMarket() {
         </div>
 
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          Ambiente de simulação (paper trading). Os preços apresentados resultam apenas de negócios
-          executados nesta plataforma entre participantes da simulação — não são cotações da BVM nem
-          de qualquer bolsa. A ligação a um operador autorizado está pendente de credenciais e API
-          oficial.
+          {environment === "LIVE"
+            ? "Mercado próprio da Betfcom SQs em meticais. Os preços resultam exclusivamente de negócios executados entre participantes deste mercado; não são cotações de terceiros. Negociar exige identidade verificada. Investir envolve risco de perda de capital e nenhum retorno é garantido."
+            : "Ambiente de simulação (paper trading) com dinheiro fictício, separado do dinheiro real. Os preços resultam apenas de negócios entre participantes da simulação."}
         </p>
       </main>
       <ExchangeNav />

@@ -68,3 +68,13 @@ export function PaperBadge() {
     </span>
   );
 }
+
+/** Identifica claramente se o ecrã está a mostrar dinheiro real ou simulação. */
+export function EnvBadge({ environment }: { environment: "LIVE" | "PAPER" }) {
+  if (environment === "PAPER") return <PaperBadge />;
+  return (
+    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-400">
+      Mercado real · MZN
+    </span>
+  );
+}

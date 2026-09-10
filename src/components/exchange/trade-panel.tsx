@@ -22,6 +22,7 @@ type Props = {
   bestAsk: number | null;
   lastPrice: number | null;
   marketStatus: string;
+  environment: "LIVE" | "PAPER";
   onDone?: () => void;
 };
 
@@ -54,7 +55,7 @@ export function TradePanel(props: Props) {
           quantity: Number(quantity),
           limitPrice: orderType === "LIMIT" ? Number(limitPrice) : null,
           idempotencyKey: `ord-${crypto.randomUUID()}`,
-          environment: "PAPER" as const,
+          environment: props.environment,
         },
       }),
     onSuccess: (order) => {
@@ -92,7 +93,11 @@ export function TradePanel(props: Props) {
           <CardTitle className="text-base">Negociar {props.symbol}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>Inicie sessão para colocar ordens no mercado de simulação.</p>
+          <p>
+            {props.environment === "LIVE"
+              ? "Inicie sessão e verifique a identidade para colocar ordens no mercado real."
+              : "Inicie sessão para colocar ordens no mercado de simulação."}
+          </p>
           <Button asChild className="w-full">
             <Link to="/auth">Entrar ou criar conta</Link>
           </Button>
@@ -182,7 +187,9 @@ export function TradePanel(props: Props) {
           </p>
         )}
         <p className="text-center text-[11px] text-muted-foreground">
-          Ambiente de simulação. Validação, reserva de fundos e cruzamento acontecem no servidor.
+          {props.environment === "LIVE"
+            ? "Mercado real em meticais. Validação, verificação de identidade, reserva de fundos e cruzamento acontecem no servidor."
+            : "Ambiente de simulação. Validação, reserva de fundos e cruzamento acontecem no servidor."}
         </p>
       </CardContent>
     </Card>
