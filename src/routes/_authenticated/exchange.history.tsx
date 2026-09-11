@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { ExchangeNav, LiveBadge } from "@/components/exchange/exchange-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ function HistoryPage() {
       <main className="mx-auto w-full max-w-4xl space-y-4 px-4 py-5">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold">Histórico</h1>
-          <PaperBadge />
+          <LiveBadge />
         </div>
         <ExchangeNav />
 

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
   AssetLogo,
   Panel,
@@ -22,10 +22,10 @@ export const Route = createFileRoute("/_authenticated/exchange/portfolio")({
       {
         name: "description",
         content:
-          "Valor total, posições, lucro/prejuízo e liquidez da sua conta de simulação no SQs Exchange.",
+          "Valor total, posições, lucro/prejuízo e liquidez da sua conta de mercado no SQs Exchange.",
       },
       { property: "og:title", content: "Carteira SQs Exchange" },
-      { property: "og:description", content: "Posições e resultado da conta de simulação." },
+      { property: "og:description", content: "Posições e resultado da conta de mercado." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -37,7 +37,7 @@ function PortfolioPage() {
   const fetchAccount = useServerFn(getExchangeAccount);
   const query = useQuery({
     queryKey: ["exchange-account"],
-    queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
     refetchInterval: 20000,
   });
   const acc = query.data;
@@ -45,7 +45,7 @@ function PortfolioPage() {
   return (
     <TerminalShell
       title="Carteira do mercado"
-      badges={<PaperBadge />}
+      badges={<LiveBadge />}
       subtitle="Valor total, posições e resultado calculados no servidor a partir do livro e do registo de negócios."
     >
       {query.isLoading && <Skeleton className="h-40 w-full" />}
