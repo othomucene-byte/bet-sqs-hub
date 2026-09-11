@@ -159,7 +159,11 @@ export type AssetDetail = {
   book: { side: "BUY" | "SELL"; price: number; quantity: number; orders: number }[];
   trades: { id: string; price: number; quantity: number; executedAt: string }[];
   history: { t: string; price: number }[];
+  referencePrice: number | null;
+  referenceSource: string | null;
+  isReferenceOnly: boolean;
 };
+
 
 export const getAssetDetail = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
