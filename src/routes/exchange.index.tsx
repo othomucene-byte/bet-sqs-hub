@@ -236,6 +236,9 @@ function ExchangeMarket() {
                         (up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />)}
                       {pct(a.changePct)}
                     </p>
+                    <span className="mt-1 inline-block rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                      Investir
+                    </span>
                   </div>
                 </div>
               </Link>
