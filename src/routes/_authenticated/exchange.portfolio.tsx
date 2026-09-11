@@ -198,10 +198,11 @@ function PortfolioPage() {
       )}
 
       <p className="text-[11px] text-muted-foreground">
-        Ambiente de simulação: os valores usam apenas preços de negócios ocorridos nesta plataforma e
-        preços de referência definidos pela administração. Não representam cotações oficiais nem
-        dinheiro real.
+        Mercado real em meticais: os valores usam os preços dos negócios ocorridos neste mercado e,
+        antes do primeiro negócio, o preço de referência da empresa. Investir envolve risco de perda
+        de capital.
       </p>
+
     </TerminalShell>
   );
 }
