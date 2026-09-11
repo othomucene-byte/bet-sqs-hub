@@ -43,7 +43,6 @@ export function TerminalShell({
         </header>
         {children}
 
-        {children}
       </main>
       <ExchangeNav />
     </div>
