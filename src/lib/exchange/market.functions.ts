@@ -177,7 +177,7 @@ export const getAssetDetail = createServerFn({ method: "POST" })
     const { data: asset } = await db
       .from("exchange_assets")
       .select(
-        "id, symbol, name, asset_type, status, currency, country, is_demo, environment, tick_size, lot_size, description, issuer_info, market_id, companies(name)",
+        "id, symbol, name, asset_type, status, currency, country, is_demo, environment, tick_size, lot_size, description, issuer_info, market_id, reference_price, reference_price_source, companies(name)",
       )
       .eq("symbol", data.symbol.toUpperCase())
       .maybeSingle();
