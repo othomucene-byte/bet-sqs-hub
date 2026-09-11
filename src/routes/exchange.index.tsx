@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 
 import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
   AssetLogo,
+  BigChart,
   Chips,
   Panel,
   Spark,
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMarketOverview } from "@/lib/exchange/market.functions";
 import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, MZN, pct, price } from "@/lib/exchange/format";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/exchange/")({
   head: () => ({
@@ -53,8 +55,6 @@ function ExchangeMarket() {
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Todos");
 
-
-
   const rows = query.data?.assets ?? [];
   const assets = useMemo(() => {
     const t = term.trim().toUpperCase();
@@ -69,11 +69,27 @@ function ExchangeMarket() {
   const gainers = traded.filter((a) => (a.changePct ?? 0) > 0).length;
   const losers = traded.filter((a) => (a.changePct ?? 0) < 0).length;
   const totalVolume = rows.reduce((s, a) => s + a.volume, 0);
+  const marketValue = rows.reduce((s, a) => s + (a.lastPrice ?? 0) * Math.max(a.volume, 1), 0);
+  const avgChange =
+    traded.length > 0 ? traded.reduce((s, a) => s + (a.changePct ?? 0), 0) / traded.length : null;
+
+  /** Série agregada do mercado: soma dos preços recentes das empresas com negócios. */
+  const indexSeries = useMemo(() => {
+    const series = rows.map((a) => a.spark).filter((s) => s.length > 1);
+    if (series.length === 0) return [];
+    const steps = Math.min(...series.map((s) => s.length));
+    return Array.from({ length: steps }, (_, i) => ({
+      label: `${i + 1}`,
+      price: Number(
+        series.reduce((s, arr) => s + (arr[arr.length - steps + i] ?? 0), 0).toFixed(2),
+      ),
+    }));
+  }, [rows]);
+
   const lastUpdate = query.dataUpdatedAt
     ? new Intl.DateTimeFormat("pt-PT", {
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
         timeZone: "Africa/Maputo",
       }).format(new Date(query.dataUpdatedAt))
     : "—";
@@ -96,6 +112,46 @@ function ExchangeMarket() {
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-3">
+          {/* Cartão principal com o valor do mercado e a evolução recente. */}
+          <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.14]"
+              style={{ backgroundImage: "var(--gradient-primary)" }}
+            />
+            <div className="relative">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Valor do mercado
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <p className="font-mono text-3xl font-bold tabular-nums sm:text-4xl">
+                  {MZN.format(marketValue)}
+                </p>
+                <span
+                  className={cn(
+                    "rounded-md px-2 py-0.5 font-mono text-xs font-semibold tabular-nums",
+                    (avgChange ?? 0) >= 0
+                      ? "bg-primary/15 text-primary"
+                      : "bg-destructive/15 text-destructive",
+                  )}
+                >
+                  {pct(avgChange)}
+                </span>
+              </div>
+              <p className="pt-0.5 text-[11px] text-muted-foreground">
+                {rows.length} empresas listadas · variação média das que já negociaram
+              </p>
+              {indexSeries.length > 1 ? (
+                <div className="pt-2">
+                  <BigChart values={indexSeries} up={(avgChange ?? 0) >= 0} height={150} />
+                </div>
+              ) : (
+                <p className="pt-3 text-[11px] text-muted-foreground">
+                  O gráfico do mercado começa a desenhar-se a partir dos primeiros negócios entre
+                  participantes.
+                </p>
+              )}
+            </div>
+          </section>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatTile label="Empresas" value={String(rows.length)} />
@@ -110,7 +166,7 @@ function ExchangeMarket() {
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Pesquisar empresa ou código..."
-              className="pl-9"
+              className="h-11 rounded-xl pl-9"
             />
           </div>
 
@@ -121,20 +177,11 @@ function ExchangeMarket() {
             labels={CATEGORY_LABELS}
           />
 
-          <Panel title="Cotações" padded={false}>
-            <div className="hidden grid-cols-[1fr_90px_80px_80px_70px_84px] gap-2 border-b border-border/50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:grid">
-              <span>Empresa</span>
-              <span className="text-right">Preço</span>
-              <span className="text-right">Variação</span>
-              <span className="text-right">Compra/Venda</span>
-              <span className="text-right">Volume</span>
-              <span className="text-right">Ação</span>
-            </div>
-
+          <Panel title="Empresas" right={<span className="text-[11px] text-muted-foreground">toque para investir</span>} padded={false}>
             {query.isLoading && (
               <div className="space-y-2 p-3">
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
+                  <Skeleton key={i} className="h-16 w-full rounded-xl" />
                 ))}
               </div>
             )}
@@ -161,75 +208,46 @@ function ExchangeMarket() {
                     key={a.id}
                     to="/exchange/asset/$symbol"
                     params={{ symbol: a.symbol }}
-                    className="grid grid-cols-[1fr_auto] items-center gap-2 px-3 py-2.5 transition-colors hover:bg-secondary/40 sm:grid-cols-[1fr_90px_80px_80px_70px_84px]"
+                    className="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-secondary/40"
                   >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold">{a.symbol}</span>
-                          <Badge variant="outline" className="hidden text-[10px] sm:inline-flex">
-                            {ASSET_TYPE_LABEL[a.assetType] ?? a.assetType}
+                    <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} size={40} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold">{a.symbol}</span>
+                        {a.status !== "ACTIVE" && (
+                          <Badge variant="destructive" className="text-[10px]">
+                            Suspenso
                           </Badge>
-                          {a.status !== "ACTIVE" && (
-                            <Badge variant="destructive" className="text-[10px]">
-                              Suspenso
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="truncate text-xs text-muted-foreground">{a.name}</p>
-                        <p className="text-[10px] text-muted-foreground sm:hidden">
-                          {a.isReferenceOnly ? "preço de referência" : `Volume ${a.volume}`}
-                        </p>
+                        )}
                       </div>
+                      <p className="truncate text-xs text-muted-foreground">{a.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {a.isReferenceOnly ? "preço de referência" : `Volume ${a.volume}`}
+                      </p>
                     </div>
 
-                    <div className="text-right sm:hidden">
+                    <div className="hidden h-8 w-16 sm:block">
+                      {a.spark.length > 1 && <Spark values={a.spark} up={up} />}
+                    </div>
+
+                    <div className="shrink-0 text-right">
                       <p className="font-mono text-sm font-semibold tabular-nums">
                         {price(a.lastPrice)}
                       </p>
-                      <p
-                        className={`font-mono text-xs tabular-nums ${
+                      <span
+                        className={cn(
+                          "mt-0.5 inline-block rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums",
                           a.changePct == null
-                            ? "text-muted-foreground"
+                            ? "bg-secondary text-muted-foreground"
                             : up
-                              ? "text-primary"
-                              : "text-destructive"
-                        }`}
+                              ? "bg-primary/15 text-primary"
+                              : "bg-destructive/15 text-destructive",
+                        )}
                       >
                         {pct(a.changePct)}
-                      </p>
-                      <span className="mt-1 inline-block rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
-                        Investir
                       </span>
                     </div>
-
-                    <p className="hidden text-right font-mono text-sm font-semibold tabular-nums sm:block">
-                      {a.lastPrice == null ? "—" : a.lastPrice.toFixed(2)}
-                    </p>
-                    <p
-                      className={`hidden text-right font-mono text-xs tabular-nums sm:block ${
-                        a.changePct == null
-                          ? "text-muted-foreground"
-                          : up
-                            ? "text-primary"
-                            : "text-destructive"
-                      }`}
-                    >
-                      {pct(a.changePct)}
-                    </p>
-                    <p className="hidden text-right font-mono text-[11px] tabular-nums text-muted-foreground sm:block">
-                      {a.bid == null ? "—" : a.bid.toFixed(2)} /{" "}
-                      {a.ask == null ? "—" : a.ask.toFixed(2)}
-                    </p>
-                    <p className="hidden text-right font-mono text-[11px] tabular-nums text-muted-foreground sm:block">
-                      {a.volume}
-                    </p>
-                    <div className="hidden justify-end sm:flex">
-                      <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground">
-                        Investir
-                      </span>
-                    </div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                   </Link>
                 );
               })}
@@ -273,9 +291,10 @@ function ExchangeMarket() {
                         )}
                       </div>
                       <span
-                        className={`font-mono text-xs tabular-nums ${
-                          (a.changePct ?? 0) >= 0 ? "text-primary" : "text-destructive"
-                        }`}
+                        className={cn(
+                          "font-mono text-xs tabular-nums",
+                          (a.changePct ?? 0) >= 0 ? "text-primary" : "text-destructive",
+                        )}
                       >
                         {pct(a.changePct)}
                       </span>
@@ -291,17 +310,6 @@ function ExchangeMarket() {
               administração ({rows.filter((a) => a.isReferenceOnly).length} empresas neste momento).
               Não é cotação de terceiros. A partir do primeiro negócio, o preço passa a resultar
               apenas das compras e vendas entre participantes.
-            </p>
-          </Panel>
-
-          <Panel title="Total do mercado">
-            <p className="font-mono text-lg font-bold tabular-nums">
-              {MZN.format(
-                rows.reduce((s, a) => s + (a.lastPrice ?? 0) * Math.max(a.volume, 1), 0),
-              )}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Valor indicativo dos preços atuais multiplicados pelo volume registado.
             </p>
           </Panel>
         </aside>
