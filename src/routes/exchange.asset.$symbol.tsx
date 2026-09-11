@@ -45,6 +45,7 @@ const KIND_LABEL: Record<string, string> = {
   news: "Notícia",
   dividend: "Dividendo",
   corporate_event: "Evento corporativo",
+  profile: "Perfil",
   guidance: "Perspetivas",
   other: "Outro",
 };
@@ -319,7 +320,7 @@ function AssetPage() {
                 <article key={d.id} className="rounded-lg border border-border/60 bg-card/60 p-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <Badge variant="outline" className="text-[10px] uppercase">
-                      {KIND_LABEL[d.kind] ?? d.kind}
+                      {KIND_LABEL[d.kind.toLowerCase()] ?? d.kind.replace(/_/g, " ")}
                     </Badge>
                     <span className="text-[11px] text-muted-foreground">
                       {new Date(d.collectedAt).toLocaleDateString("pt-PT")}
