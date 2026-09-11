@@ -61,20 +61,12 @@ export function ExchangeNav({ className }: { className?: string }) {
   );
 }
 
-export function PaperBadge() {
-  return (
-    <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-400">
-      Simulação · Paper trading
-    </span>
-  );
-}
-
-/** Identifica claramente se o ecrã está a mostrar dinheiro real ou simulação. */
-export function EnvBadge({ environment }: { environment: "LIVE" | "PAPER" }) {
-  if (environment === "PAPER") return <PaperBadge />;
+/** Identifica o mercado real em meticais. */
+export function LiveBadge() {
   return (
     <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-400">
       Mercado real · MZN
     </span>
   );
 }
+
