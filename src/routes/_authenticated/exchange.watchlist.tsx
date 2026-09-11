@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { ExchangeNav, LiveBadge } from "@/components/exchange/exchange-nav";
 import { AssetLogo } from "@/components/exchange/terminal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/exchange/watchlist")({
       { title: "Favoritos | SQs Exchange" },
       {
         name: "description",
-        content: "Instrumentos que segue no SQs Exchange, com preço e variação do mercado de simulação.",
+        content: "Instrumentos que segue no SQs Exchange, com preço e variação do mercado real.",
       },
       { property: "og:title", content: "Favoritos — SQs Exchange" },
       { property: "og:description", content: "A sua lista de instrumentos acompanhados." },
@@ -33,7 +33,7 @@ function WatchlistPage() {
   const fetchMarket = useServerFn(getMarketOverview);
   const account = useQuery({
     queryKey: ["exchange-account"],
-    queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
   });
   const market = useQuery({ queryKey: ["exchange-market"], queryFn: () => fetchMarket() });
 
@@ -46,7 +46,7 @@ function WatchlistPage() {
       <main className="mx-auto w-full max-w-3xl space-y-4 px-4 py-5">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold">Favoritos</h1>
-          <PaperBadge />
+          <LiveBadge />
         </div>
         <ExchangeNav />
 

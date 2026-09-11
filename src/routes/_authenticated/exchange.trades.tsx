@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
 import { Panel, StatTile, TerminalShell } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/exchange/trades")({
       {
         name: "description",
         content:
-          "Negócios executados na sua conta de simulação do SQs Exchange, com preço, quantidade, comissão e liquidação.",
+          "Negócios executados na sua conta de mercado do SQs Exchange, com preço, quantidade, comissão e liquidação.",
       },
       { property: "og:title", content: "Negócios executados — SQs Exchange" },
       { property: "og:description", content: "Detalhe de cada execução com comissões e liquidação." },
@@ -38,7 +38,7 @@ function TradesPage() {
   const fetchAccount = useServerFn(getExchangeAccount);
   const query = useQuery({
     queryKey: ["exchange-account"],
-    queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
     refetchInterval: 20000,
   });
 
@@ -49,7 +49,7 @@ function TradesPage() {
   return (
     <TerminalShell
       title="Negócios executados"
-      badges={<PaperBadge />}
+      badges={<LiveBadge />}
       subtitle="Fita de execuções da sua conta, com preço, quantidade, comissão e estado de liquidação."
     >
       <div className="grid grid-cols-3 gap-2">

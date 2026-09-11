@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
 import { Panel, StatTile, TerminalShell } from "@/components/exchange/terminal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,10 @@ export const Route = createFileRoute("/_authenticated/exchange/orders")({
       { title: "Ordens SQs Exchange | Betfcom SQs" },
       {
         name: "description",
-        content: "Ordens abertas e histórico de ordens da sua conta de simulação no SQs Exchange.",
+        content: "Ordens abertas e histórico de ordens da sua conta de mercado no SQs Exchange.",
       },
       { property: "og:title", content: "Ordens SQs Exchange" },
-      { property: "og:description", content: "Acompanhe e cancele ordens no mercado de simulação." },
+      { property: "og:description", content: "Acompanhe e cancele ordens no mercado real." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -44,7 +44,7 @@ function OrdersPage() {
 
   const account = useQuery({
     queryKey: ["exchange-account"],
-    queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
     refetchInterval: 15000,
   });
   const history = useQuery({
@@ -53,7 +53,7 @@ function OrdersPage() {
   });
 
   const cancel = useMutation({
-    mutationFn: (orderId: string) => doCancel({ data: { orderId, environment: "PAPER" as const } }),
+    mutationFn: (orderId: string) => doCancel({ data: { orderId, environment: "LIVE" as const } }),
     onSuccess: () => {
       toast.success("Ordem cancelada e fundos liberados");
       queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
@@ -68,7 +68,7 @@ function OrdersPage() {
   return (
     <TerminalShell
       title="Ordens"
-      badges={<PaperBadge />}
+      badges={<LiveBadge />}
       subtitle="Cada ordem é validada, reservada e cruzada no servidor; o ecrã só mostra o resultado."
     >
       <div className="grid grid-cols-3 gap-2">

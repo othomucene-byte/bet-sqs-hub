@@ -1,20 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
 import { Panel, StatTile, TerminalShell, TotalCard } from "@/components/exchange/terminal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  getExchangeAccount,
-  grantPaperCash,
-  transferWallet,
-} from "@/lib/exchange/trading.functions";
+import { getExchangeAccount, transferWallet } from "@/lib/exchange/trading.functions";
 import { MZN } from "@/lib/exchange/format";
 
 export const Route = createFileRoute("/_authenticated/exchange/wallet")({
@@ -24,10 +20,10 @@ export const Route = createFileRoute("/_authenticated/exchange/wallet")({
       {
         name: "description",
         content:
-          "Saldo de simulação, entradas e saídas entre a carteira de investimentos e a conta do SQs Exchange.",
+          "Entradas e saídas de dinheiro entre a sua carteira e a conta de mercado do SQs Exchange, em meticais.",
       },
       { property: "og:title", content: "Fundos SQs Exchange" },
-      { property: "og:description", content: "Gestão de liquidez da conta de mercado." },
+      { property: "og:description", content: "Depositar e levantar na conta de mercado." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -35,58 +31,44 @@ export const Route = createFileRoute("/_authenticated/exchange/wallet")({
   component: WalletPage,
 });
 
+const QUICK = [500, 1000, 5000, 10000];
+
 function WalletPage() {
   const queryClient = useQueryClient();
   const fetchAccount = useServerFn(getExchangeAccount);
-  const doGrant = useServerFn(grantPaperCash);
   const doTransfer = useServerFn(transferWallet);
-  const [paperAmount, setPaperAmount] = useState("50000");
-  const [liveAmount, setLiveAmount] = useState("1000");
+  const [amount, setAmount] = useState("1000");
 
   const account = useQuery({
     queryKey: ["exchange-account"],
-    queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
   });
   const acc = account.data;
-
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
-    queryClient.invalidateQueries({ queryKey: ["exchange-history"] });
-  };
-
-  const grant = useMutation({
-    mutationFn: () =>
-      doGrant({
-        data: { amount: Number(paperAmount), idempotencyKey: `paper-${crypto.randomUUID()}` },
-      }),
-    onSuccess: (r) => {
-      toast.success(`Creditados ${MZN.format(r.amount)} de saldo de simulação`);
-      invalidate();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   const transfer = useMutation({
     mutationFn: (direction: "IN" | "OUT") =>
       doTransfer({
         data: {
           direction,
-          amount: Number(liveAmount),
+          amount: Number(amount),
           idempotencyKey: `xfer-${crypto.randomUUID()}`,
         },
       }),
-    onSuccess: () => {
-      toast.success("Transferência registada");
-      invalidate();
+    onSuccess: (_r, direction) => {
+      toast.success(direction === "IN" ? "Fundos colocados na conta de mercado" : "Levantamento registado");
+      queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
+      queryClient.invalidateQueries({ queryKey: ["exchange-history"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const valid = Number(amount) > 0 && Boolean(acc?.kycApproved);
+
   return (
     <TerminalShell
       title="Fundos do mercado"
-      badges={<PaperBadge />}
-      subtitle="Movimente liquidez entre a carteira de investimentos e a conta de mercado. Todos os movimentos passam pelo registo imutável do servidor."
+      badges={<LiveBadge />}
+      subtitle="Mova dinheiro real entre a sua carteira e a conta de mercado. Todos os movimentos passam pelo registo imutável do servidor."
     >
       {account.isLoading && <Skeleton className="h-32 w-full" />}
 
@@ -94,86 +76,74 @@ function WalletPage() {
         <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
           <div className="space-y-3">
             <TotalCard
-              label="Liquidez para negociar"
+              label="Liquidez para investir"
               value={acc.available}
               note="Valor livre para colocar novas ordens; o reservado está preso em ordens abertas."
             />
             <div className="grid grid-cols-3 gap-2">
               <StatTile label="Disponível" value={MZN.format(acc.available)} />
               <StatTile label="Reservado" value={MZN.format(acc.reserved)} />
-              <StatTile
-                label="Carteira invest."
-                value={MZN.format(acc.investmentWalletBalance)}
-              />
+              <StatTile label="Carteira" value={MZN.format(acc.investmentWalletBalance)} />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Panel title="Saldo de simulação">
-              <p className="text-xs text-muted-foreground">
-                Dinheiro fictício, exclusivo do ambiente de simulação. Não é sacável, não tem valor
-                monetário e está separado do seu dinheiro real.
+          <Panel title="Depositar ou levantar">
+            {!acc.kycApproved && (
+              <p className="mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-400">
+                Precisa da identidade verificada para mover dinheiro real.{" "}
+                <Link to="/kyc" className="underline">
+                  Verificar identidade
+                </Link>
               </p>
-              <div className="mt-3 flex items-end gap-2">
-                <div className="flex-1 space-y-1">
-                  <Label htmlFor="paper" className="text-xs">
-                    Montante (MZN)
-                  </Label>
-                  <Input
-                    id="paper"
-                    inputMode="numeric"
-                    value={paperAmount}
-                    onChange={(e) => setPaperAmount(e.target.value)}
-                  />
-                </div>
-                <Button
-                  disabled={grant.isPending || !(Number(paperAmount) > 0)}
-                  onClick={() => grant.mutate()}
+            )}
+            <div className="space-y-1">
+              <Label htmlFor="amt" className="text-xs">
+                Montante (MZN)
+              </Label>
+              <Input
+                id="amt"
+                inputMode="numeric"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+            <div className="mt-2 flex gap-1.5">
+              {QUICK.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setAmount(String(v))}
+                  className="flex-1 rounded-full border border-border/60 py-1 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  Creditar
-                </Button>
-              </div>
-            </Panel>
-
-            <Panel title="Dinheiro real (mercado LIVE)">
-              <p className="text-xs text-muted-foreground">
-                Movimenta a carteira de investimentos para a conta de mercado real. Exige verificação
-                de identidade aprovada e o mercado real aberto pela administração.
-              </p>
-              {!acc.kycApproved && (
-                <p className="mt-2 text-xs text-amber-400">
-                  Verificação de identidade ainda não aprovada.
-                </p>
-              )}
-              <div className="mt-3 flex items-end gap-2">
-                <div className="flex-1 space-y-1">
-                  <Label htmlFor="live" className="text-xs">
-                    Montante (MZN)
-                  </Label>
-                  <Input
-                    id="live"
-                    inputMode="numeric"
-                    value={liveAmount}
-                    onChange={(e) => setLiveAmount(e.target.value)}
-                  />
-                </div>
-                <Button
-                  variant="secondary"
-                  disabled={transfer.isPending || !acc.kycApproved}
-                  onClick={() => transfer.mutate("IN")}
-                >
-                  Depositar
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={transfer.isPending || !acc.kycApproved}
-                  onClick={() => transfer.mutate("OUT")}
-                >
-                  Levantar
-                </Button>
-              </div>
-            </Panel>
-          </div>
+                  {v}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button
+                className="h-11 font-semibold"
+                disabled={transfer.isPending || !valid}
+                onClick={() => transfer.mutate("IN")}
+              >
+                Depositar
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 font-semibold"
+                disabled={transfer.isPending || !valid}
+                onClick={() => transfer.mutate("OUT")}
+              >
+                Levantar
+              </Button>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Para carregar a carteira use{" "}
+              <Link to="/carteira" className="underline">
+                Depósito
+              </Link>{" "}
+              (M-Pesa, e-Mola, mKesh ou cartão).
+            </p>
+          </Panel>
         </div>
       )}
     </TerminalShell>
