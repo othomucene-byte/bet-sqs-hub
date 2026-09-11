@@ -45,24 +45,15 @@ const CATEGORY_LABELS: Record<string, string> = { Todos: "Todos", ...ASSET_TYPE_
 
 function ExchangeMarket() {
   const fetchMarket = useServerFn(getMarketOverview);
-  const [environment, setEnvironment] = useState<"LIVE" | "PAPER">("LIVE");
-  const [autoSwitched, setAutoSwitched] = useState(false);
   const query = useQuery({
-    queryKey: ["exchange-market", environment],
-    queryFn: () => fetchMarket({ data: { environment } }),
+    queryKey: ["exchange-market"],
+    queryFn: () => fetchMarket({ data: { environment: "LIVE" as const } }),
     refetchInterval: 20000,
   });
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Todos");
 
-  // Se o mercado real ainda não tem empresas listadas, mostramos logo a simulação
-  // para que a lista nunca apareça vazia sem explicação.
-  useEffect(() => {
-    if (environment === "LIVE" && !autoSwitched && query.data && query.data.assets.length === 0) {
-      setAutoSwitched(true);
-      setEnvironment("PAPER");
-    }
-  }, [environment, autoSwitched, query.data]);
+
 
   const rows = query.data?.assets ?? [];
   const assets = useMemo(() => {
