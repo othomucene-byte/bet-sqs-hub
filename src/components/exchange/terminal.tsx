@@ -49,6 +49,63 @@ export function TerminalShell({
   );
 }
 
+/** Paletas fixas para o emblema de cada empresa (cor estável por símbolo). */
+const LOGO_TONES = [
+  "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  "bg-sky-500/20 text-sky-300 border-sky-500/30",
+  "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  "bg-violet-500/20 text-violet-300 border-violet-500/30",
+  "bg-rose-500/20 text-rose-300 border-rose-500/30",
+  "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+];
+
+/**
+ * Emblema visual da empresa: usa o logótipo oficial quando existir e, enquanto
+ * não existir, um monograma com cor estável — nunca inventa marcas.
+ */
+export function AssetLogo({
+  symbol,
+  name,
+  logoUrl,
+  size = 36,
+  className,
+}: {
+  symbol: string;
+  name?: string;
+  logoUrl?: string | null;
+  size?: number;
+  className?: string;
+}) {
+  const tone = LOGO_TONES[
+    [...symbol].reduce((acc, c) => acc + c.charCodeAt(0), 0) % LOGO_TONES.length
+  ] as string;
+  const style = { width: size, height: size };
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name ?? symbol}
+        style={style}
+        className={cn("shrink-0 rounded-full border border-border/60 object-cover", className)}
+      />
+    );
+  }
+  return (
+    <span
+      aria-hidden
+      style={style}
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full border font-bold tracking-tight",
+        size <= 28 ? "text-[9px]" : size >= 48 ? "text-sm" : "text-[11px]",
+        tone,
+        className,
+      )}
+    >
+      {symbol.slice(0, 3)}
+    </span>
+  );
+}
+
 /** Painel escuro com título discreto, no estilo de terminal. */
 export function Panel({
   title,
