@@ -9,3 +9,8 @@
 - [x] Ecrãs de mercado, ativo, carteira, ordens, negócios, fundos, favoritos e histórico
 - [x] Painel /admin/exchange e documentação em docs/architecture/sqs-exchange.md
 - [ ] Negociação LIVE — bloqueada: exige operador de bolsa autorizado, credenciais e API oficial
+
+- [x] SQs Exchange: mercado próprio real (SQSX-LIVE) + simulação, seletor de ambiente, KYC obrigatório para dinheiro real
+- [x] SQs Exchange: candidaturas à listagem (utilizador) e aprovação/criação de instrumento (administração)
+- [x] SQs Exchange: inteligência Mistral AI para dados das empresas com fonte, data, histórico e validação humana
+- [ ] Agendar de hora a hora `/api/public/cron/exchange-ai` em Cloud → Jobs (ação do proprietário)
