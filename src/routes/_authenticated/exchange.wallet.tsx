@@ -4,10 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { Panel, StatTile, TerminalShell, TotalCard } from "@/components/exchange/terminal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -84,123 +83,99 @@ function WalletPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl space-y-4 px-4 py-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Fundos do mercado</h1>
-          <PaperBadge />
-        </div>
-        <ExchangeNav />
+    <TerminalShell
+      title="Fundos do mercado"
+      badges={<PaperBadge />}
+      subtitle="Movimente liquidez entre a carteira de investimentos e a conta de mercado. Todos os movimentos passam pelo registo imutável do servidor."
+    >
+      {account.isLoading && <Skeleton className="h-32 w-full" />}
 
-        {account.isLoading && <Skeleton className="h-24 w-full" />}
-
-        {acc && (
-          <>
+      {acc && (
+        <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+          <div className="space-y-3">
+            <TotalCard
+              label="Liquidez para negociar"
+              value={acc.available}
+              note="Valor livre para colocar novas ordens; o reservado está preso em ordens abertas."
+            />
             <div className="grid grid-cols-3 gap-2">
-              <Card>
-                <CardContent className="p-3">
-                  <p className="text-[11px] uppercase text-muted-foreground">Disponível</p>
-                  <p className="text-sm font-semibold">{MZN.format(acc.available)}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-3">
-                  <p className="text-[11px] uppercase text-muted-foreground">Reservado</p>
-                  <p className="text-sm font-semibold">{MZN.format(acc.reserved)}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-3">
-                  <p className="text-[11px] uppercase text-muted-foreground">Carteira investimentos</p>
-                  <p className="text-sm font-semibold">{MZN.format(acc.investmentWalletBalance)}</p>
-                </CardContent>
-              </Card>
+              <StatTile label="Disponível" value={MZN.format(acc.available)} />
+              <StatTile label="Reservado" value={MZN.format(acc.reserved)} />
+              <StatTile
+                label="Carteira invest."
+                value={MZN.format(acc.investmentWalletBalance)}
+              />
             </div>
+          </div>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Saldo de simulação</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Dinheiro fictício, exclusivo do ambiente de simulação. Não é sacável, não tem valor
-                  monetário e está separado do seu dinheiro real.
-                </p>
-                <div className="flex gap-2">
-                  <div className="flex-1 space-y-1">
-                    <Label htmlFor="paper" className="text-xs">
-                      Montante (MZN)
-                    </Label>
-                    <Input
-                      id="paper"
-                      inputMode="numeric"
-                      value={paperAmount}
-                      onChange={(e) => setPaperAmount(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="mt-6"
-                    disabled={grant.isPending || !(Number(paperAmount) > 0)}
-                    onClick={() => grant.mutate()}
-                  >
-                    Creditar simulação
-                  </Button>
+          <div className="space-y-3">
+            <Panel title="Saldo de simulação">
+              <p className="text-xs text-muted-foreground">
+                Dinheiro fictício, exclusivo do ambiente de simulação. Não é sacável, não tem valor
+                monetário e está separado do seu dinheiro real.
+              </p>
+              <div className="mt-3 flex items-end gap-2">
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="paper" className="text-xs">
+                    Montante (MZN)
+                  </Label>
+                  <Input
+                    id="paper"
+                    inputMode="numeric"
+                    value={paperAmount}
+                    onChange={(e) => setPaperAmount(e.target.value)}
+                  />
                 </div>
-              </CardContent>
-            </Card>
+                <Button
+                  disabled={grant.isPending || !(Number(paperAmount) > 0)}
+                  onClick={() => grant.mutate()}
+                >
+                  Creditar
+                </Button>
+              </div>
+            </Panel>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Dinheiro real (ambiente LIVE)</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Movimenta a carteira de investimentos para a conta de mercado LIVE. Exige
-                  verificação de identidade aprovada e um operador de bolsa autorizado ligado — essa
-                  integração está pendente de credenciais e API oficial, pelo que a negociação LIVE
-                  permanece indisponível.
+            <Panel title="Dinheiro real (mercado LIVE)">
+              <p className="text-xs text-muted-foreground">
+                Movimenta a carteira de investimentos para a conta de mercado real. Exige verificação
+                de identidade aprovada e o mercado real aberto pela administração.
+              </p>
+              {!acc.kycApproved && (
+                <p className="mt-2 text-xs text-amber-400">
+                  Verificação de identidade ainda não aprovada.
                 </p>
-                {!acc.kycApproved && (
-                  <p className="text-xs text-amber-400">
-                    Verificação de identidade ainda não aprovada.
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <div className="flex-1 space-y-1">
-                    <Label htmlFor="live" className="text-xs">
-                      Montante (MZN)
-                    </Label>
-                    <Input
-                      id="live"
-                      inputMode="numeric"
-                      value={liveAmount}
-                      onChange={(e) => setLiveAmount(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    variant="secondary"
-                    className="mt-6"
-                    disabled={transfer.isPending || !acc.kycApproved}
-                    onClick={() => transfer.mutate("IN")}
-                  >
-                    Depositar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="mt-6"
-                    disabled={transfer.isPending || !acc.kycApproved}
-                    onClick={() => transfer.mutate("OUT")}
-                  >
-                    Levantar
-                  </Button>
+              )}
+              <div className="mt-3 flex items-end gap-2">
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="live" className="text-xs">
+                    Montante (MZN)
+                  </Label>
+                  <Input
+                    id="live"
+                    inputMode="numeric"
+                    value={liveAmount}
+                    onChange={(e) => setLiveAmount(e.target.value)}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </main>
-      <ExchangeNav />
-    </div>
+                <Button
+                  variant="secondary"
+                  disabled={transfer.isPending || !acc.kycApproved}
+                  onClick={() => transfer.mutate("IN")}
+                >
+                  Depositar
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={transfer.isPending || !acc.kycApproved}
+                  onClick={() => transfer.mutate("OUT")}
+                >
+                  Levantar
+                </Button>
+              </div>
+            </Panel>
+          </div>
+        </div>
+      )}
+    </TerminalShell>
   );
 }

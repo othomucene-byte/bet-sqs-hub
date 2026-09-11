@@ -17,7 +17,13 @@ export type MarketAssetRow = {
   bid: number | null;
   ask: number | null;
   spark: number[];
+  /** Preço de arranque definido pela administração; usado só para exibição quando não há negócios. */
+  referencePrice: number | null;
+  referenceSource: string | null;
+  /** true quando o valor mostrado é de referência e não resultou de negócios. */
+  isReferenceOnly: boolean;
 };
+
 
 export type MarketOverview = {
   marketStatus: "PRE_OPEN" | "OPEN" | "PAUSED" | "CLOSED";
@@ -47,7 +53,9 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         .maybeSingle(),
       db
         .from("exchange_assets")
-        .select("id, symbol, name, asset_type, status, is_demo, environment, logo_url")
+        .select(
+          "id, symbol, name, asset_type, status, is_demo, environment, logo_url, reference_price, reference_price_source",
+        )
         .eq("environment", data.environment)
         .order("symbol"),
       db.from("market_data").select("asset_id, last_price, prev_close, volume"),
@@ -82,8 +90,10 @@ export const getMarketOverview = createServerFn({ method: "POST" })
 
     const assets: MarketAssetRow[] = (assetsRes.data ?? []).map((a) => {
       const md = dataByAsset.get(a.id as string);
-      const last = md?.last_price == null ? null : Number(md.last_price);
-      const prev = md?.prev_close == null ? null : Number(md.prev_close);
+      const traded = md?.last_price == null ? null : Number(md.last_price);
+      const reference = a.reference_price == null ? null : Number(a.reference_price);
+      const last = traded ?? reference;
+      const prev = md?.prev_close == null ? reference : Number(md.prev_close);
       const ask = asks.get(a.id as string);
       return {
         id: a.id as string,
@@ -96,13 +106,18 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         logoUrl: (a.logo_url as string | null) ?? null,
         lastPrice: last,
         prevClose: prev,
-        changePct: last != null && prev != null && prev > 0 ? ((last - prev) / prev) * 100 : null,
+        changePct:
+          traded != null && prev != null && prev > 0 ? ((traded - prev) / prev) * 100 : null,
         volume: Number(md?.volume ?? 0),
         bid: bids.get(a.id as string) ?? null,
         ask: ask == null || !Number.isFinite(ask) ? null : ask,
         spark: (sparks.get(a.id as string) ?? []).slice(-20),
+        referencePrice: reference,
+        referenceSource: (a.reference_price_source as string | null) ?? null,
+        isReferenceOnly: traded == null && reference != null,
       };
     });
+
 
     const market = marketRes.data;
     return {
@@ -144,7 +159,11 @@ export type AssetDetail = {
   book: { side: "BUY" | "SELL"; price: number; quantity: number; orders: number }[];
   trades: { id: string; price: number; quantity: number; executedAt: string }[];
   history: { t: string; price: number }[];
+  referencePrice: number | null;
+  referenceSource: string | null;
+  isReferenceOnly: boolean;
 };
+
 
 export const getAssetDetail = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
@@ -158,7 +177,7 @@ export const getAssetDetail = createServerFn({ method: "POST" })
     const { data: asset } = await db
       .from("exchange_assets")
       .select(
-        "id, symbol, name, asset_type, status, currency, country, is_demo, environment, tick_size, lot_size, description, issuer_info, market_id, companies(name)",
+        "id, symbol, name, asset_type, status, currency, country, is_demo, environment, tick_size, lot_size, description, issuer_info, market_id, reference_price, reference_price_source, companies(name)",
       )
       .eq("symbol", data.symbol.toUpperCase())
       .maybeSingle();
@@ -174,6 +193,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
     ]);
 
     const company = asset.companies as { name: string } | null;
+    const reference = asset.reference_price == null ? null : Number(asset.reference_price);
+    const traded = quote?.lastPrice ?? null;
     return {
       id: asset.id as string,
       symbol: asset.symbol as string,
@@ -191,8 +212,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
       companyName: company?.name ?? null,
       marketStatus: (marketRes.data?.status as string) ?? "CLOSED",
       quote: {
-        lastPrice: quote?.lastPrice ?? null,
-        prevClose: quote?.prevClose ?? null,
+        lastPrice: traded ?? reference,
+        prevClose: quote?.prevClose ?? reference,
         dayHigh: quote?.dayHigh ?? null,
         dayLow: quote?.dayLow ?? null,
         volume: quote?.volume ?? 0,
@@ -202,5 +223,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
       book,
       trades,
       history,
+      referencePrice: reference,
+      referenceSource: (asset.reference_price_source as string | null) ?? null,
+      isReferenceOnly: traded == null && reference != null,
     };
   });

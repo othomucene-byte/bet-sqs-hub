@@ -551,6 +551,9 @@ export type Database = {
           lot_size: number
           market_id: string
           name: string
+          reference_price: number | null
+          reference_price_at: string | null
+          reference_price_source: string | null
           status: string
           symbol: string
           tick_size: number
@@ -572,6 +575,9 @@ export type Database = {
           lot_size?: number
           market_id: string
           name: string
+          reference_price?: number | null
+          reference_price_at?: string | null
+          reference_price_source?: string | null
           status?: string
           symbol: string
           tick_size?: number
@@ -593,6 +599,9 @@ export type Database = {
           lot_size?: number
           market_id?: string
           name?: string
+          reference_price?: number | null
+          reference_price_at?: string | null
+          reference_price_source?: string | null
           status?: string
           symbol?: string
           tick_size?: number
@@ -2945,6 +2954,44 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "exchange_markets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      exchange_set_reference_price: {
+        Args: {
+          _admin_id: string
+          _asset_id: string
+          _price: number
+          _source: string
+        }
+        Returns: {
+          asset_type: string
+          company_id: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          environment: string
+          id: string
+          is_demo: boolean
+          issuer_info: string | null
+          logo_url: string | null
+          lot_size: number
+          market_id: string
+          name: string
+          reference_price: number | null
+          reference_price_at: string | null
+          reference_price_source: string | null
+          status: string
+          symbol: string
+          tick_size: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "exchange_assets"
           isOneToOne: true
           isSetofReturn: false
         }

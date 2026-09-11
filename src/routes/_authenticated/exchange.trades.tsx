@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { Panel, StatTile, TerminalShell } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
 import { MZN } from "@/lib/exchange/format";
@@ -40,58 +39,57 @@ function TradesPage() {
   const query = useQuery({
     queryKey: ["exchange-account"],
     queryFn: () => fetchAccount({ data: { environment: "PAPER" as const } }),
+    refetchInterval: 20000,
   });
 
-  return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl space-y-4 px-4 py-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Negócios executados</h1>
-          <PaperBadge />
-        </div>
-        <ExchangeNav />
+  const trades = query.data?.recentTrades ?? [];
+  const volume = trades.reduce((s, t) => s + t.grossValue, 0);
+  const fees = trades.reduce((s, t) => s + t.fee, 0);
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Execuções recentes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 p-3">
-            {query.isLoading && <Skeleton className="h-20 w-full" />}
-            {query.data?.recentTrades.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                Ainda não há negócios executados na sua conta.
-              </p>
-            )}
-            {query.data?.recentTrades.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center justify-between rounded-lg border border-border/60 p-3 text-sm"
-              >
-                <div>
-                  <p className="font-semibold">
-                    <span className={t.side === "BUY" ? "text-emerald-400" : "text-destructive"}>
-                      {t.side === "BUY" ? "Compra" : "Venda"}
-                    </span>{" "}
-                    {t.symbol}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.quantity} un. a {t.price.toFixed(2)} MZN · {dt.format(new Date(t.executedAt))}
-                  </p>
-                </div>
-                <div className="text-right text-xs">
-                  <p className="text-sm font-medium">{MZN.format(t.grossValue)}</p>
-                  <p className="text-muted-foreground">Comissão {t.fee.toFixed(2)} MZN</p>
-                  <p className="text-muted-foreground">
-                    {t.settlementStatus === "SETTLED" ? "Liquidado" : t.settlementStatus}
-                  </p>
-                </div>
+  return (
+    <TerminalShell
+      title="Negócios executados"
+      badges={<PaperBadge />}
+      subtitle="Fita de execuções da sua conta, com preço, quantidade, comissão e estado de liquidação."
+    >
+      <div className="grid grid-cols-3 gap-2">
+        <StatTile label="Execuções" value={String(trades.length)} />
+        <StatTile label="Valor negociado" value={MZN.format(volume)} />
+        <StatTile label="Comissões" value={MZN.format(fees)} />
+      </div>
+
+      <Panel title="Fita de negócios" padded={false}>
+        {query.isLoading && <Skeleton className="m-3 h-20" />}
+        {trades.length === 0 && !query.isLoading && (
+          <p className="p-6 text-center text-sm text-muted-foreground">
+            Ainda não há negócios executados na sua conta.
+          </p>
+        )}
+        <div className="divide-y divide-border/40">
+          {trades.map((t) => (
+            <div key={t.id} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
+              <div>
+                <p className="font-semibold">
+                  <span className={t.side === "BUY" ? "text-primary" : "text-destructive"}>
+                    {t.side === "BUY" ? "Compra" : "Venda"}
+                  </span>{" "}
+                  {t.symbol}
+                </p>
+                <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                  {t.quantity} un. a {t.price.toFixed(2)} MZN · {dt.format(new Date(t.executedAt))}
+                </p>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      </main>
-      <ExchangeNav />
-    </div>
+              <div className="shrink-0 text-right font-mono text-xs tabular-nums">
+                <p className="text-sm font-semibold">{MZN.format(t.grossValue)}</p>
+                <p className="text-muted-foreground">Comissão {t.fee.toFixed(2)} MZN</p>
+                <p className="text-muted-foreground">
+                  {t.settlementStatus === "SETTLED" ? "Liquidado" : t.settlementStatus}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </TerminalShell>
   );
 }

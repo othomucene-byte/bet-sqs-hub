@@ -2,9 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaperBadge } from "@/components/exchange/exchange-nav";
+import { Panel, Spark, StatTile, TerminalShell, TotalCard } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
 import { MZN, pct, price } from "@/lib/exchange/format";
@@ -37,108 +36,164 @@ function PortfolioPage() {
   const acc = query.data;
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl space-y-4 px-4 py-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Carteira do mercado</h1>
-          <PaperBadge />
-        </div>
-        <ExchangeNav />
+    <TerminalShell
+      title="Carteira do mercado"
+      badges={<PaperBadge />}
+      subtitle="Valor total, posições e resultado calculados no servidor a partir do livro e do registo de negócios."
+    >
+      {query.isLoading && <Skeleton className="h-40 w-full" />}
 
-        {query.isLoading && <Skeleton className="h-32 w-full" />}
-
-        {acc && (
-          <>
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-transparent">
-              <CardContent className="space-y-1 p-5">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor total</p>
-                <p className="text-3xl font-bold">{MZN.format(acc.totalValue)}</p>
-                <p
-                  className={
-                    acc.unrealizedPnl >= 0 ? "text-sm text-emerald-400" : "text-sm text-destructive"
-                  }
-                >
-                  {acc.unrealizedPnl >= 0 ? "+" : ""}
-                  {MZN.format(acc.unrealizedPnl)} não realizado ({pct(acc.unrealizedPnlPct)})
-                </p>
-              </CardContent>
-            </Card>
+      {acc && (
+        <div className="grid gap-3 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-3">
+            <TotalCard
+              label="Valor total"
+              value={acc.totalValue}
+              changeValue={acc.unrealizedPnl}
+              changePct={acc.unrealizedPnlPct}
+              note="Liquidez disponível + valor dos títulos, aos preços mais recentes do mercado."
+              spark={acc.positions
+                .map((p) => p.marketValue)
+                .filter((v): v is number => v != null)}
+            />
 
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-              <Stat label="Liquidez disponível" value={MZN.format(acc.available)} />
-              <Stat label="Reservado em ordens" value={MZN.format(acc.reserved)} />
-              <Stat label="Títulos" value={MZN.format(acc.portfolioValue)} />
-              <Stat label="Resultado realizado" value={MZN.format(acc.realizedPnl)} />
+              <StatTile label="Disponível" value={MZN.format(acc.available)} />
+              <StatTile label="Reservado" value={MZN.format(acc.reserved)} />
+              <StatTile label="Títulos" value={MZN.format(acc.portfolioValue)} />
+              <StatTile
+                label="Realizado"
+                value={MZN.format(acc.realizedPnl)}
+                tone={acc.realizedPnl >= 0 ? "up" : "down"}
+              />
             </div>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Posições</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3">
-                {acc.positions.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">
-                    Sem posições. Explore o <Link to="/exchange" className="text-primary">mercado</Link>.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {acc.positions.map((p) => (
+            <Panel title="Posições" padded={false}>
+              {acc.positions.length === 0 ? (
+                <p className="p-6 text-center text-sm text-muted-foreground">
+                  Sem posições. Explore o{" "}
+                  <Link to="/exchange" className="text-primary underline">
+                    mercado
+                  </Link>
+                  .
+                </p>
+              ) : (
+                <div className="divide-y divide-border/40">
+                  {acc.positions.map((p) => {
+                    const up = (p.pnl ?? 0) >= 0;
+                    return (
                       <Link
                         key={p.assetId}
                         to="/exchange/asset/$symbol"
                         params={{ symbol: p.symbol }}
-                        className="flex items-center justify-between rounded-lg border border-border/60 p-3 text-sm hover:border-primary/40"
+                        className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-secondary/40"
                       >
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-semibold">{p.symbol}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-mono text-xs tabular-nums text-muted-foreground">
                             {p.quantity} un. · médio {p.avgPrice.toFixed(2)} MZN
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">
-                            {p.marketValue == null ? "Dados não disponíveis" : MZN.format(p.marketValue)}
+                        <div className="shrink-0 text-right">
+                          <p className="font-mono text-sm font-semibold tabular-nums">
+                            {p.marketValue == null ? "—" : MZN.format(p.marketValue)}
                           </p>
                           <p
-                            className={
+                            className={`font-mono text-xs tabular-nums ${
                               p.pnl == null
-                                ? "text-xs text-muted-foreground"
-                                : p.pnl >= 0
-                                  ? "text-xs text-emerald-400"
-                                  : "text-xs text-destructive"
-                            }
+                                ? "text-muted-foreground"
+                                : up
+                                  ? "text-primary"
+                                  : "text-destructive"
+                            }`}
                           >
-                            {p.pnl == null ? "—" : `${p.pnl >= 0 ? "+" : ""}${MZN.format(p.pnl)}`} ·{" "}
-                            {pct(p.pnlPct)} · último {price(p.lastPrice)}
+                            {p.pnl == null ? "—" : `${up ? "+" : ""}${MZN.format(p.pnl)}`} ·{" "}
+                            {pct(p.pnlPct)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            último {price(p.lastPrice)}
                           </p>
                         </div>
                       </Link>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </Panel>
+          </div>
 
-            <p className="text-[11px] text-muted-foreground">
-              Ambiente de simulação: os valores usam apenas preços de negócios ocorridos nesta
-              plataforma e não representam cotações oficiais nem dinheiro real.
-            </p>
-          </>
-        )}
-      </main>
-      <ExchangeNav />
-    </div>
-  );
-}
+          <aside className="space-y-3">
+            <Panel title="Composição">
+              {acc.positions.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Sem títulos em carteira.</p>
+              ) : (
+                <div className="space-y-2">
+                  {acc.positions.map((p) => {
+                    const share =
+                      acc.portfolioValue > 0 && p.marketValue != null
+                        ? (p.marketValue / acc.portfolioValue) * 100
+                        : 0;
+                    return (
+                      <div key={p.assetId} className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="font-semibold">{p.symbol}</span>
+                          <span className="font-mono tabular-nums text-muted-foreground">
+                            {share.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary">
+                          <div
+                            className="h-1.5 rounded-full bg-primary"
+                            style={{ width: `${Math.min(share, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Panel>
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <Card>
-      <CardContent className="p-3">
-        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="text-sm font-semibold">{value}</p>
-      </CardContent>
-    </Card>
+            <Panel title="Negócios recentes">
+              {acc.recentTrades.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Ainda sem execuções.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {acc.recentTrades.slice(0, 6).map((t) => (
+                    <div key={t.id} className="flex justify-between text-xs">
+                      <span className={t.side === "BUY" ? "text-primary" : "text-destructive"}>
+                        {t.side === "BUY" ? "C" : "V"} {t.symbol}
+                      </span>
+                      <span className="font-mono tabular-nums text-muted-foreground">
+                        {t.quantity} · {t.price.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Panel>
+
+            {acc.positions.some((p) => p.lastPrice != null) && (
+              <Panel title="Evolução do valor">
+                <div className="h-24">
+                  <Spark
+                    values={acc.positions
+                      .map((p) => p.marketValue)
+                      .filter((v): v is number => v != null)}
+                    up={acc.unrealizedPnl >= 0}
+                  />
+                </div>
+              </Panel>
+            )}
+          </aside>
+        </div>
+      )}
+
+      <p className="text-[11px] text-muted-foreground">
+        Ambiente de simulação: os valores usam apenas preços de negócios ocorridos nesta plataforma e
+        preços de referência definidos pela administração. Não representam cotações oficiais nem
+        dinheiro real.
+      </p>
+    </TerminalShell>
   );
 }
