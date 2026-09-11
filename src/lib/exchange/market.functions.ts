@@ -53,7 +53,9 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         .maybeSingle(),
       db
         .from("exchange_assets")
-        .select("id, symbol, name, asset_type, status, is_demo, environment, logo_url")
+        .select(
+          "id, symbol, name, asset_type, status, is_demo, environment, logo_url, reference_price, reference_price_source",
+        )
         .eq("environment", data.environment)
         .order("symbol"),
       db.from("market_data").select("asset_id, last_price, prev_close, volume"),
