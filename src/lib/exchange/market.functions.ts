@@ -193,6 +193,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
     ]);
 
     const company = asset.companies as { name: string } | null;
+    const reference = asset.reference_price == null ? null : Number(asset.reference_price);
+    const traded = quote?.lastPrice ?? null;
     return {
       id: asset.id as string,
       symbol: asset.symbol as string,
@@ -210,8 +212,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
       companyName: company?.name ?? null,
       marketStatus: (marketRes.data?.status as string) ?? "CLOSED",
       quote: {
-        lastPrice: quote?.lastPrice ?? null,
-        prevClose: quote?.prevClose ?? null,
+        lastPrice: traded ?? reference,
+        prevClose: quote?.prevClose ?? reference,
         dayHigh: quote?.dayHigh ?? null,
         dayLow: quote?.dayLow ?? null,
         volume: quote?.volume ?? 0,
@@ -221,5 +223,8 @@ export const getAssetDetail = createServerFn({ method: "POST" })
       book,
       trades,
       history,
+      referencePrice: reference,
+      referenceSource: (asset.reference_price_source as string | null) ?? null,
+      isReferenceOnly: traded == null && reference != null,
     };
   });
