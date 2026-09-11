@@ -108,6 +108,15 @@ function ExchangeMarket() {
 
         <ExchangeNav />
 
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="space-y-1 p-3 text-xs text-muted-foreground">
+            <p className="text-sm font-semibold text-foreground">Como investir em 3 passos</p>
+            <p>1. Coloque fundos na carteira de investimentos em Fundos.</p>
+            <p>2. Escolha uma empresa da lista abaixo e toque em Investir.</p>
+            <p>3. Indique quantas ações quer e a que preço; a ordem é validada e registada no servidor.</p>
+          </CardContent>
+        </Card>
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
