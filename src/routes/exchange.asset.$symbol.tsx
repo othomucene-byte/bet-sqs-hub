@@ -137,6 +137,14 @@ function AssetPage() {
                 Mercado: {MARKET_STATUS_LABEL[asset.marketStatus] ?? asset.marketStatus} · Volume{" "}
                 {asset.quote.volume} · Compra {price(asset.quote.bid)} · Venda {price(asset.quote.ask)}
               </p>
+              {asset.isReferenceOnly && (
+                <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-400">
+                  Preço de referência ({asset.referenceSource ?? "definido pela administração"}).
+                  Ainda não houve negócios nesta empresa; a partir da primeira compra e venda o preço
+                  passa a resultar apenas do mercado.
+                </p>
+              )}
+
             </header>
 
             <div className="grid gap-4 md:grid-cols-[1fr_320px]">
