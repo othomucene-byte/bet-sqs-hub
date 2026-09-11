@@ -2,18 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
 import { LiveBadge } from "@/components/exchange/exchange-nav";
-import { AssetLogo, Panel, StatTile, TerminalShell } from "@/components/exchange/terminal";
+import {
+  AssetLogo,
+  BigChart,
+  DepthRow,
+  Panel,
+  StatTile,
+  TerminalShell,
+} from "@/components/exchange/terminal";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
