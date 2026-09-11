@@ -41,7 +41,8 @@ export function TerminalShell({
             <p className="text-[12px] leading-relaxed text-muted-foreground">{subtitle}</p>
           )}
         </header>
-        <ExchangeNav />
+        {children}
+
         {children}
       </main>
       <ExchangeNav />
