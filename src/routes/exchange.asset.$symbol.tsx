@@ -186,8 +186,8 @@ function AssetPage() {
                             <Area
                               type="monotone"
                               dataKey="price"
-                              stroke="hsl(var(--primary))"
-                              fill="hsl(var(--primary) / 0.18)"
+                              stroke="var(--primary)"
+                              fill="color-mix(in oklab, var(--primary) 18%, transparent)"
                               strokeWidth={2}
                             />
                           </AreaChart>
