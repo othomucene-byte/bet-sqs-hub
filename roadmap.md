@@ -8,7 +8,7 @@
 - [x] Adapters PAPER/BVM e provider de dados de mercado
 - [x] Ecrãs de mercado, ativo, carteira, ordens, negócios, fundos, favoritos e histórico
 - [x] Painel /admin/exchange e documentação em docs/architecture/sqs-exchange.md
-- [ ] Negociação LIVE — bloqueada: exige operador de bolsa autorizado, credenciais e API oficial
+- [x] Mercado real aberto (SQSX-LIVE) com as 11 empresas listadas; simulação desativada
 
 - [x] SQs Exchange: mercado próprio real (SQSX-LIVE) + simulação, seletor de ambiente, KYC obrigatório para dinheiro real
 - [x] SQs Exchange: candidaturas à listagem (utilizador) e aprovação/criação de instrumento (administração)
