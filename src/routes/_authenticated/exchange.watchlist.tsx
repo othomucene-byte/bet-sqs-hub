@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { SiteHeader } from "@/components/site-header";
 import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { AssetLogo } from "@/components/exchange/terminal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
