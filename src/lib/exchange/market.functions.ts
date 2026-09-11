@@ -17,7 +17,13 @@ export type MarketAssetRow = {
   bid: number | null;
   ask: number | null;
   spark: number[];
+  /** Preço de arranque definido pela administração; usado só para exibição quando não há negócios. */
+  referencePrice: number | null;
+  referenceSource: string | null;
+  /** true quando o valor mostrado é de referência e não resultou de negócios. */
+  isReferenceOnly: boolean;
 };
+
 
 export type MarketOverview = {
   marketStatus: "PRE_OPEN" | "OPEN" | "PAUSED" | "CLOSED";
