@@ -90,8 +90,10 @@ export const getMarketOverview = createServerFn({ method: "POST" })
 
     const assets: MarketAssetRow[] = (assetsRes.data ?? []).map((a) => {
       const md = dataByAsset.get(a.id as string);
-      const last = md?.last_price == null ? null : Number(md.last_price);
-      const prev = md?.prev_close == null ? null : Number(md.prev_close);
+      const traded = md?.last_price == null ? null : Number(md.last_price);
+      const reference = a.reference_price == null ? null : Number(a.reference_price);
+      const last = traded ?? reference;
+      const prev = md?.prev_close == null ? reference : Number(md.prev_close);
       const ask = asks.get(a.id as string);
       return {
         id: a.id as string,
@@ -104,13 +106,18 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         logoUrl: (a.logo_url as string | null) ?? null,
         lastPrice: last,
         prevClose: prev,
-        changePct: last != null && prev != null && prev > 0 ? ((last - prev) / prev) * 100 : null,
+        changePct:
+          traded != null && prev != null && prev > 0 ? ((traded - prev) / prev) * 100 : null,
         volume: Number(md?.volume ?? 0),
         bid: bids.get(a.id as string) ?? null,
         ask: ask == null || !Number.isFinite(ask) ? null : ask,
         spark: (sparks.get(a.id as string) ?? []).slice(-20),
+        referencePrice: reference,
+        referenceSource: (a.reference_price_source as string | null) ?? null,
+        isReferenceOnly: traded == null && reference != null,
       };
     });
+
 
     const market = marketRes.data;
     return {
