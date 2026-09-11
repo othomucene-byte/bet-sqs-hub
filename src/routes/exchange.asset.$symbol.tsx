@@ -114,6 +114,7 @@ function AssetPage() {
           <>
             <header className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
+                <AssetLogo symbol={asset.symbol} name={asset.name} size={44} />
                 <h1 className="text-2xl font-bold">{asset.symbol}</h1>
                 <Badge variant="outline">{ASSET_TYPE_LABEL[asset.assetType] ?? asset.assetType}</Badge>
                 {asset.isDemo ? <PaperBadge /> : <EnvBadge environment="LIVE" />}

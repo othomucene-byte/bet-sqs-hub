@@ -3,7 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { PaperBadge } from "@/components/exchange/exchange-nav";
-import { Panel, Spark, StatTile, TerminalShell, TotalCard } from "@/components/exchange/terminal";
+import {
+  AssetLogo,
+  Panel,
+  Spark,
+  StatTile,
+  TerminalShell,
+  TotalCard,
+} from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
 import { MZN, pct, price } from "@/lib/exchange/format";
@@ -88,7 +95,8 @@ function PortfolioPage() {
                         params={{ symbol: p.symbol }}
                         className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-secondary/40"
                       >
-                        <div className="min-w-0">
+                        <AssetLogo symbol={p.symbol} size={32} />
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold">{p.symbol}</p>
                           <p className="font-mono text-xs tabular-nums text-muted-foreground">
                             {p.quantity} un. · médio {p.avgPrice.toFixed(2)} MZN

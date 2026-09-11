@@ -5,7 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { Search } from "lucide-react";
 
 import { EnvBadge } from "@/components/exchange/exchange-nav";
-import { Chips, Panel, Spark, StatTile, TerminalShell } from "@/components/exchange/terminal";
+import {
+  AssetLogo,
+  Chips,
+  Panel,
+  Spark,
+  StatTile,
+  TerminalShell,
+} from "@/components/exchange/terminal";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
