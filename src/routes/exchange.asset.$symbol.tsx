@@ -6,6 +6,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { SiteHeader } from "@/components/site-header";
 import { EnvBadge, ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { AssetLogo } from "@/components/exchange/terminal";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,7 @@ function AssetPage() {
           <>
             <header className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
+                <AssetLogo symbol={asset.symbol} name={asset.name} size={44} />
                 <h1 className="text-2xl font-bold">{asset.symbol}</h1>
                 <Badge variant="outline">{ASSET_TYPE_LABEL[asset.assetType] ?? asset.assetType}</Badge>
                 {asset.isDemo ? <PaperBadge /> : <EnvBadge environment="LIVE" />}

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { SiteHeader } from "@/components/site-header";
 import { ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { AssetLogo } from "@/components/exchange/terminal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
@@ -71,9 +72,12 @@ function WatchlistPage() {
               params={{ symbol: a.symbol }}
               className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 text-sm hover:border-primary/40"
             >
-              <div>
-                <p className="font-semibold">{a.symbol}</p>
-                <p className="text-xs text-muted-foreground">{a.name}</p>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} size={32} />
+                <div className="min-w-0">
+                  <p className="font-semibold">{a.symbol}</p>
+                  <p className="truncate text-xs text-muted-foreground">{a.name}</p>
+                </div>
               </div>
               <div className="text-right">
                 <p className="font-medium">{price(a.lastPrice)}</p>

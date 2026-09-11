@@ -5,7 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { Search } from "lucide-react";
 
 import { EnvBadge } from "@/components/exchange/exchange-nav";
-import { Chips, Panel, Spark, StatTile, TerminalShell } from "@/components/exchange/terminal";
+import {
+  AssetLogo,
+  Chips,
+  Panel,
+  Spark,
+  StatTile,
+  TerminalShell,
+} from "@/components/exchange/terminal";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -183,17 +190,7 @@ function ExchangeMarket() {
                     className="grid grid-cols-[1fr_auto] items-center gap-2 px-3 py-2.5 transition-colors hover:bg-secondary/40 sm:grid-cols-[1fr_90px_80px_80px_70px_84px]"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold">
-                        {a.logoUrl ? (
-                          <img
-                            src={a.logoUrl}
-                            alt={a.name}
-                            className="size-9 rounded-full object-cover"
-                          />
-                        ) : (
-                          a.symbol.slice(0, 3)
-                        )}
-                      </div>
+                      <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold">{a.symbol}</span>
