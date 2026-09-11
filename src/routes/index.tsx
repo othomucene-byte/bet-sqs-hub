@@ -200,6 +200,9 @@ function Landing() {
                 </a>
               </Button>
               <Button size="lg" variant="secondary" asChild>
+                <a href="/exchange">Ver empresas e investir</a>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
                 <a href="/auth">Criar conta</a>
               </Button>
             </div>

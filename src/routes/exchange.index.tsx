@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, TrendingDown, TrendingUp } from "lucide-react";
@@ -40,6 +40,7 @@ const CATEGORIES = ["Todos", "EQUITY", "BOND", "COMMERCIAL_PAPER", "FUND", "OTHE
 function ExchangeMarket() {
   const fetchMarket = useServerFn(getMarketOverview);
   const [environment, setEnvironment] = useState<"LIVE" | "PAPER">("LIVE");
+  const [autoSwitched, setAutoSwitched] = useState(false);
   const query = useQuery({
     queryKey: ["exchange-market", environment],
     queryFn: () => fetchMarket({ data: { environment } }),
@@ -47,6 +48,20 @@ function ExchangeMarket() {
   });
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<string>("Todos");
+
+  // Se o mercado real ainda não tem empresas listadas, mostramos logo a simulação
+  // para que a lista nunca apareça vazia sem explicação.
+  useEffect(() => {
+    if (
+      environment === "LIVE" &&
+      !autoSwitched &&
+      query.data &&
+      query.data.assets.length === 0
+    ) {
+      setAutoSwitched(true);
+      setEnvironment("PAPER");
+    }
+  }, [environment, autoSwitched, query.data]);
 
   const assets = useMemo(() => {
     const rows = query.data?.assets ?? [];
@@ -92,6 +107,15 @@ function ExchangeMarket() {
         </header>
 
         <ExchangeNav />
+
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="space-y-1 p-3 text-xs text-muted-foreground">
+            <p className="text-sm font-semibold text-foreground">Como investir em 3 passos</p>
+            <p>1. Coloque fundos na carteira de investimentos em Fundos.</p>
+            <p>2. Escolha uma empresa da lista abaixo e toque em Investir.</p>
+            <p>3. Indique quantas ações quer e a que preço; a ordem é validada e registada no servidor.</p>
+          </CardContent>
+        </Card>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -212,6 +236,9 @@ function ExchangeMarket() {
                         (up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />)}
                       {pct(a.changePct)}
                     </p>
+                    <span className="mt-1 inline-block rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                      Investir
+                    </span>
                   </div>
                 </div>
               </Link>
