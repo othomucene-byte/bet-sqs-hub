@@ -6,6 +6,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { SiteHeader } from "@/components/site-header";
 import { EnvBadge, ExchangeNav, PaperBadge } from "@/components/exchange/exchange-nav";
+import { AssetLogo } from "@/components/exchange/terminal";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
