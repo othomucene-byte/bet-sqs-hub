@@ -12,25 +12,40 @@
 
 import { z } from "zod";
 
-import { callMistralJson, MISTRAL_MODEL, type MistralMessage } from "./mistral.server";
+import { callMistralJson, type MistralMessage } from "./mistral.server";
 
 const KINDS = ["FINANCIALS", "NEWS", "DIVIDEND", "CORPORATE_EVENT", "PROFILE", "OTHER"] as const;
 
+const nullish = <T extends z.ZodTypeAny>(schema: T) =>
+  schema.nullable().optional().transform((value) => value ?? null);
+
 const ItemSchema = z.object({
-  kind: z.enum(KINDS),
-  title: z.string().trim().min(3).max(200),
-  summary: z.string().trim().max(2000).nullable(),
-  metrics: z.record(z.string(), z.union([z.string(), z.number()])).nullable(),
-  event_date: z
+  kind: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .nullable(),
+    .transform((value) => value.trim().toUpperCase())
+    .transform((value) => ((KINDS as readonly string[]).includes(value) ? value : "OTHER"))
+    .pipe(z.enum(KINDS)),
+  title: z.string().trim().min(3).max(200),
+  summary: nullish(z.string().trim().max(2000)),
+  metrics: nullish(
+    z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])),
+  ),
+  event_date: nullish(
+    z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}/)
+      .transform((value) => value.slice(0, 10)),
+  ),
   source_name: z.string().trim().min(2).max(160),
-  source_url: z.string().trim().url().nullable(),
-  confidence: z.number().min(0).max(1),
+  source_url: nullish(z.string().trim().url()),
+  confidence: z.coerce.number().min(0).max(1),
 });
 
-const PayloadSchema = z.object({ items: z.array(ItemSchema).max(12) });
+/** Itens malformados são descartados um a um; o resto do lote é aproveitado. */
+const PayloadSchema = z.object({
+  items: z.array(z.unknown()).max(30).optional().default([]),
+});
 
 export type CollectedItem = z.infer<typeof ItemSchema>;
 
@@ -114,7 +129,7 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
     }),
   );
 
-  const parsed = PayloadSchema.safeParse(raw);
+  const parsed = PayloadSchema.safeParse(raw.data);
   if (!parsed.success) {
     throw new Error("Dados propostos com formato inválido — nada foi guardado.");
   }
@@ -129,7 +144,14 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
     skipped: 0,
   };
 
-  for (const item of parsed.data.items) {
+  const items: CollectedItem[] = [];
+  for (const candidate of parsed.data.items) {
+    const item = ItemSchema.safeParse(candidate);
+    if (item.success) items.push(item.data);
+    else result.skipped += 1;
+  }
+
+  for (const item of items) {
     const contentHash = hash(
       [item.kind, item.title, item.summary ?? "", item.event_date ?? "", item.source_url ?? ""]
         .join("|")
@@ -175,8 +197,8 @@ export async function refreshAssetData(assetId: string): Promise<RefreshResult> 
         source_url: item.source_url,
         confidence: item.confidence,
         status,
-        provider: "mistral",
-        model: MISTRAL_MODEL,
+        provider: raw.provider,
+        model: raw.model,
         run_id: runId,
         content_hash: contentHash,
         ...(autoApprove && previous?.id ? { supersedes_id: previous.id as string } : {}),
