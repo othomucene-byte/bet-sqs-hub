@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search } from "lucide-react";
 
-import { EnvBadge } from "@/components/exchange/exchange-nav";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
   AssetLogo,
   Chips,
@@ -85,7 +85,7 @@ function ExchangeMarket() {
       badges={
         <>
           <span className="text-xs text-muted-foreground">🇲🇿 Moçambique · MZN</span>
-          <EnvBadge environment={environment} />
+          <LiveBadge />
         </>
       }
       subtitle={
@@ -96,23 +96,6 @@ function ExchangeMarket() {
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-3">
-
-          <div className="flex gap-1 rounded-lg border border-border/60 bg-card/60 p-1">
-            {(["LIVE", "PAPER"] as const).map((env) => (
-              <button
-                key={env}
-                type="button"
-                onClick={() => setEnvironment(env)}
-                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  environment === env
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {env === "LIVE" ? "Mercado real" : "Simulação"}
-              </button>
-            ))}
-          </div>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatTile label="Empresas" value={String(rows.length)} />
@@ -164,8 +147,8 @@ function ExchangeMarket() {
 
             {query.data && assets.length === 0 && (
               <p className="p-6 text-sm text-muted-foreground">
-                {rows.length === 0 && environment === "LIVE"
-                  ? "Ainda não há empresas listadas no mercado real. As empresas aprovadas pela administração aparecem aqui."
+                {rows.length === 0
+                  ? "Ainda não há empresas listadas. As empresas aprovadas pela administração aparecem aqui."
                   : "Nenhuma empresa corresponde à pesquisa."}
               </p>
             )}
@@ -325,9 +308,9 @@ function ExchangeMarket() {
       </div>
 
       <p className="text-[11px] leading-relaxed text-muted-foreground">
-        {environment === "LIVE"
-          ? "Mercado próprio da Betfcom SQs em meticais. Os preços resultam de negócios entre participantes deste mercado; não são cotações de terceiros. Negociar exige identidade verificada. Investir envolve risco de perda de capital e nenhum retorno é garantido."
-          : "Ambiente de simulação (paper trading) com dinheiro fictício, separado do dinheiro real. Os preços resultam apenas de negócios entre participantes da simulação."}
+        Mercado próprio da Betfcom SQs em meticais. Os preços resultam de negócios entre
+        participantes deste mercado; não são cotações de terceiros. Investir exige identidade
+        verificada e envolve risco de perda de capital; nenhum retorno é garantido.
       </p>
     </TerminalShell>
   );
