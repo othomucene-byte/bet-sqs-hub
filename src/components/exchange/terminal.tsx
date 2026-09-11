@@ -27,7 +27,7 @@ export function TerminalShell({
       <SiteHeader />
       <main
         className={cn(
-          "mx-auto w-full space-y-3 px-3 py-4 sm:px-4",
+          "mx-auto w-full max-w-full space-y-3 overflow-x-hidden px-3 py-4 sm:px-4",
           wide ? "max-w-7xl" : "max-w-6xl",
         )}
       >
