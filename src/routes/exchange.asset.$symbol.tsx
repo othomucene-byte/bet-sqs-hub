@@ -154,12 +154,12 @@ function AssetPage() {
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <StatTile label="Compra" value={price(asset.quote.bid)} tone="up" />
-              <StatTile label="Venda" value={price(asset.quote.ask)} tone="down" />
+              <StatTile label="Compra" value={asset.quote.bid != null ? price(asset.quote.bid) : "—"} tone="up" />
+              <StatTile label="Venda" value={asset.quote.ask != null ? price(asset.quote.ask) : "—"} tone="down" />
               <StatTile label="Volume" value={String(asset.quote.volume)} />
               <StatTile label="Fecho ant." value={price(asset.quote.prevClose)} />
-              <StatTile label="Máximo" value={price(asset.quote.dayHigh)} />
-              <StatTile label="Mínimo" value={price(asset.quote.dayLow)} />
+              <StatTile label="Máximo" value={asset.quote.dayHigh != null ? price(asset.quote.dayHigh) : "—"} />
+              <StatTile label="Mínimo" value={asset.quote.dayLow != null ? price(asset.quote.dayLow) : "—"} />
               <StatTile label="Lote mínimo" value={String(asset.lotSize)} />
               <StatTile label="Variação mín." value={`${asset.tickSize} MZN`} />
             </div>
