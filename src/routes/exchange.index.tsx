@@ -96,8 +96,9 @@ function ExchangeMarket() {
           : "A carregar estado do mercado…"
       }
     >
-      <div className="grid gap-3 lg:grid-cols-[1fr_300px]">
-        <div className="space-y-3">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="min-w-0 space-y-3">
+
           <div className="flex gap-1 rounded-lg border border-border/60 bg-card/60 p-1">
             {(["LIVE", "PAPER"] as const).map((env) => (
               <button
