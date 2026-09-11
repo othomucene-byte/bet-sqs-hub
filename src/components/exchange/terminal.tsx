@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { SiteHeader } from "@/components/site-header";
 import { ExchangeNav } from "@/components/exchange/exchange-nav";
@@ -282,6 +290,91 @@ export function Chips<T extends string>({
           {labels?.[o] ?? o}
         </button>
       ))}
+    </div>
+  );
+}
+
+/** Gráfico grande com grelha discreta e preenchimento em gradiente. */
+export function BigChart({
+  values,
+  up,
+  height = 200,
+}: {
+  values: { label: string; price: number }[];
+  up: boolean;
+  height?: number;
+}) {
+  const stroke = up ? "var(--primary)" : "var(--destructive)";
+  return (
+    <div style={{ height }} className="w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={values} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="bigchart" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.4} />
+              <stop offset="100%" stopColor={stroke} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeOpacity={0.08} vertical={false} />
+          <XAxis dataKey="label" fontSize={10} tickLine={false} axisLine={false} minTickGap={28} />
+          <YAxis
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+            width={44}
+            domain={["auto", "auto"]}
+            orientation="right"
+          />
+          <Tooltip
+            contentStyle={{
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              fontSize: 12,
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="price"
+            stroke={stroke}
+            strokeWidth={2}
+            fill="url(#bigchart)"
+            dot={false}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Linha do livro de ordens com barra de profundidade proporcional. */
+export function DepthRow({
+  price: p,
+  qty,
+  max,
+  tone,
+}: {
+  price: number;
+  qty: number;
+  max: number;
+  tone: "buy" | "sell";
+}) {
+  const width = max > 0 ? Math.max(4, Math.round((qty / max) * 100)) : 0;
+  return (
+    <div className="relative flex items-center justify-between px-2 py-1 font-mono text-xs tabular-nums">
+      <span
+        aria-hidden
+        className={cn(
+          "absolute inset-y-0.5 rounded-sm",
+          tone === "buy" ? "left-0 bg-primary/15" : "right-0 bg-destructive/15",
+        )}
+        style={{ width: `${width}%` }}
+      />
+      <span className={cn("relative", tone === "buy" ? "text-primary" : "text-destructive")}>
+        {p.toFixed(2)}
+      </span>
+      <span className="relative text-muted-foreground">{qty}</span>
     </div>
   );
 }

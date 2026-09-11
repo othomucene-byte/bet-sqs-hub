@@ -2,18 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
 import { LiveBadge } from "@/components/exchange/exchange-nav";
-import { AssetLogo, Panel, StatTile, TerminalShell } from "@/components/exchange/terminal";
+import {
+  AssetLogo,
+  BigChart,
+  DepthRow,
+  Panel,
+  StatTile,
+  TerminalShell,
+} from "@/components/exchange/terminal";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +45,7 @@ const KIND_LABEL: Record<string, string> = {
   news: "Notícia",
   dividend: "Dividendo",
   corporate_event: "Evento corporativo",
+  profile: "Perfil",
   guidance: "Perspetivas",
   other: "Outro",
 };
@@ -122,6 +120,8 @@ function AssetPage() {
     );
   }
 
+  const maxDepth = Math.max(1, ...asset.book.map((l) => l.quantity));
+
   return (
     <TerminalShell
       wide
@@ -134,82 +134,125 @@ function AssetPage() {
       }
       subtitle={`${asset.name} · Mercado ${MARKET_STATUS_LABEL[asset.marketStatus] ?? asset.marketStatus} · ${asset.country === "MZ" ? "Moçambique" : asset.country} · ${asset.currency}`}
     >
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-3">
-          <Panel>
-            <div className="flex items-center gap-3">
-              <AssetLogo symbol={asset.symbol} name={asset.name} size={48} />
-              <div className="min-w-0">
-                <p className="font-mono text-3xl font-bold tabular-nums">
-                  {price(asset.quote.lastPrice)}
-                </p>
-                <p
-                  className={cn(
-                    "font-mono text-sm tabular-nums",
-                    change == null ? "text-muted-foreground" : up ? "text-primary" : "text-destructive",
-                  )}
-                >
-                  {pct(change)} · último negócio
-                </p>
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        {/* Cabeçalho de preço + gráfico: o essencial em primeiro no telefone. */}
+        <section className="order-1 overflow-hidden rounded-2xl border border-border/60 bg-card/80 lg:col-start-1 lg:row-start-1">
+          <div className="relative p-4">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.12]"
+              style={{ backgroundImage: "var(--gradient-primary)" }}
+            />
+            <div className="relative flex items-center gap-3">
+              <AssetLogo symbol={asset.symbol} name={asset.name} size={44} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs text-muted-foreground">{asset.name}</p>
+                <div className="flex flex-wrap items-end gap-2">
+                  <p className="font-mono text-3xl font-bold tabular-nums">
+                    {price(asset.quote.lastPrice)}
+                  </p>
+                  <span
+                    className={cn(
+                      "rounded-md px-2 py-0.5 font-mono text-xs font-semibold tabular-nums",
+                      change == null
+                        ? "bg-secondary text-muted-foreground"
+                        : up
+                          ? "bg-primary/15 text-primary"
+                          : "bg-destructive/15 text-destructive",
+                    )}
+                  >
+                    {pct(change)}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <StatTile label="Compra" value={asset.quote.bid != null ? price(asset.quote.bid) : "—"} tone="up" />
-              <StatTile label="Venda" value={asset.quote.ask != null ? price(asset.quote.ask) : "—"} tone="down" />
-              <StatTile label="Volume" value={String(asset.quote.volume)} />
-              <StatTile label="Fecho ant." value={price(asset.quote.prevClose)} />
-              <StatTile label="Máximo" value={asset.quote.dayHigh != null ? price(asset.quote.dayHigh) : "—"} />
-              <StatTile label="Mínimo" value={asset.quote.dayLow != null ? price(asset.quote.dayLow) : "—"} />
-              <StatTile label="Lote mínimo" value={String(asset.lotSize)} />
-              <StatTile label="Variação mín." value={`${asset.tickSize} MZN`} />
-            </div>
-            {asset.isReferenceOnly && (
-              <p className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-400">
-                Preço de referência ({asset.referenceSource ?? "definido pela administração"}). A
-                partir do primeiro negócio, o preço passa a resultar apenas das compras e vendas.
-              </p>
-            )}
-          </Panel>
 
-          <Panel title="Evolução do preço">
-            <div className="h-56">
+            <div className="relative pt-2">
               {asset.history.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={asset.history.map((h) => ({ ...h, label: timeFmt.format(new Date(h.t)) }))}
-                  >
-                    <CartesianGrid strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="label" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      width={45}
-                      domain={["auto", "auto"]}
-                    />
-                    <Tooltip />
-                    <Area
-                      type="monotone"
-                      dataKey="price"
-                      stroke="var(--primary)"
-                      fill="color-mix(in oklab, var(--primary) 18%, transparent)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <BigChart
+                  values={asset.history.map((h) => ({
+                    label: timeFmt.format(new Date(h.t)),
+                    price: h.price,
+                  }))}
+                  up={up}
+                  height={190}
+                />
               ) : (
-                <p className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
+                <p className="py-8 text-center text-xs text-muted-foreground">
                   O gráfico começa a desenhar-se a partir do primeiro negócio nesta empresa.
                 </p>
               )}
             </div>
-          </Panel>
+          </div>
 
+          <div className="grid grid-cols-2 gap-2 border-t border-border/50 p-3 sm:grid-cols-4">
+            <StatTile
+              label="Compra"
+              value={asset.quote.bid != null ? price(asset.quote.bid) : "—"}
+              tone="up"
+            />
+            <StatTile
+              label="Venda"
+              value={asset.quote.ask != null ? price(asset.quote.ask) : "—"}
+              tone="down"
+            />
+            <StatTile label="Volume" value={String(asset.quote.volume)} />
+            <StatTile label="Fecho ant." value={price(asset.quote.prevClose)} />
+            <StatTile
+              label="Máximo"
+              value={asset.quote.dayHigh != null ? price(asset.quote.dayHigh) : "—"}
+            />
+            <StatTile
+              label="Mínimo"
+              value={asset.quote.dayLow != null ? price(asset.quote.dayLow) : "—"}
+            />
+            <StatTile label="Lote mínimo" value={String(asset.lotSize)} />
+            <StatTile label="Variação mín." value={`${asset.tickSize} MZN`} />
+          </div>
+
+          {asset.isReferenceOnly && (
+            <p className="border-t border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-400">
+              Preço de referência ({asset.referenceSource ?? "definido pela administração"}). A
+              partir do primeiro negócio, o preço passa a resultar apenas das compras e vendas.
+            </p>
+          )}
+        </section>
+
+        <aside className="order-2 space-y-3 lg:sticky lg:top-4 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <TradePanel
+            assetId={asset.id}
+            symbol={asset.symbol}
+            tickSize={asset.tickSize}
+            lotSize={asset.lotSize}
+            bestBid={asset.quote.bid}
+            bestAsk={asset.quote.ask}
+            lastPrice={asset.quote.lastPrice}
+            marketStatus={asset.marketStatus}
+            onDone={() => query.refetch()}
+          />
+          <Panel title="A sua conta">
+            <div className="grid gap-2 text-xs">
+              <Link to="/exchange/portfolio" className="text-primary underline">
+                Ver carteira e posições
+              </Link>
+              <Link to="/exchange/orders" className="text-primary underline">
+                Ordens abertas
+              </Link>
+              <Link to="/exchange/wallet" className="text-primary underline">
+                Depositar ou levantar
+              </Link>
+              <Link to="/exchange" className="text-muted-foreground underline">
+                ← Todas as empresas
+              </Link>
+            </div>
+          </Panel>
+        </aside>
+
+        <div className="order-3 min-w-0 space-y-3 lg:col-start-1 lg:row-start-2">
           <div className="grid gap-3 md:grid-cols-2">
             <Panel title="Livro de ordens" padded={false}>
-              <div className="p-2 text-xs">
+              <div className="p-2">
                 {asks.length === 0 && bids.length === 0 && (
-                  <p className="py-6 text-center text-muted-foreground">
+                  <p className="py-6 text-center text-xs text-muted-foreground">
                     Livro vazio — seja o primeiro a colocar uma ordem.
                   </p>
                 )}
@@ -217,7 +260,13 @@ function AssetPage() {
                   .slice()
                   .reverse()
                   .map((l, i) => (
-                    <BookRow key={`a${i}`} price={l.price} qty={l.quantity} tone="sell" />
+                    <DepthRow
+                      key={`a${i}`}
+                      price={l.price}
+                      qty={l.quantity}
+                      max={maxDepth}
+                      tone="sell"
+                    />
                   ))}
                 {(asks.length > 0 || bids.length > 0) && (
                   <div className="my-1 rounded-md bg-secondary/50 py-1 text-center font-mono text-xs font-semibold tabular-nums">
@@ -225,7 +274,13 @@ function AssetPage() {
                   </div>
                 )}
                 {bids.map((l, i) => (
-                  <BookRow key={`b${i}`} price={l.price} qty={l.quantity} tone="buy" />
+                  <DepthRow
+                    key={`b${i}`}
+                    price={l.price}
+                    qty={l.quantity}
+                    max={maxDepth}
+                    tone="buy"
+                  />
                 ))}
               </div>
             </Panel>
@@ -265,7 +320,7 @@ function AssetPage() {
                 <article key={d.id} className="rounded-lg border border-border/60 bg-card/60 p-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <Badge variant="outline" className="text-[10px] uppercase">
-                      {KIND_LABEL[d.kind] ?? d.kind}
+                      {KIND_LABEL[d.kind.toLowerCase()] ?? d.kind.replace(/_/g, " ")}
                     </Badge>
                     <span className="text-[11px] text-muted-foreground">
                       {new Date(d.collectedAt).toLocaleDateString("pt-PT")}
@@ -313,46 +368,7 @@ function AssetPage() {
             </p>
           </Panel>
         </div>
-
-        <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
-          <TradePanel
-            assetId={asset.id}
-            symbol={asset.symbol}
-            tickSize={asset.tickSize}
-            lotSize={asset.lotSize}
-            bestBid={asset.quote.bid}
-            bestAsk={asset.quote.ask}
-            lastPrice={asset.quote.lastPrice}
-            marketStatus={asset.marketStatus}
-            onDone={() => query.refetch()}
-          />
-          <Panel title="A sua conta">
-            <div className="grid gap-2 text-xs">
-              <Link to="/exchange/portfolio" className="text-primary underline">
-                Ver carteira e posições
-              </Link>
-              <Link to="/exchange/orders" className="text-primary underline">
-                Ordens abertas
-              </Link>
-              <Link to="/exchange/wallet" className="text-primary underline">
-                Depositar ou levantar
-              </Link>
-              <Link to="/exchange" className="text-muted-foreground underline">
-                ← Todas as empresas
-              </Link>
-            </div>
-          </Panel>
-        </aside>
       </div>
     </TerminalShell>
-  );
-}
-
-function BookRow({ price: p, qty, tone }: { price: number; qty: number; tone: "buy" | "sell" }) {
-  return (
-    <div className="flex justify-between rounded px-2 py-1 font-mono tabular-nums">
-      <span className={tone === "buy" ? "text-primary" : "text-destructive"}>{p.toFixed(2)}</span>
-      <span className="text-muted-foreground">{qty}</span>
-    </div>
   );
 }
