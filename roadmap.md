@@ -13,4 +13,4 @@
 - [x] SQs Exchange: mercado próprio real (SQSX-LIVE) + simulação, seletor de ambiente, KYC obrigatório para dinheiro real
 - [x] SQs Exchange: candidaturas à listagem (utilizador) e aprovação/criação de instrumento (administração)
 - [x] SQs Exchange: inteligência Mistral AI para dados das empresas com fonte, data, histórico e validação humana
-- [ ] Agendar de hora a hora `/api/public/cron/exchange-ai` em Cloud → Jobs (ação do proprietário)
+- [x] Atualização automática dos dados das empresas de hora a hora (tarefa `exchange-ai-hourly` ativa, com fornecedor principal Mistral AI e alternativo Google AI)
