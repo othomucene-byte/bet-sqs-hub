@@ -78,7 +78,7 @@ export class PlatformMarketDataProvider implements MarketDataProvider {
 
   async getHistoricalPrices(assetId: string, limit = 60) {
     const { data } = await this.db
-      .from("trades")
+      .from("exchange_public_trades")
       .select("price, executed_at")
       .eq("asset_id", assetId)
       .order("executed_at", { ascending: false })
@@ -105,13 +105,13 @@ export class PlatformMarketDataProvider implements MarketDataProvider {
 
   async getTrades(assetId: string, limit = 25): Promise<TapeTrade[]> {
     const { data } = await this.db
-      .from("trades")
-      .select("id, price, quantity, executed_at")
+      .from("exchange_public_trades")
+      .select("trade_id, price, quantity, executed_at")
       .eq("asset_id", assetId)
       .order("executed_at", { ascending: false })
       .limit(limit);
     return (data ?? []).map((row) => ({
-      id: row.id as string,
+      id: row.trade_id as string,
       price: Number(row.price),
       quantity: Number(row.quantity),
       executedAt: row.executed_at as string,
