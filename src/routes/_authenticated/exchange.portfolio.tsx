@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery as useMarketQuery } from "@tanstack/react-query";
 
 import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
@@ -45,7 +44,7 @@ function PortfolioPage() {
   });
   const acc = query.data;
   const fetchMarket = useServerFn(getMarketOverview);
-  const market = useMarketQuery({ queryKey: ["exchange-market"], queryFn: () => fetchMarket({ data: { environment: "LIVE" as const } }) });
+  const market = useQuery({ queryKey: ["exchange-market"], queryFn: () => fetchMarket({ data: { environment: "LIVE" as const } }) });
 
   return (
     <TerminalShell

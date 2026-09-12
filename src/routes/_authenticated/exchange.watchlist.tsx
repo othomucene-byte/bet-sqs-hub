@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, LiveBadge } from "@/components/exchange/exchange-nav";
-import { AssetLogo } from "@/components/exchange/terminal";
-import { Card, CardContent } from "@/components/ui/card";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
+import { AssetLogo, Panel, TerminalShell } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
 import { getMarketOverview } from "@/lib/exchange/market.functions";
@@ -41,36 +39,30 @@ function WatchlistPage() {
   const rows = (market.data?.assets ?? []).filter((a) => ids.has(a.id));
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl space-y-4 px-4 py-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Favoritos</h1>
-          <LiveBadge />
-        </div>
-        <ExchangeNav />
+    <TerminalShell title="Favoritos" badges={<LiveBadge />} subtitle="Empresas acompanhadas, preço atual e acesso direto ao terminal.">
 
         {(account.isLoading || market.isLoading) && <Skeleton className="h-20 w-full" />}
 
         {!account.isLoading && rows.length === 0 && (
-          <Card>
-            <CardContent className="p-6 text-sm text-muted-foreground">
+          <Panel>
+            <div className="p-3 text-sm text-muted-foreground">
               Ainda não segue nenhum instrumento. Abra o{" "}
               <Link to="/exchange" className="text-primary">
                 mercado
               </Link>{" "}
               e adicione aos favoritos.
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         )}
 
-        <div className="space-y-2">
+        <Panel title="Lista acompanhada" padded={false}>
+        <div className="divide-y divide-border/40">
           {rows.map((a) => (
             <Link
               key={a.id}
               to="/exchange/asset/$symbol"
               params={{ symbol: a.symbol }}
-              className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 text-sm hover:border-primary/40"
+              className="flex items-center justify-between p-3 text-sm transition-colors hover:bg-secondary/40"
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} size={32} />
@@ -96,8 +88,7 @@ function WatchlistPage() {
             </Link>
           ))}
         </div>
-      </main>
-      <ExchangeNav />
-    </div>
+        </Panel>
+    </TerminalShell>
   );
 }

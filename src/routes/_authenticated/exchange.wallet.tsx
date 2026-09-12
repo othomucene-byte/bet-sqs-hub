@@ -109,14 +109,16 @@ function WalletPage() {
             </div>
             <div className="mt-2 flex gap-1.5">
               {QUICK.map((v) => (
-                <button
+                <Button
                   key={v}
                   type="button"
                   onClick={() => setAmount(String(v))}
-                  className="flex-1 rounded-full border border-border/60 py-1 text-xs text-muted-foreground hover:text-foreground"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 flex-1 rounded-full px-1 text-xs text-muted-foreground"
                 >
                   {v}
-                </button>
+                </Button>
               ))}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
