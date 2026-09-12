@@ -366,9 +366,9 @@ function AssetPage() {
                 </article>
               ))}
             </div>
-            {(asset.description || asset.issuerInfo) && (
+            {(asset.issuerInfo || (asset.environment !== "LIVE" && asset.description)) && (
               <p className="pt-2 text-xs text-muted-foreground">
-                {asset.description} {asset.issuerInfo}
+                {asset.environment !== "LIVE" ? asset.description : ""} {asset.issuerInfo}
               </p>
             )}
             <p className="pt-2 text-[11px] text-muted-foreground">
