@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BarChart3, ClipboardList, LineChart, User, Wallet } from "lucide-react";
+import { BarChart3, ClipboardList, History, LineChart, ListChecks, Star, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -11,40 +11,47 @@ const items = [
 ] as const;
 
 /** Navegação do módulo: barra inferior no telefone, linha de separadores no ecrã grande. */
-export function ExchangeNav({ className }: { className?: string }) {
+export function ExchangeNav({ className, variant = "all" }: { className?: string; variant?: "all" | "sidebar" | "mobile" }) {
   return (
     <>
-      <nav
+      {(variant === "all" || variant === "sidebar") && <nav
         className={cn(
-          "hidden gap-1 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1 md:flex",
+          "hidden w-52 shrink-0 flex-col gap-1 border-r border-border/60 bg-card/30 px-3 py-5 md:flex",
           className,
         )}
       >
+        <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">SQs Exchange</p>
         {items.map((item) => (
           <Link
             key={item.to}
             to={item.to}
             activeOptions={{ exact: item.exact }}
-            className="shrink-0 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
           >
+            <item.icon className="size-4" />
             {item.label}
           </Link>
         ))}
         <Link
           to="/exchange/trades"
-          className="shrink-0 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
         >
+          <ListChecks className="size-4" />
           Negócios
         </Link>
         <Link
           to="/exchange/history"
-          className="shrink-0 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary"
         >
+          <History className="size-4" />
           Histórico
         </Link>
-      </nav>
+        <Link to="/exchange/watchlist" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary">
+          <Star className="size-4" /> Favoritos
+        </Link>
+      </nav>}
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-background/95 backdrop-blur md:hidden">
+      {(variant === "all" || variant === "mobile") && <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-background/95 backdrop-blur md:hidden">
         {items.map((item) => (
           <Link
             key={item.to}
@@ -56,7 +63,7 @@ export function ExchangeNav({ className }: { className?: string }) {
             {item.label}
           </Link>
         ))}
-      </nav>
+      </nav>}
     </>
   );
 }

@@ -11,6 +11,7 @@ import {
 
 import { SiteHeader } from "@/components/site-header";
 import { ExchangeNav } from "@/components/exchange/exchange-nav";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MZN, pct } from "@/lib/exchange/format";
 
@@ -33,12 +34,9 @@ export function TerminalShell({
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8">
       <SiteHeader />
-      <main
-        className={cn(
-          "mx-auto w-full max-w-full space-y-3 overflow-x-hidden px-3 py-4 sm:px-4",
-          wide ? "max-w-7xl" : "max-w-6xl",
-        )}
-      >
+      <div className={cn("mx-auto flex w-full max-w-full", wide ? "max-w-[1480px]" : "max-w-6xl")}>
+        <ExchangeNav variant="sidebar" />
+        <main className="min-w-0 flex-1 space-y-3 overflow-x-hidden px-3 py-4 sm:px-4">
         <header className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{title}</h1>
@@ -51,8 +49,9 @@ export function TerminalShell({
         </header>
         {children}
 
-      </main>
-      <ExchangeNav />
+        </main>
+      </div>
+      <ExchangeNav variant="mobile" />
     </div>
   );
 }
@@ -276,19 +275,21 @@ export function Chips<T extends string>({
   return (
     <div className="flex gap-1.5 overflow-x-auto pb-1">
       {options.map((o) => (
-        <button
+        <Button
           key={o}
           type="button"
           onClick={() => onChange(o)}
+          size="sm"
+          variant="outline"
           className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+            "h-7 shrink-0 rounded-full px-3 text-xs font-medium",
             value === o
               ? "border-primary bg-primary/15 text-primary"
               : "border-border/60 text-muted-foreground hover:text-foreground",
           )}
         >
           {labels?.[o] ?? o}
-        </button>
+        </Button>
       ))}
     </div>
   );
