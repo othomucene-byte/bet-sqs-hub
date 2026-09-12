@@ -22,6 +22,12 @@ export type MarketAssetRow = {
   referenceSource: string | null;
   /** true quando o valor mostrado é de referência e não resultou de negócios. */
   isReferenceOnly: boolean;
+  referenceHistory: { t: string; price: number }[];
+  latestCompanyUpdate: {
+    title: string;
+    sourceName: string;
+    collectedAt: string;
+  } | null;
 };
 
 
@@ -45,7 +51,7 @@ export const getMarketOverview = createServerFn({ method: "POST" })
     const db = publicClient();
     const marketCode = data.environment === "LIVE" ? "SQSX-LIVE" : "SQSX-PAPER";
 
-    const [marketRes, assetsRes, dataRes, tradesRes, bookRes] = await Promise.all([
+    const [marketRes, assetsRes, dataRes, tradesRes, bookRes, referenceRes, companyRes] = await Promise.all([
       db
         .from("exchange_markets")
         .select("name, status, environment, opens_at, closes_at")
@@ -59,11 +65,22 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         .eq("environment", data.environment)
         .order("symbol"),
       db.from("market_data").select("asset_id, last_price, prev_close, volume"),
-      db.from("trades").select("asset_id, price, executed_at").order("executed_at").limit(500),
+      db.from("exchange_public_trades").select("asset_id, price, executed_at").order("executed_at").limit(500),
       db
         .from("exchange_orders")
         .select("asset_id, side, limit_price, remaining_quantity, status")
         .in("status", ["OPEN", "PARTIALLY_FILLED"]),
+      db
+        .from("exchange_reference_price_history")
+        .select("asset_id, price, effective_at")
+        .order("effective_at")
+        .limit(500),
+      db
+        .from("company_data_points")
+        .select("asset_id, title, source_name, collected_at")
+        .eq("status", "approved")
+        .order("collected_at", { ascending: false })
+        .limit(500),
     ]);
 
     const dataByAsset = new Map(
@@ -75,6 +92,24 @@ export const getMarketOverview = createServerFn({ method: "POST" })
       const arr = sparks.get(key) ?? [];
       arr.push(Number(t.price));
       sparks.set(key, arr);
+    }
+    const references = new Map<string, { t: string; price: number }[]>();
+    for (const row of referenceRes.data ?? []) {
+      const key = row.asset_id as string;
+      const arr = references.get(key) ?? [];
+      arr.push({ t: row.effective_at as string, price: Number(row.price) });
+      references.set(key, arr);
+    }
+    const latestCompany = new Map<string, MarketAssetRow["latestCompanyUpdate"]>();
+    for (const row of companyRes.data ?? []) {
+      const key = row.asset_id as string;
+      if (!latestCompany.has(key)) {
+        latestCompany.set(key, {
+          title: row.title as string,
+          sourceName: row.source_name as string,
+          collectedAt: row.collected_at as string,
+        });
+      }
     }
 
     // O livro é agregado no servidor; as ordens individuais permanecem privadas por RLS.
@@ -115,6 +150,8 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         referencePrice: reference,
         referenceSource: (a.reference_price_source as string | null) ?? null,
         isReferenceOnly: traded == null && reference != null,
+        referenceHistory: references.get(a.id as string) ?? [],
+        latestCompanyUpdate: latestCompany.get(a.id as string) ?? null,
       };
     });
 
@@ -162,6 +199,7 @@ export type AssetDetail = {
   referencePrice: number | null;
   referenceSource: string | null;
   isReferenceOnly: boolean;
+  referenceHistory: { t: string; price: number }[];
 };
 
 
@@ -184,12 +222,17 @@ export const getAssetDetail = createServerFn({ method: "POST" })
     if (!asset) return null;
 
     const provider = new PlatformMarketDataProvider(db);
-    const [quote, book, trades, history, marketRes] = await Promise.all([
+    const [quote, book, trades, history, marketRes, referenceRes] = await Promise.all([
       provider.getQuote(asset.id as string),
       provider.getOrderBook(asset.id as string, 10),
       provider.getTrades(asset.id as string, 25),
       provider.getHistoricalPrices(asset.id as string, 60),
       db.from("exchange_markets").select("status").eq("id", asset.market_id as string).maybeSingle(),
+      db
+        .from("exchange_reference_price_history")
+        .select("price, effective_at")
+        .eq("asset_id", asset.id as string)
+        .order("effective_at"),
     ]);
 
     const company = asset.companies as { name: string } | null;
@@ -226,5 +269,9 @@ export const getAssetDetail = createServerFn({ method: "POST" })
       referencePrice: reference,
       referenceSource: (asset.reference_price_source as string | null) ?? null,
       isReferenceOnly: traded == null && reference != null,
+      referenceHistory: (referenceRes.data ?? []).map((row) => ({
+        t: row.effective_at as string,
+        price: Number(row.price),
+      })),
     };
   });

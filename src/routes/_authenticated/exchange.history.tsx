@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { SiteHeader } from "@/components/site-header";
-import { ExchangeNav, LiveBadge } from "@/components/exchange/exchange-nav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LiveBadge } from "@/components/exchange/exchange-nav";
+import { Panel, TerminalShell } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getExchangeHistory } from "@/lib/exchange/trading.functions";
@@ -44,14 +43,7 @@ function HistoryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl space-y-4 px-4 py-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Histórico</h1>
-          <LiveBadge />
-        </div>
-        <ExchangeNav />
+    <TerminalShell title="Histórico" badges={<LiveBadge />} subtitle="Ordens, transferências e registo contabilístico imutável da sua conta.">
 
         {query.isLoading && <Skeleton className="h-32 w-full" />}
 
@@ -64,8 +56,8 @@ function HistoryPage() {
             </TabsList>
 
             <TabsContent value="ordens" className="pt-3">
-              <Card>
-                <CardContent className="p-3 text-xs">
+              <Panel title="Ordens" padded={false}>
+                <div className="overflow-x-auto p-3 text-xs">
                   {query.data.orders.length === 0 && (
                     <p className="py-4 text-center text-muted-foreground">Sem registos.</p>
                   )}
@@ -82,13 +74,13 @@ function HistoryPage() {
                       </span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </Panel>
             </TabsContent>
 
             <TabsContent value="transferencias" className="pt-3">
-              <Card>
-                <CardContent className="p-3 text-xs">
+              <Panel title="Transferências" padded={false}>
+                <div className="overflow-x-auto p-3 text-xs">
                   {query.data.transfers.length === 0 && (
                     <p className="py-4 text-center text-muted-foreground">Sem transferências.</p>
                   )}
@@ -101,16 +93,13 @@ function HistoryPage() {
                       <span className="text-muted-foreground">{t.status}</span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </Panel>
             </TabsContent>
 
             <TabsContent value="extrato" className="pt-3">
-              <Card>
-                <CardHeader className="pb-1">
-                  <CardTitle className="text-sm">Lançamentos (dupla entrada, imutáveis)</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 text-xs">
+              <Panel title="Lançamentos — dupla entrada" padded={false}>
+                <div className="overflow-x-auto p-3 text-xs">
                   {query.data.ledger.length === 0 && (
                     <p className="py-4 text-center text-muted-foreground">Sem lançamentos.</p>
                   )}
@@ -125,13 +114,11 @@ function HistoryPage() {
                       </span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </Panel>
             </TabsContent>
           </Tabs>
         )}
-      </main>
-      <ExchangeNav />
-    </div>
+    </TerminalShell>
   );
 }

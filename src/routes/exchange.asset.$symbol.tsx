@@ -60,6 +60,9 @@ function AssetPage() {
   const { symbol } = Route.useParams();
   const fetchAsset = useServerFn(getAssetDetail);
   const queryClient = useQueryClient();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [symbol]);
   const query = useQuery({
     queryKey: ["exchange-asset", symbol],
     queryFn: () => fetchAsset({ data: { symbol } }),
@@ -86,7 +89,10 @@ function AssetPage() {
   const fetchCompanyData = useServerFn(getCompanyData);
   const companyData = useQuery({
     queryKey: ["exchange-company-data", asset?.id],
-    queryFn: () => fetchCompanyData({ data: { assetId: asset!.id, includeHistory: false } }),
+    queryFn: () => {
+      if (!asset) throw new Error("Empresa indisponível");
+      return fetchCompanyData({ data: { assetId: asset.id, includeHistory: false } });
+    },
     enabled: Boolean(asset?.id),
     refetchInterval: 300000,
   });
@@ -121,6 +127,13 @@ function AssetPage() {
   }
 
   const maxDepth = Math.max(1, ...asset.book.map((l) => l.quantity));
+  const chartHistory = asset.history.length > 1
+    ? asset.history
+    : asset.referenceHistory.length > 1
+      ? asset.referenceHistory
+      : asset.referencePrice != null
+        ? [{ t: new Date(0).toISOString(), price: asset.referencePrice }, { t: new Date().toISOString(), price: asset.referencePrice }]
+        : [];
 
   return (
     <TerminalShell
@@ -134,7 +147,7 @@ function AssetPage() {
       }
       subtitle={`${asset.name} · Mercado ${MARKET_STATUS_LABEL[asset.marketStatus] ?? asset.marketStatus} · ${asset.country === "MZ" ? "Moçambique" : asset.country} · ${asset.currency}`}
     >
-      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <div className="flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
         {/* Cabeçalho de preço + gráfico: o essencial em primeiro no telefone. */}
         <section className="order-1 overflow-hidden rounded-2xl border border-border/60 bg-card/80 lg:col-start-1 lg:row-start-1">
           <div className="relative p-4">
@@ -167,20 +180,16 @@ function AssetPage() {
             </div>
 
             <div className="relative pt-2">
-              {asset.history.length > 1 ? (
+              {chartHistory.length > 1 ? (
                 <BigChart
-                  values={asset.history.map((h) => ({
-                    label: timeFmt.format(new Date(h.t)),
+                  values={chartHistory.map((h, index) => ({
+                    label: new Date(h.t).getTime() === 0 ? "Referência" : index === chartHistory.length - 1 ? "Agora" : timeFmt.format(new Date(h.t)),
                     price: h.price,
                   }))}
                   up={up}
                   height={190}
                 />
-              ) : (
-                <p className="py-8 text-center text-xs text-muted-foreground">
-                  O gráfico começa a desenhar-se a partir do primeiro negócio nesta empresa.
-                </p>
-              )}
+               ) : <div className="h-[190px]" />}
             </div>
           </div>
 
@@ -217,7 +226,7 @@ function AssetPage() {
           )}
         </section>
 
-        <aside className="order-2 space-y-3 lg:sticky lg:top-4 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+         <aside className="order-2 space-y-3 xl:sticky xl:top-4 xl:col-start-2 xl:row-start-1 xl:row-span-2">
           <TradePanel
             assetId={asset.id}
             symbol={asset.symbol}
@@ -247,7 +256,7 @@ function AssetPage() {
           </Panel>
         </aside>
 
-        <div className="order-3 min-w-0 space-y-3 lg:col-start-1 lg:row-start-2">
+         <div className="order-3 min-w-0 space-y-3 xl:col-start-1 xl:row-start-2">
           <div className="grid gap-3 md:grid-cols-2">
             <Panel title="Livro de ordens" padded={false}>
               <div className="p-2">
@@ -357,9 +366,9 @@ function AssetPage() {
                 </article>
               ))}
             </div>
-            {(asset.description || asset.issuerInfo) && (
+            {(asset.issuerInfo || (asset.environment !== "LIVE" && asset.description)) && (
               <p className="pt-2 text-xs text-muted-foreground">
-                {asset.description} {asset.issuerInfo}
+                {asset.environment !== "LIVE" ? asset.description : ""} {asset.issuerInfo}
               </p>
             )}
             <p className="pt-2 text-[11px] text-muted-foreground">

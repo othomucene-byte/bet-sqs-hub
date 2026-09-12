@@ -115,13 +115,18 @@ export const getExchangeAccount = createServerFn({ method: "POST" })
           .eq("user_id", context.userId)
           .eq("kind", "investment")
           .maybeSingle(),
-        supabaseAdmin.from("market_data").select("asset_id, last_price"),
+        supabaseAdmin.from("exchange_assets").select("id, reference_price, market_data(last_price)"),
       ]);
 
     const lastPrices = new Map<string, number>(
       (marketDataRes.data ?? [])
-        .filter((r) => r.last_price != null)
-        .map((r) => [r.asset_id as string, Number(r.last_price)]),
+        .map((r) => {
+          const marketData = Array.isArray(r.market_data) ? r.market_data[0] : r.market_data;
+          const marketPrice = marketData?.last_price;
+          const value = marketPrice == null ? r.reference_price : marketPrice;
+          return value == null ? null : [r.id as string, Number(value)] as const;
+        })
+        .filter((row): row is readonly [string, number] => row != null),
     );
 
     let portfolioValue = 0;
