@@ -834,6 +834,47 @@ export type Database = {
           },
         ]
       }
+      exchange_reference_price_history: {
+        Row: {
+          asset_id: string
+          changed_by: string | null
+          created_at: string
+          effective_at: string
+          id: string
+          price: number
+          reason: string | null
+          source: string | null
+        }
+        Insert: {
+          asset_id: string
+          changed_by?: string | null
+          created_at?: string
+          effective_at?: string
+          id?: string
+          price: number
+          reason?: string | null
+          source?: string | null
+        }
+        Update: {
+          asset_id?: string
+          changed_by?: string | null
+          created_at?: string
+          effective_at?: string
+          id?: string
+          price?: number
+          reason?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_reference_price_history_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_transfers: {
         Row: {
           account_id: string
