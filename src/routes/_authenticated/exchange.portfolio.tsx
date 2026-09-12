@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery as useMarketQuery } from "@tanstack/react-query";
 
 import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
   AssetLogo,
+  BigChart,
   Panel,
   Spark,
   StatTile,
@@ -13,6 +15,7 @@ import {
 } from "@/components/exchange/terminal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getExchangeAccount } from "@/lib/exchange/trading.functions";
+import { getMarketOverview } from "@/lib/exchange/market.functions";
 import { MZN, pct, price } from "@/lib/exchange/format";
 
 export const Route = createFileRoute("/_authenticated/exchange/portfolio")({
@@ -41,6 +44,8 @@ function PortfolioPage() {
     refetchInterval: 20000,
   });
   const acc = query.data;
+  const fetchMarket = useServerFn(getMarketOverview);
+  const market = useMarketQuery({ queryKey: ["exchange-market"], queryFn: () => fetchMarket({ data: { environment: "LIVE" as const } }) });
 
   return (
     <TerminalShell
@@ -53,16 +58,16 @@ function PortfolioPage() {
       {acc && (
         <div className="grid gap-3 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
-            <TotalCard
+             <TotalCard
               label="Valor total"
               value={acc.totalValue}
               changeValue={acc.unrealizedPnl}
               changePct={acc.unrealizedPnlPct}
               note="Liquidez disponível + valor dos títulos, aos preços mais recentes do mercado."
-              spark={acc.positions
-                .map((p) => p.marketValue)
-                .filter((v): v is number => v != null)}
             />
+             <Panel title="Desempenho" right={<span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">Valor real da conta</span>}>
+               <BigChart values={[{ label: "Início", price: acc.totalValue }, { label: "Agora", price: acc.totalValue }]} up={acc.unrealizedPnl >= 0} height={180} />
+             </Panel>
 
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               <StatTile label="Disponível" value={MZN.format(acc.available)} />
@@ -77,13 +82,18 @@ function PortfolioPage() {
 
             <Panel title="Posições" padded={false}>
               {acc.positions.length === 0 ? (
-                <p className="p-6 text-center text-sm text-muted-foreground">
-                  Sem posições. Explore o{" "}
-                  <Link to="/exchange" className="text-primary underline">
-                    mercado
-                  </Link>
-                  .
-                </p>
+                 <div className="p-3">
+                   <p className="mb-3 text-xs text-muted-foreground">Ainda não tem posições. Estas empresas estão disponíveis para investir agora.</p>
+                   <div className="divide-y divide-border/40">
+                     {(market.data?.assets ?? []).slice(0, 5).map((a) => (
+                       <Link key={a.id} to="/exchange/asset/$symbol" params={{ symbol: a.symbol }} className="flex items-center gap-3 py-2.5">
+                         <AssetLogo symbol={a.symbol} name={a.name} logoUrl={a.logoUrl} size={32} />
+                         <div className="min-w-0 flex-1"><p className="font-semibold">{a.symbol}</p><p className="truncate text-xs text-muted-foreground">{a.name}</p></div>
+                         <div className="text-right"><p className="font-mono text-sm font-semibold">{price(a.lastPrice)}</p><p className="text-[10px] text-primary">Investir</p></div>
+                       </Link>
+                     ))}
+                   </div>
+                 </div>
               ) : (
                 <div className="divide-y divide-border/40">
                   {acc.positions.map((p) => {

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronRight, Search } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Clock3, Search } from "lucide-react";
 
 import { LiveBadge } from "@/components/exchange/exchange-nav";
 import {
@@ -69,14 +69,21 @@ function ExchangeMarket() {
   const gainers = traded.filter((a) => (a.changePct ?? 0) > 0).length;
   const losers = traded.filter((a) => (a.changePct ?? 0) < 0).length;
   const totalVolume = rows.reduce((s, a) => s + a.volume, 0);
-  const marketValue = rows.reduce((s, a) => s + (a.lastPrice ?? 0) * Math.max(a.volume, 1), 0);
+  const referenceTotal = rows.reduce((s, a) => s + (a.lastPrice ?? 0), 0);
   const avgChange =
     traded.length > 0 ? traded.reduce((s, a) => s + (a.changePct ?? 0), 0) / traded.length : null;
 
   /** Série agregada do mercado: soma dos preços recentes das empresas com negócios. */
   const indexSeries = useMemo(() => {
     const series = rows.map((a) => a.spark).filter((s) => s.length > 1);
-    if (series.length === 0) return [];
+    if (series.length === 0) {
+      const history = rows
+        .flatMap((a) => a.referenceHistory.map((point) => ({ ...point, assetId: a.id })))
+        .sort((a, b) => new Date(a.t).getTime() - new Date(b.t).getTime());
+      const base = rows.reduce((sum, a) => sum + (a.referencePrice ?? 0), 0);
+      if (history.length === 0) return base > 0 ? [{ label: "Referência", price: base }, { label: "Agora", price: base }] : [];
+      return [{ label: "Referência", price: base }, { label: "Agora", price: base }];
+    }
     const steps = Math.min(...series.map((s) => s.length));
     return Array.from({ length: steps }, (_, i) => ({
       label: `${i + 1}`,
@@ -110,7 +117,7 @@ function ExchangeMarket() {
           : "A carregar estado do mercado…"
       }
     >
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-3">
           {/* Cartão principal com o valor do mercado e a evolução recente. */}
           <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4">
@@ -120,11 +127,11 @@ function ExchangeMarket() {
             />
             <div className="relative">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Valor do mercado
+                 Painel do mercado
               </p>
               <div className="flex flex-wrap items-end gap-3">
                 <p className="font-mono text-3xl font-bold tabular-nums sm:text-4xl">
-                  {MZN.format(marketValue)}
+                   {MZN.format(referenceTotal)}
                 </p>
                 <span
                   className={cn(
@@ -138,25 +145,24 @@ function ExchangeMarket() {
                 </span>
               </div>
               <p className="pt-0.5 text-[11px] text-muted-foreground">
-                {rows.length} empresas listadas · variação média das que já negociaram
+                 Soma dos preços por unidade · {rows.length} empresas listadas
               </p>
-              {indexSeries.length > 1 ? (
+               {indexSeries.length > 1 && (
                 <div className="pt-2">
                   <BigChart values={indexSeries} up={(avgChange ?? 0) >= 0} height={150} />
                 </div>
-              ) : (
-                <p className="pt-3 text-[11px] text-muted-foreground">
-                  O gráfico do mercado começa a desenhar-se a partir dos primeiros negócios entre
-                  participantes.
-                </p>
               )}
+               <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+                 <span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-primary">Referência</span>
+                 A linha-base muda para Mercado quando houver negócios executados.
+               </div>
             </div>
           </section>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatTile label="Empresas" value={String(rows.length)} />
-            <StatTile label="Em alta" value={String(gainers)} tone="up" />
-            <StatTile label="Em baixa" value={String(losers)} tone="down" />
+             <StatTile label="Negociadas" value={String(traded.length)} tone="up" />
+             <StatTile label="Com referência" value={String(rows.filter((a) => a.isReferenceOnly).length)} />
             <StatTile label="Volume do dia" value={String(totalVolume)} />
           </div>
 
@@ -177,7 +183,7 @@ function ExchangeMarket() {
             labels={CATEGORY_LABELS}
           />
 
-          <Panel title="Empresas" right={<span className="text-[11px] text-muted-foreground">toque para investir</span>} padded={false}>
+           <Panel title="Mercado ao vivo" right={<span className="text-[11px] text-primary">Abrir terminal</span>} padded={false}>
             {query.isLoading && (
               <div className="space-y-2 p-3">
                 {[0, 1, 2, 3, 4].map((i) => (
@@ -221,9 +227,10 @@ function ExchangeMarket() {
                         )}
                       </div>
                       <p className="truncate text-xs text-muted-foreground">{a.name}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {a.isReferenceOnly ? "preço de referência" : `Volume ${a.volume}`}
-                      </p>
+                       <p className="flex items-center gap-1 truncate text-[10px] text-muted-foreground">
+                         <Clock3 className="size-3" />
+                         {a.latestCompanyUpdate ? a.latestCompanyUpdate.title : a.isReferenceOnly ? "Preço de referência verificado" : `Volume ${a.volume}`}
+                       </p>
                     </div>
 
                     <div className="hidden h-8 w-16 sm:block">
@@ -247,7 +254,7 @@ function ExchangeMarket() {
                         {pct(a.changePct)}
                       </span>
                     </div>
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                     <ArrowUpRight className="size-4 shrink-0 text-primary" />
                   </Link>
                 );
               })}
@@ -256,20 +263,21 @@ function ExchangeMarket() {
         </div>
 
         <aside className="space-y-3">
-          <Panel title="Como investir">
-            <ol className="space-y-1.5 text-xs text-muted-foreground">
-              <li>1. Coloque fundos na conta de mercado, em Fundos.</li>
-              <li>2. Escolha uma empresa e toque em Investir.</li>
-              <li>3. Diga quantas ações quer e a que preço.</li>
-              <li>4. A ordem é validada e registada no servidor.</li>
-            </ol>
-          </Panel>
+           <Panel title="Atualizações das empresas">
+             <div className="space-y-3">
+               {rows.filter((a) => a.latestCompanyUpdate).slice(0, 6).map((a) => (
+                 <Link key={a.id} to="/exchange/asset/$symbol" params={{ symbol: a.symbol }} className="block border-b border-border/40 pb-2 last:border-0 last:pb-0">
+                   <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">{a.symbol}</span><span className="text-[10px] text-muted-foreground">{a.latestCompanyUpdate?.sourceName}</span></div>
+                   <p className="line-clamp-2 pt-0.5 text-xs text-muted-foreground">{a.latestCompanyUpdate?.title}</p>
+                 </Link>
+               ))}
+             </div>
+           </Panel>
 
-          <Panel title="Maiores subidas">
+           <Panel title="Atividade do mercado">
             {traded.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                Ainda não houve negócios; as variações aparecem depois da primeira compra e venda
-                entre participantes.
+                 Mercado aberto. O livro aceita ordens reais; a fita permanece a zero até compradores e vendedores cruzarem preço.
               </p>
             ) : (
               <div className="space-y-1.5">
@@ -306,8 +314,8 @@ function ExchangeMarket() {
 
           <Panel title="Preços de referência">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Enquanto uma empresa não tiver negócios, mostramos o preço de referência definido pela
-              administração ({rows.filter((a) => a.isReferenceOnly).length} empresas neste momento).
+               Enquanto uma empresa não tiver negócios, mostramos o preço de referência auditável definido pela
+               administração ({rows.filter((a) => a.isReferenceOnly).length} empresas neste momento).
               Não é cotação de terceiros. A partir do primeiro negócio, o preço passa a resultar
               apenas das compras e vendas entre participantes.
             </p>
