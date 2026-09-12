@@ -834,6 +834,45 @@ export type Database = {
           },
         ]
       }
+      exchange_public_trades: {
+        Row: {
+          asset_id: string
+          executed_at: string
+          price: number
+          quantity: number
+          trade_id: string
+        }
+        Insert: {
+          asset_id: string
+          executed_at: string
+          price: number
+          quantity: number
+          trade_id: string
+        }
+        Update: {
+          asset_id?: string
+          executed_at?: string
+          price?: number
+          quantity?: number
+          trade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_public_trades_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_public_trades_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: true
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_reference_price_history: {
         Row: {
           asset_id: string
