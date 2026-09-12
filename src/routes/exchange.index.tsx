@@ -163,7 +163,7 @@ function ExchangeMarket() {
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatTile label="Empresas" value={String(rows.length)} />
-             <StatTile label="Mercado" value={query.data ? MARKET_STATUS_LABEL[query.data.marketStatus] : "—"} tone="up" />
+              <StatTile label="Mercado" value={query.data ? (MARKET_STATUS_LABEL[query.data.marketStatus] ?? query.data.marketStatus) : "—"} tone="up" />
              <StatTile label="Negociadas" value={String(traded.length)} />
              <StatTile label="Volume" value={String(totalVolume)} />
           </div>
