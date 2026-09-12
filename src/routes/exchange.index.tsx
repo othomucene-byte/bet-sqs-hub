@@ -107,7 +107,7 @@ function ExchangeMarket() {
       title="SQs Exchange"
       badges={
         <>
-          <span className="text-xs text-muted-foreground">🇲🇿 Moçambique · MZN</span>
+           <span className="text-xs text-muted-foreground">Moçambique · MZN</span>
           <LiveBadge />
         </>
       }

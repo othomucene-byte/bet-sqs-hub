@@ -15,4 +15,4 @@
 - [x] SQs Exchange: inteligência Mistral AI para dados das empresas com fonte, data, histórico e validação humana
 - [x] Atualização automática dos dados das empresas de hora a hora (tarefa `exchange-ai-hourly` ativa, com fornecedor principal Mistral AI e alternativo Google AI)
 - [x] Exchange: histórico auditável de preços de referência e fita pública sem dados pessoais
-- [ ] Exchange: substituir todos os ecrãs pelo terminal/dashboard aprovado e validar em mobile/desktop
+- [x] Exchange: substituir todos os ecrãs pelo terminal/dashboard aprovado e validar em mobile/desktop

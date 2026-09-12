@@ -60,6 +60,9 @@ function AssetPage() {
   const { symbol } = Route.useParams();
   const fetchAsset = useServerFn(getAssetDetail);
   const queryClient = useQueryClient();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [symbol]);
   const query = useQuery({
     queryKey: ["exchange-asset", symbol],
     queryFn: () => fetchAsset({ data: { symbol } }),
