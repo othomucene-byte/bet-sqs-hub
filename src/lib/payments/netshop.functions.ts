@@ -326,21 +326,47 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
     }): Promise<{ status: "pending" | "succeeded" | "failed" | "unknown"; message?: string | null }> => {
       const { data: intent } = await context.supabase
         .from("payment_intents")
-        .select("id, wallet_id, direction, method, amount, status, reference")
+        .select(
+          "id, wallet_id, direction, method, amount, status, reference, provider_transaction_id",
+        )
         .eq("reference", data.reference)
         .eq("user_id", context.userId)
         .maybeSingle();
       if (!intent) return { status: "unknown" };
-      if (intent.status !== "pending") {
+      if (intent.status === "succeeded" || intent.status === "expired") {
         return { status: intent.status as "succeeded" | "failed" };
       }
 
       const netshop = await import("@/lib/payments/netshop.server");
+      const lookupIds = [intent.reference as string];
+      if (
+        typeof intent.provider_transaction_id === "string" &&
+        intent.provider_transaction_id &&
+        intent.provider_transaction_id !== intent.reference
+      ) {
+        lookupIds.push(intent.provider_transaction_id);
+      }
+
+      // Alguns operadores móveis concluem o débito depois de a cobrança ter
+      // recebido `timeout_no_callback`. Nesses casos a NetShop pode atualizar
+      // primeiro o identificador da operação e só depois a referência do
+      // comerciante. Consultamos ambos e damos precedência ao estado `paid`.
+      const remoteResults = await Promise.all(
+        lookupIds.map((id) =>
+          intent.direction === "deposit"
+            ? netshop.getCharge(id, intent.method as Method)
+            : netshop.getPayout(id, intent.method as Method),
+        ),
+      );
+      const successfulResults = remoteResults.filter((result) => result.ok);
       const remote =
-        intent.direction === "deposit"
-          ? await netshop.getCharge(intent.reference as string, intent.method as Method)
-          : await netshop.getPayout(intent.reference as string, intent.method as Method);
-      if (!remote.ok) return { status: "pending" };
+        successfulResults.find((result) => result.ok && result.status === "paid") ??
+        successfulResults.find((result) => result.ok && result.status === "pending") ??
+        successfulResults[0];
+
+      if (!remote || !remote.ok) {
+        return { status: intent.status === "failed" ? "failed" : "pending" };
+      }
       if (remote.status === "pending") return { status: "pending", message: remote.message };
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
