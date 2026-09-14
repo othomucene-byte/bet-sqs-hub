@@ -333,9 +333,8 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
         .eq("user_id", context.userId)
         .maybeSingle();
       if (!intent) return { status: "unknown" };
-      if (intent.status === "succeeded" || intent.status === "expired") {
-        return { status: intent.status as "succeeded" | "failed" };
-      }
+      if (intent.status === "succeeded") return { status: "succeeded" };
+      if (intent.status === "expired") return { status: "failed" };
 
       const netshop = await import("@/lib/payments/netshop.server");
       const lookupIds = [intent.reference as string];
