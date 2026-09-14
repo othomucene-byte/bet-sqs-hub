@@ -39,6 +39,7 @@ import {
   listPayments,
   listRiskSignals,
   postReturn,
+  reconcilePayment,
   reviewApplication,
 } from "@/lib/admin/admin.functions";
 
@@ -514,8 +515,20 @@ function InvestmentsTable() {
 }
 
 function PaymentsTable() {
+  const queryClient = useQueryClient();
   const fetchPayments = useServerFn(listPayments);
+  const reconcile = useServerFn(reconcilePayment);
   const payments = useQuery({ queryKey: ["admin-payments"], queryFn: () => fetchPayments() });
+  const reconciliation = useMutation({
+    mutationFn: (reference: string) => reconcile({ data: { reference } }),
+    onSuccess: (result) => {
+      if (result.status === "succeeded") toast.success("Pagamento confirmado e carteira atualizada.");
+      else toast.error(result.message ?? `A NetShop mantém o estado ${result.status}.`);
+      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível reconciliar."),
+  });
 
   return (
     <Card>
@@ -535,6 +548,7 @@ function PaymentsTable() {
               <TableHead className="text-right">Montante</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Ref. gateway</TableHead>
+              <TableHead className="text-right">Ação</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -551,6 +565,16 @@ function PaymentsTable() {
                 </TableCell>
                 <TableCell className="font-mono text-xs">
                   {row.providerTransactionId ?? "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={reconciliation.isPending || row.status === "succeeded"}
+                    onClick={() => reconciliation.mutate(row.reference)}
+                  >
+                    Reconciliar
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

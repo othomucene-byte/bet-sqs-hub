@@ -267,6 +267,85 @@ export const listPayments = createServerFn({ method: "GET" })
     }));
   });
 
+/**
+ * Reconcilia uma intenção diretamente com a NetShop. Consulta a referência do
+ * comerciante e o identificador devolvido pelo gateway, pois operações móveis
+ * podem concluir depois de um `timeout_no_callback`. Nunca aceita um estado
+ * indicado pelo browser e o ledger continua idempotente.
+ */
+export const reconcilePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ reference: z.string().trim().min(6).max(120) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context as unknown as AuthedContext);
+    const { data: intent, error } = await admin
+      .from("payment_intents")
+      .select(
+        "id, wallet_id, direction, method, amount, status, reference, provider_transaction_id",
+      )
+      .eq("reference", data.reference)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!intent) throw new Error("Pagamento não encontrado.");
+    if (intent.status === "succeeded") return { status: "succeeded" as const, message: null };
+
+    const netshop = await import("@/lib/payments/netshop.server");
+    const ids = [intent.reference as string];
+    if (
+      typeof intent.provider_transaction_id === "string" &&
+      intent.provider_transaction_id &&
+      intent.provider_transaction_id !== intent.reference
+    ) {
+      ids.push(intent.provider_transaction_id);
+    }
+    const results = await Promise.all(
+      ids.map((id) =>
+        intent.direction === "deposit"
+          ? netshop.getCharge(id, intent.method as "card" | "mpesa" | "emola" | "mkesh")
+          : netshop.getPayout(id, intent.method as "mpesa" | "emola"),
+      ),
+    );
+    const confirmed = results.filter((result) => result.ok);
+    const remote =
+      confirmed.find((result) => result.ok && result.status === "paid") ??
+      confirmed.find((result) => result.ok && result.status === "pending") ??
+      confirmed[0];
+    if (!remote || !remote.ok) {
+      return { status: "unconfirmed" as const, message: "A NetShop não reconheceu os identificadores." };
+    }
+    if (remote.status !== "paid") {
+      return { status: remote.status, message: remote.message };
+    }
+
+    const providerId = remote.providerTransactionId ?? remote.id ?? intent.provider_transaction_id;
+    if (intent.direction === "deposit") {
+      const { error: ledgerError } = await admin.rpc("wallet_apply", {
+        _wallet_id: intent.wallet_id,
+        _type: "deposit",
+        _amount: Number(intent.amount),
+        _reference: `netshop:${intent.reference}`,
+        _provider: "netshop",
+        ...(providerId ? { _provider_transaction_id: providerId } : {}),
+        _metadata: { method: intent.method, source: "admin_reconciliation" },
+      });
+      if (ledgerError && !/duplicate|unique/i.test(ledgerError.message)) {
+        throw new Error("A NetShop confirmou, mas o lançamento no ledger falhou.");
+      }
+    }
+
+    const { error: updateError } = await admin
+      .from("payment_intents")
+      .update({
+        status: "succeeded",
+        ...(providerId ? { provider_transaction_id: providerId } : {}),
+      })
+      .eq("id", intent.id);
+    if (updateError) throw new Error(updateError.message);
+    return { status: "succeeded" as const, message: null };
+  });
+
 /** Sinais de risco: movimentos elevados no ledger nas últimas 48h. */
 export const listRiskSignals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
