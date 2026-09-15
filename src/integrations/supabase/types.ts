@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_agent_config: {
+        Row: {
+          allowed_sources: Json
+          batch_size: number
+          config_key: string
+          created_at: string
+          enabled: boolean
+          id: string
+          interval_minutes: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allowed_sources?: Json
+          batch_size?: number
+          config_key: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allowed_sources?: Json
+          batch_size?: number
+          config_key?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       ai_jobs: {
         Row: {
           created_at: string
@@ -61,6 +97,90 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ai_run_log: {
+        Row: {
+          approved_count: number
+          asset_id: string | null
+          changes: Json
+          company_id: string | null
+          conflict_count: number
+          created_at: string
+          error: string | null
+          finished_at: string
+          id: string
+          inserted_count: number
+          job_key: string
+          model: string | null
+          pending_count: number
+          provider: string | null
+          run_id: string
+          skipped_count: number
+          sources: Json
+          started_at: string
+          status: string
+          trigger: string
+        }
+        Insert: {
+          approved_count?: number
+          asset_id?: string | null
+          changes?: Json
+          company_id?: string | null
+          conflict_count?: number
+          created_at?: string
+          error?: string | null
+          finished_at?: string
+          id?: string
+          inserted_count?: number
+          job_key?: string
+          model?: string | null
+          pending_count?: number
+          provider?: string | null
+          run_id: string
+          skipped_count?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Update: {
+          approved_count?: number
+          asset_id?: string | null
+          changes?: Json
+          company_id?: string | null
+          conflict_count?: number
+          created_at?: string
+          error?: string | null
+          finished_at?: string
+          id?: string
+          inserted_count?: number
+          job_key?: string
+          model?: string | null
+          pending_count?: number
+          provider?: string | null
+          run_id?: string
+          skipped_count?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_run_log_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_run_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
@@ -437,9 +557,11 @@ export type Database = {
       company_data_points: {
         Row: {
           asset_id: string
+          change_summary: string | null
           collected_at: string
           company_id: string | null
           confidence: number
+          conflict_note: string | null
           content_hash: string
           created_at: string
           event_date: string | null
@@ -453,6 +575,7 @@ export type Database = {
           run_id: string | null
           source_name: string
           source_url: string | null
+          sources: Json
           status: string
           summary: string | null
           supersedes_id: string | null
@@ -462,9 +585,11 @@ export type Database = {
         }
         Insert: {
           asset_id: string
+          change_summary?: string | null
           collected_at?: string
           company_id?: string | null
           confidence?: number
+          conflict_note?: string | null
           content_hash: string
           created_at?: string
           event_date?: string | null
@@ -478,6 +603,7 @@ export type Database = {
           run_id?: string | null
           source_name: string
           source_url?: string | null
+          sources?: Json
           status?: string
           summary?: string | null
           supersedes_id?: string | null
@@ -487,9 +613,11 @@ export type Database = {
         }
         Update: {
           asset_id?: string
+          change_summary?: string | null
           collected_at?: string
           company_id?: string | null
           confidence?: number
+          conflict_note?: string | null
           content_hash?: string
           created_at?: string
           event_date?: string | null
@@ -503,6 +631,7 @@ export type Database = {
           run_id?: string | null
           source_name?: string
           source_url?: string | null
+          sources?: Json
           status?: string
           summary?: string | null
           supersedes_id?: string | null
@@ -536,6 +665,7 @@ export type Database = {
       }
       exchange_assets: {
         Row: {
+          ai_monitored: boolean
           asset_type: string
           company_id: string | null
           country: string
@@ -560,6 +690,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_monitored?: boolean
           asset_type?: string
           company_id?: string | null
           country?: string
@@ -584,6 +715,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_monitored?: boolean
           asset_type?: string
           company_id?: string | null
           country?: string
@@ -3046,6 +3178,7 @@ export type Database = {
           _source: string
         }
         Returns: {
+          ai_monitored: boolean
           asset_type: string
           company_id: string | null
           country: string

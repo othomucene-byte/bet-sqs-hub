@@ -17,6 +17,9 @@ export type CompanyDataRow = {
   provider: string;
   model: string | null;
   collectedAt: string;
+  sources: Array<{ title: string; url: string; domain: string }>;
+  changeSummary: string | null;
+  conflictNote: string | null;
 };
 
 function mapRow(r: Record<string, unknown>): CompanyDataRow {
@@ -34,11 +37,16 @@ function mapRow(r: Record<string, unknown>): CompanyDataRow {
     provider: r["provider"] as string,
     model: (r["model"] as string | null) ?? null,
     collectedAt: r["collected_at"] as string,
+    sources: Array.isArray(r["sources"])
+      ? (r["sources"] as Array<{ title: string; url: string; domain: string }>)
+      : [],
+    changeSummary: (r["change_summary"] as string | null) ?? null,
+    conflictNote: (r["conflict_note"] as string | null) ?? null,
   };
 }
 
 const SELECT =
-  "id, kind, title, summary, metrics, event_date, source_name, source_url, confidence, status, provider, model, collected_at";
+  "id, kind, title, summary, metrics, event_date, source_name, source_url, confidence, status, provider, model, collected_at, sources, change_summary, conflict_note";
 
 /** Dados validados de uma empresa/instrumento (leitura pública). */
 export const getCompanyData = createServerFn({ method: "POST" })
@@ -104,7 +112,7 @@ export const getAiSupervision = createServerFn({ method: "POST" })
       db
         .from("company_data_points")
         .select(`${SELECT}, asset_id, exchange_assets(symbol)`)
-        .eq("status", "pending")
+        .in("status", ["pending", "conflict"])
         .order("collected_at", { ascending: false })
         .limit(100),
       db.from("company_data_points").select("id", { count: "exact", head: true }).eq("status", "approved"),
@@ -156,7 +164,7 @@ export const reviewCompanyData = createServerFn({ method: "POST" })
         ...(data.note ? { validation_note: data.note } : {}),
       })
       .eq("id", data.id)
-      .eq("status", "pending")
+      .in("status", ["pending", "conflict"])
       .select("id, asset_id, kind")
       .maybeSingle();
     if (error) throw new Error(error.message);
