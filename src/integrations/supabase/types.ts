@@ -182,6 +182,80 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          environment: string
+          id: string
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          prefix: string
+          request_count: number
+          revoked_at: string | null
+          scopes: string[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          id?: string
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          prefix: string
+          request_count?: number
+          revoked_at?: string | null
+          scopes?: string[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          id?: string
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          prefix?: string
+          request_count?: number
+          revoked_at?: string | null
+          scopes?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_request_log: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          id: string
+          path: string
+          status: number
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          id?: string
+          path: string
+          status: number
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          id?: string
+          path?: string
+          status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_request_log_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
