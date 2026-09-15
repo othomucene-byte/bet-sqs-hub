@@ -11,6 +11,7 @@ import {
   StatTile,
   TerminalShell,
 } from "@/components/exchange/terminal";
+import { CompanyAiPanel } from "@/components/exchange/company-ai";
 import { TradePanel } from "@/components/exchange/trade-panel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -320,8 +321,8 @@ function AssetPage() {
             {companyData.isLoading && <Skeleton className="h-20 w-full" />}
             {companyData.data?.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Ainda não há dados validados desta empresa. A atualização automática corre de hora a
-                hora e cada registo é publicado com fonte e data.
+                Ainda não há dados validados desta empresa. A pesquisa automática corre no intervalo
+                definido pela administração e cada registo é publicado com fonte, data e ligação.
               </p>
             )}
             <div className="space-y-2">
@@ -337,6 +338,9 @@ function AssetPage() {
                   </div>
                   <p className="pt-1 text-sm font-semibold">{d.title}</p>
                   {d.summary && <p className="text-xs text-muted-foreground">{d.summary}</p>}
+                  {d.changeSummary && (
+                    <p className="pt-0.5 text-[11px] text-primary/80">{d.changeSummary}</p>
+                  )}
                   {Object.keys(d.metrics).length > 0 && (
                     <div className="grid grid-cols-2 gap-1 pt-1 text-xs">
                       {Object.entries(d.metrics).map(([k, v]) => (
@@ -376,6 +380,8 @@ function AssetPage() {
               recomendação de investimento.
             </p>
           </Panel>
+
+          <CompanyAiPanel assetId={asset.id} />
         </div>
       </div>
     </TerminalShell>
