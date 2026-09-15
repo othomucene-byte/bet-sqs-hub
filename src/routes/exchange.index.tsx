@@ -278,12 +278,13 @@ function ExchangeMarket() {
              </div>
            </Panel>
 
-           <Panel title="Atualizações das empresas">
+           <Panel title="Atualizações da pesquisa automática">
              <div className="space-y-3">
                {rows.filter((a) => a.latestCompanyUpdate).slice(0, 6).map((a) => (
                  <Link key={a.id} to="/exchange/asset/$symbol" params={{ symbol: a.symbol }} className="block border-b border-border/40 pb-2 last:border-0 last:pb-0">
-                   <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">{a.symbol}</span><span className="text-[10px] text-muted-foreground">{a.latestCompanyUpdate?.sourceName}</span></div>
+                   <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">{a.symbol}</span><span className="text-[10px] text-muted-foreground">{a.latestCompanyUpdate ? new Date(a.latestCompanyUpdate.collectedAt).toLocaleDateString("pt-PT") : ""}</span></div>
                    <p className="line-clamp-2 pt-0.5 text-xs text-muted-foreground">{a.latestCompanyUpdate?.title}</p>
+                   <p className="pt-0.5 text-[10px] text-primary/80">Fonte: {a.latestCompanyUpdate?.sourceName}</p>
                  </Link>
                ))}
              </div>

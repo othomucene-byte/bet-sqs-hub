@@ -26,6 +26,7 @@ export type MarketAssetRow = {
   latestCompanyUpdate: {
     title: string;
     sourceName: string;
+    sourceUrl: string | null;
     collectedAt: string;
   } | null;
 };
@@ -77,7 +78,7 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         .limit(500),
       db
         .from("company_data_points")
-        .select("asset_id, title, source_name, collected_at")
+        .select("asset_id, title, source_name, source_url, collected_at")
         .eq("status", "approved")
         .order("collected_at", { ascending: false })
         .limit(500),
@@ -107,6 +108,7 @@ export const getMarketOverview = createServerFn({ method: "POST" })
         latestCompany.set(key, {
           title: row.title as string,
           sourceName: row.source_name as string,
+          sourceUrl: (row.source_url as string | null) ?? null,
           collectedAt: row.collected_at as string,
         });
       }
