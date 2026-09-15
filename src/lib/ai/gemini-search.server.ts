@@ -16,13 +16,10 @@ const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export type GroundedSource = { title: string; url: string; domain: string };
+import { AiNotConfigured, type GroundedResult, type GroundedSource } from "./search-types";
 
-export type GroundedResult =
-  | { ok: true; text: string; sources: GroundedSource[]; model: string; queries: string[] }
-  | { ok: false; status?: number; error: string; terminal: boolean };
-
-export class AiNotConfigured extends Error {}
+export { AiNotConfigured };
+export type { GroundedResult, GroundedSource };
 
 function domainOf(url: string): string {
   try {
