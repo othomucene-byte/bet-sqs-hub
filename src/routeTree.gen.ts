@@ -41,6 +41,7 @@ import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
+import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
 import { Route as ApiPublicV1MarketAssetsSymbolRouteImport } from './routes/api/public/v1/market.assets.$symbol'
@@ -220,6 +221,12 @@ const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   path: '/api/public/cron/sports-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1OpenapiDotjsonRoute =
+  ApiPublicV1OpenapiDotjsonRouteImport.update({
+    id: '/api/public/v1/openapi.json',
+    path: '/api/public/v1/openapi.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
@@ -320,6 +328,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
@@ -360,6 +369,7 @@ export interface FileRoutesById {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
@@ -477,6 +489,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
@@ -497,6 +510,7 @@ export interface RootRouteChildren {
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
+  ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
   ApiPublicV1MarketOrderbookSymbolRoute: typeof ApiPublicV1MarketOrderbookSymbolRoute
@@ -729,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSportsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/openapi.json': {
+      id: '/api/public/v1/openapi.json'
+      path: '/api/public/v1/openapi.json'
+      fullPath: '/api/public/v1/openapi.json'
+      preLoaderRoute: typeof ApiPublicV1OpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
@@ -853,6 +874,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
+  ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
   ApiPublicV1MarketOrderbookSymbolRoute: ApiPublicV1MarketOrderbookSymbolRoute,
