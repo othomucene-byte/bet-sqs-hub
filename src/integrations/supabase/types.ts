@@ -2204,6 +2204,142 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_authorization_codes: {
+        Row: {
+          client_id: string
+          code_challenge: string | null
+          code_challenge_method: string | null
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          redirect_uri: string
+          scopes: string[]
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          code_challenge?: string | null
+          code_challenge_method?: string | null
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          redirect_uri: string
+          scopes: string[]
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          code_challenge?: string | null
+          code_challenge_method?: string | null
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          redirect_uri?: string
+          scopes?: string[]
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_authorization_codes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
+      oauth_clients: {
+        Row: {
+          client_id: string
+          client_secret_hash: string
+          created_at: string
+          id: string
+          name: string
+          owner_user_id: string
+          redirect_uris: string[]
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          client_id: string
+          client_secret_hash: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_user_id: string
+          redirect_uris: string[]
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          client_id?: string
+          client_secret_hash?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_user_id?: string
+          redirect_uris?: string[]
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: []
+      }
+      oauth_tokens: {
+        Row: {
+          access_token_hash: string
+          client_id: string
+          created_at: string
+          environment: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          refresh_token_hash: string | null
+          revoked_at: string | null
+          scopes: string[]
+          user_id: string
+        }
+        Insert: {
+          access_token_hash: string
+          client_id: string
+          created_at?: string
+          environment?: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          refresh_token_hash?: string | null
+          revoked_at?: string | null
+          scopes: string[]
+          user_id: string
+        }
+        Update: {
+          access_token_hash?: string
+          client_id?: string
+          created_at?: string
+          environment?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          refresh_token_hash?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
       order_events: {
         Row: {
           created_at: string
@@ -2904,6 +3040,98 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_deliveries: {
+        Row: {
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          endpoint_id: string
+          error: string | null
+          event: string
+          id: string
+          next_attempt_at: string
+          payload: Json
+          response_status: number | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id: string
+          error?: string | null
+          event: string
+          id?: string
+          next_attempt_at?: string
+          payload: Json
+          response_status?: number | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id?: string
+          error?: string | null
+          event?: string
+          id?: string
+          next_attempt_at?: string
+          payload?: Json
+          response_status?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          environment: string
+          events: string[]
+          failure_count: number
+          id: string
+          last_delivery_at: string | null
+          secret: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          environment?: string
+          events?: string[]
+          failure_count?: number
+          id?: string
+          last_delivery_at?: string | null
+          secret: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          environment?: string
+          events?: string[]
+          failure_count?: number
+          id?: string
+          last_delivery_at?: string | null
+          secret?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
