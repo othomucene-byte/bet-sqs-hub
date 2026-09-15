@@ -20,16 +20,6 @@ async function adapterFor(environment: Environment) {
   return getExchangeAdapter(environment);
 }
 
-async function accountId(userId: string, environment: Environment) {
-  const db = await admin();
-  const { data, error } = await db.rpc("exchange_ensure_account", {
-    _user_id: userId,
-    _env: environment,
-  });
-  if (error) throw new Error(error.message);
-  return data as unknown as string;
-}
-
 export async function apiAccount(userId: string, environment: Environment) {
   const { PaperTradingAdapter } = await import("@/lib/exchange/adapters.server");
   const account = await new PaperTradingAdapter(environment).getAccount(userId);
@@ -94,13 +84,13 @@ export async function apiOrder(userId: string, environment: Environment, orderId
 
 export async function apiTrades(userId: string, environment: Environment, limit: number) {
   const db = await admin();
-  const account = await accountId(userId, environment);
   const { data } = await db
     .from("trades")
     .select(
-      "id, price, quantity, gross_value, buyer_fee, seller_fee, buyer_id, seller_id, buyer_account_id, seller_account_id, settlement_status, executed_at, exchange_assets(symbol)",
+      "id, price, quantity, gross_value, buyer_fee, seller_fee, buyer_id, seller_id, settlement_status, executed_at, exchange_assets(symbol)",
     )
-    .or(`buyer_account_id.eq.${account},seller_account_id.eq.${account}`)
+    .eq("environment", environment)
+    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order("executed_at", { ascending: false })
     .limit(limit);
 
