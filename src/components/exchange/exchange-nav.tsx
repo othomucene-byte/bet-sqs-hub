@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BarChart3, ClipboardList, History, LineChart, ListChecks, Star, User, Wallet } from "lucide-react";
+import { BarChart3, ClipboardList, Code2, History, LineChart, ListChecks, Star, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -48,6 +48,9 @@ export function ExchangeNav({ className, variant = "all" }: { className?: string
         </Link>
         <Link to="/exchange/watchlist" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary">
           <Star className="size-4" /> Favoritos
+        </Link>
+        <Link to="/developers" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary">
+          <Code2 className="size-4" /> API developers
         </Link>
       </nav>}
 

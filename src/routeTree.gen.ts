@@ -20,6 +20,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
+import { Route as AuthenticatedDevelopersRouteImport } from './routes/_authenticated/developers'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
@@ -41,7 +42,12 @@ import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
+import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
+import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
+import { Route as ApiPublicV1MarketAssetsSymbolRouteImport } from './routes/api/public/v1/market.assets.$symbol'
+import { Route as ApiPublicV1MarketOrderbookSymbolRouteImport } from './routes/api/public/v1/market.orderbook.$symbol'
+import { Route as ApiPublicV1MarketTradesSymbolRouteImport } from './routes/api/public/v1/market.trades.$symbol'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -95,6 +101,11 @@ const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
 const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
   id: '/crash',
   path: '/crash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDevelopersRoute = AuthenticatedDevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
@@ -216,10 +227,39 @@ const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   path: '/api/public/cron/sports-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1OpenapiDotjsonRoute =
+  ApiPublicV1OpenapiDotjsonRouteImport.update({
+    id: '/api/public/v1/openapi.json',
+    path: '/api/public/v1/openapi.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksNetshopRoute =
   ApiPublicWebhooksNetshopRouteImport.update({
     id: '/api/public/webhooks/netshop',
     path: '/api/public/webhooks/netshop',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
+  id: '/api/public/v1/market/assets',
+  path: '/api/public/v1/market/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1MarketAssetsSymbolRoute =
+  ApiPublicV1MarketAssetsSymbolRouteImport.update({
+    id: '/$symbol',
+    path: '/$symbol',
+    getParentRoute: () => ApiPublicV1MarketAssetsRoute,
+  } as any)
+const ApiPublicV1MarketOrderbookSymbolRoute =
+  ApiPublicV1MarketOrderbookSymbolRouteImport.update({
+    id: '/api/public/v1/market/orderbook/$symbol',
+    path: '/api/public/v1/market/orderbook/$symbol',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1MarketTradesSymbolRoute =
+  ApiPublicV1MarketTradesSymbolRouteImport.update({
+    id: '/api/public/v1/market/trades/$symbol',
+    path: '/api/public/v1/market/trades/$symbol',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -234,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -255,7 +296,12 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
+  '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -268,6 +314,7 @@ export interface FileRoutesByTo {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -289,7 +336,12 @@ export interface FileRoutesByTo {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
+  '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -304,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
+  '/_authenticated/developers': typeof AuthenticatedDevelopersRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -325,7 +378,12 @@ export interface FileRoutesById {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
+  '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -340,6 +398,7 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/carteira'
     | '/crash'
+    | '/developers'
     | '/fish'
     | '/kyc'
     | '/notificacoes'
@@ -361,7 +420,12 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
+    | '/api/public/v1/market/trades/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -374,6 +438,7 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/carteira'
     | '/crash'
+    | '/developers'
     | '/fish'
     | '/kyc'
     | '/notificacoes'
@@ -395,7 +460,12 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
+    | '/api/public/v1/market/trades/$symbol'
   id:
     | '__root__'
     | '/'
@@ -409,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bilhetes'
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
+    | '/_authenticated/developers'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
     | '/_authenticated/notificacoes'
@@ -430,7 +501,12 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
+    | '/api/public/v1/market/trades/$symbol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -446,7 +522,11 @@ export interface RootRouteChildren {
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
+  ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
+  ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
+  ApiPublicV1MarketOrderbookSymbolRoute: typeof ApiPublicV1MarketOrderbookSymbolRoute
+  ApiPublicV1MarketTradesSymbolRoute: typeof ApiPublicV1MarketTradesSymbolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -526,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/crash'
       fullPath: '/crash'
       preLoaderRoute: typeof AuthenticatedCrashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/developers': {
+      id: '/_authenticated/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof AuthenticatedDevelopersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fish': {
@@ -675,11 +762,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSportsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/openapi.json': {
+      id: '/api/public/v1/openapi.json'
+      path: '/api/public/v1/openapi.json'
+      fullPath: '/api/public/v1/openapi.json'
+      preLoaderRoute: typeof ApiPublicV1OpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/netshop': {
       id: '/api/public/webhooks/netshop'
       path: '/api/public/webhooks/netshop'
       fullPath: '/api/public/webhooks/netshop'
       preLoaderRoute: typeof ApiPublicWebhooksNetshopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/market/assets': {
+      id: '/api/public/v1/market/assets'
+      path: '/api/public/v1/market/assets'
+      fullPath: '/api/public/v1/market/assets'
+      preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/market/assets/$symbol': {
+      id: '/api/public/v1/market/assets/$symbol'
+      path: '/$symbol'
+      fullPath: '/api/public/v1/market/assets/$symbol'
+      preLoaderRoute: typeof ApiPublicV1MarketAssetsSymbolRouteImport
+      parentRoute: typeof ApiPublicV1MarketAssetsRoute
+    }
+    '/api/public/v1/market/orderbook/$symbol': {
+      id: '/api/public/v1/market/orderbook/$symbol'
+      path: '/api/public/v1/market/orderbook/$symbol'
+      fullPath: '/api/public/v1/market/orderbook/$symbol'
+      preLoaderRoute: typeof ApiPublicV1MarketOrderbookSymbolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/market/trades/$symbol': {
+      id: '/api/public/v1/market/trades/$symbol'
+      path: '/api/public/v1/market/trades/$symbol'
+      fullPath: '/api/public/v1/market/trades/$symbol'
+      preLoaderRoute: typeof ApiPublicV1MarketTradesSymbolRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -701,6 +823,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
+  AuthenticatedDevelopersRoute: typeof AuthenticatedDevelopersRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
@@ -723,6 +846,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
+  AuthenticatedDevelopersRoute: AuthenticatedDevelopersRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
@@ -744,6 +868,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicV1MarketAssetsRouteChildren {
+  ApiPublicV1MarketAssetsSymbolRoute: typeof ApiPublicV1MarketAssetsSymbolRoute
+}
+
+const ApiPublicV1MarketAssetsRouteChildren: ApiPublicV1MarketAssetsRouteChildren =
+  {
+    ApiPublicV1MarketAssetsSymbolRoute: ApiPublicV1MarketAssetsSymbolRoute,
+  }
+
+const ApiPublicV1MarketAssetsRouteWithChildren =
+  ApiPublicV1MarketAssetsRoute._addFileChildren(
+    ApiPublicV1MarketAssetsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -757,7 +895,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
+  ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
+  ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
+  ApiPublicV1MarketOrderbookSymbolRoute: ApiPublicV1MarketOrderbookSymbolRoute,
+  ApiPublicV1MarketTradesSymbolRoute: ApiPublicV1MarketTradesSymbolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
