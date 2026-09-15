@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BarChart3, ClipboardList, History, LineChart, ListChecks, Star, User, Wallet } from "lucide-react";
+import { BarChart3, ClipboardList, Code2, History, LineChart, ListChecks, Star, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
