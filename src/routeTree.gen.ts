@@ -43,6 +43,7 @@ import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
+import { Route as ApiPublicV1MarketAssetsSymbolRouteImport } from './routes/api/public/v1/market.assets.$symbol'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -228,6 +229,12 @@ const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   path: '/api/public/v1/market/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1MarketAssetsSymbolRoute =
+  ApiPublicV1MarketAssetsSymbolRouteImport.update({
+    id: '/$symbol',
+    path: '/$symbol',
+    getParentRoute: () => ApiPublicV1MarketAssetsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -262,7 +269,8 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
-  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -297,7 +305,8 @@ export interface FileRoutesByTo {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
-  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -334,7 +343,8 @@ export interface FileRoutesById {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
-  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
   id:
     | '__root__'
     | '/'
@@ -443,6 +455,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/market/assets/$symbol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -459,7 +472,7 @@ export interface RootRouteChildren {
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
-  ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRoute
+  ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -702,6 +715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/market/assets/$symbol': {
+      id: '/api/public/v1/market/assets/$symbol'
+      path: '/$symbol'
+      fullPath: '/api/public/v1/market/assets/$symbol'
+      preLoaderRoute: typeof ApiPublicV1MarketAssetsSymbolRouteImport
+      parentRoute: typeof ApiPublicV1MarketAssetsRoute
+    }
   }
 }
 
@@ -764,6 +784,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicV1MarketAssetsRouteChildren {
+  ApiPublicV1MarketAssetsSymbolRoute: typeof ApiPublicV1MarketAssetsSymbolRoute
+}
+
+const ApiPublicV1MarketAssetsRouteChildren: ApiPublicV1MarketAssetsRouteChildren =
+  {
+    ApiPublicV1MarketAssetsSymbolRoute: ApiPublicV1MarketAssetsSymbolRoute,
+  }
+
+const ApiPublicV1MarketAssetsRouteWithChildren =
+  ApiPublicV1MarketAssetsRoute._addFileChildren(
+    ApiPublicV1MarketAssetsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -778,7 +812,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
-  ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRoute,
+  ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
