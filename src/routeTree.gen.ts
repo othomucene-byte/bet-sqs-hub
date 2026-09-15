@@ -44,6 +44,7 @@ import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
 import { Route as ApiPublicV1MarketAssetsSymbolRouteImport } from './routes/api/public/v1/market.assets.$symbol'
+import { Route as ApiPublicV1MarketOrderbookSymbolRouteImport } from './routes/api/public/v1/market.orderbook.$symbol'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -235,6 +236,12 @@ const ApiPublicV1MarketAssetsSymbolRoute =
     path: '/$symbol',
     getParentRoute: () => ApiPublicV1MarketAssetsRoute,
   } as any)
+const ApiPublicV1MarketOrderbookSymbolRoute =
+  ApiPublicV1MarketOrderbookSymbolRouteImport.update({
+    id: '/api/public/v1/market/orderbook/$symbol',
+    path: '/api/public/v1/market/orderbook/$symbol',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -271,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -307,6 +315,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -345,6 +354,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
+  '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -383,6 +393,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
   id:
     | '__root__'
     | '/'
@@ -456,6 +468,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/market/assets/$symbol'
+    | '/api/public/v1/market/orderbook/$symbol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -473,6 +486,7 @@ export interface RootRouteChildren {
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
+  ApiPublicV1MarketOrderbookSymbolRoute: typeof ApiPublicV1MarketOrderbookSymbolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -722,6 +736,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1MarketAssetsSymbolRouteImport
       parentRoute: typeof ApiPublicV1MarketAssetsRoute
     }
+    '/api/public/v1/market/orderbook/$symbol': {
+      id: '/api/public/v1/market/orderbook/$symbol'
+      path: '/api/public/v1/market/orderbook/$symbol'
+      fullPath: '/api/public/v1/market/orderbook/$symbol'
+      preLoaderRoute: typeof ApiPublicV1MarketOrderbookSymbolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -813,6 +834,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
+  ApiPublicV1MarketOrderbookSymbolRoute: ApiPublicV1MarketOrderbookSymbolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
