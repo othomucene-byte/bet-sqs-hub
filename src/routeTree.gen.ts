@@ -42,6 +42,7 @@ import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/publi
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
+import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -222,6 +223,11 @@ const ApiPublicWebhooksNetshopRoute =
     path: '/api/public/webhooks/netshop',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
+  id: '/api/public/v1/market/assets',
+  path: '/api/public/v1/market/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -362,6 +371,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
   id:
     | '__root__'
     | '/'
@@ -431,6 +442,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
     | '/api/public/webhooks/netshop'
+    | '/api/public/v1/market/assets'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -447,6 +459,7 @@ export interface RootRouteChildren {
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
+  ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -682,6 +695,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksNetshopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/market/assets': {
+      id: '/api/public/v1/market/assets'
+      path: '/api/public/v1/market/assets'
+      fullPath: '/api/public/v1/market/assets'
+      preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -758,6 +778,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
+  ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
