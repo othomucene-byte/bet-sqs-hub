@@ -49,6 +49,9 @@ export function ExchangeNav({ className, variant = "all" }: { className?: string
         <Link to="/exchange/watchlist" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary">
           <Star className="size-4" /> Favoritos
         </Link>
+        <Link to="/developers" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/15 data-[status=active]:text-primary">
+          <Code2 className="size-4" /> API developers
+        </Link>
       </nav>}
 
       {(variant === "all" || variant === "mobile") && <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-background/95 backdrop-blur md:hidden">

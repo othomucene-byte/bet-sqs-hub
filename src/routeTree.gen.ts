@@ -20,6 +20,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
+import { Route as AuthenticatedDevelopersRouteImport } from './routes/_authenticated/developers'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
@@ -100,6 +101,11 @@ const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
 const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
   id: '/crash',
   path: '/crash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDevelopersRoute = AuthenticatedDevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
@@ -268,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByTo {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
+  '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
+  '/_authenticated/developers': typeof AuthenticatedDevelopersRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/carteira'
     | '/crash'
+    | '/developers'
     | '/fish'
     | '/kyc'
     | '/notificacoes'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/carteira'
     | '/crash'
+    | '/developers'
     | '/fish'
     | '/kyc'
     | '/notificacoes'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bilhetes'
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
+    | '/_authenticated/developers'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
     | '/_authenticated/notificacoes'
@@ -594,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/crash'
       fullPath: '/crash'
       preLoaderRoute: typeof AuthenticatedCrashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/developers': {
+      id: '/_authenticated/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof AuthenticatedDevelopersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fish': {
@@ -804,6 +823,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
+  AuthenticatedDevelopersRoute: typeof AuthenticatedDevelopersRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
@@ -826,6 +846,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
+  AuthenticatedDevelopersRoute: AuthenticatedDevelopersRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
