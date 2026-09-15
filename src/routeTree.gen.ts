@@ -45,9 +45,13 @@ import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
+import { Route as ApiPublicV1TradingAccountRouteImport } from './routes/api/public/v1/trading.account'
+import { Route as ApiPublicV1TradingOrdersRouteImport } from './routes/api/public/v1/trading.orders'
+import { Route as ApiPublicV1TradingTradesRouteImport } from './routes/api/public/v1/trading.trades'
 import { Route as ApiPublicV1MarketAssetsSymbolRouteImport } from './routes/api/public/v1/market.assets.$symbol'
 import { Route as ApiPublicV1MarketOrderbookSymbolRouteImport } from './routes/api/public/v1/market.orderbook.$symbol'
 import { Route as ApiPublicV1MarketTradesSymbolRouteImport } from './routes/api/public/v1/market.trades.$symbol'
+import { Route as ApiPublicV1TradingOrdersIdRouteImport } from './routes/api/public/v1/trading.orders.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -244,6 +248,24 @@ const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   path: '/api/public/v1/market/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1TradingAccountRoute =
+  ApiPublicV1TradingAccountRouteImport.update({
+    id: '/api/public/v1/trading/account',
+    path: '/api/public/v1/trading/account',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TradingOrdersRoute =
+  ApiPublicV1TradingOrdersRouteImport.update({
+    id: '/api/public/v1/trading/orders',
+    path: '/api/public/v1/trading/orders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TradingTradesRoute =
+  ApiPublicV1TradingTradesRouteImport.update({
+    id: '/api/public/v1/trading/trades',
+    path: '/api/public/v1/trading/trades',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1MarketAssetsSymbolRoute =
   ApiPublicV1MarketAssetsSymbolRouteImport.update({
     id: '/$symbol',
@@ -261,6 +283,12 @@ const ApiPublicV1MarketTradesSymbolRoute =
     id: '/api/public/v1/market/trades/$symbol',
     path: '/api/public/v1/market/trades/$symbol',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TradingOrdersIdRoute =
+  ApiPublicV1TradingOrdersIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiPublicV1TradingOrdersRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -299,9 +327,13 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
+  '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
+  '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
   '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
   '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
+  '/api/public/v1/trading/orders/$id': typeof ApiPublicV1TradingOrdersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -339,9 +371,13 @@ export interface FileRoutesByTo {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
+  '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
+  '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
   '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
   '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
+  '/api/public/v1/trading/orders/$id': typeof ApiPublicV1TradingOrdersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -381,9 +417,13 @@ export interface FileRoutesById {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
+  '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
+  '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
   '/api/public/v1/market/assets/$symbol': typeof ApiPublicV1MarketAssetsSymbolRoute
   '/api/public/v1/market/orderbook/$symbol': typeof ApiPublicV1MarketOrderbookSymbolRoute
   '/api/public/v1/market/trades/$symbol': typeof ApiPublicV1MarketTradesSymbolRoute
+  '/api/public/v1/trading/orders/$id': typeof ApiPublicV1TradingOrdersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -423,9 +463,13 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/trading/account'
+    | '/api/public/v1/trading/orders'
+    | '/api/public/v1/trading/trades'
     | '/api/public/v1/market/assets/$symbol'
     | '/api/public/v1/market/orderbook/$symbol'
     | '/api/public/v1/market/trades/$symbol'
+    | '/api/public/v1/trading/orders/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -463,9 +507,13 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/trading/account'
+    | '/api/public/v1/trading/orders'
+    | '/api/public/v1/trading/trades'
     | '/api/public/v1/market/assets/$symbol'
     | '/api/public/v1/market/orderbook/$symbol'
     | '/api/public/v1/market/trades/$symbol'
+    | '/api/public/v1/trading/orders/$id'
   id:
     | '__root__'
     | '/'
@@ -504,9 +552,13 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/trading/account'
+    | '/api/public/v1/trading/orders'
+    | '/api/public/v1/trading/trades'
     | '/api/public/v1/market/assets/$symbol'
     | '/api/public/v1/market/orderbook/$symbol'
     | '/api/public/v1/market/trades/$symbol'
+    | '/api/public/v1/trading/orders/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -525,6 +577,9 @@ export interface RootRouteChildren {
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
+  ApiPublicV1TradingAccountRoute: typeof ApiPublicV1TradingAccountRoute
+  ApiPublicV1TradingOrdersRoute: typeof ApiPublicV1TradingOrdersRouteWithChildren
+  ApiPublicV1TradingTradesRoute: typeof ApiPublicV1TradingTradesRoute
   ApiPublicV1MarketOrderbookSymbolRoute: typeof ApiPublicV1MarketOrderbookSymbolRoute
   ApiPublicV1MarketTradesSymbolRoute: typeof ApiPublicV1MarketTradesSymbolRoute
 }
@@ -783,6 +838,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/trading/account': {
+      id: '/api/public/v1/trading/account'
+      path: '/api/public/v1/trading/account'
+      fullPath: '/api/public/v1/trading/account'
+      preLoaderRoute: typeof ApiPublicV1TradingAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/trading/orders': {
+      id: '/api/public/v1/trading/orders'
+      path: '/api/public/v1/trading/orders'
+      fullPath: '/api/public/v1/trading/orders'
+      preLoaderRoute: typeof ApiPublicV1TradingOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/trading/trades': {
+      id: '/api/public/v1/trading/trades'
+      path: '/api/public/v1/trading/trades'
+      fullPath: '/api/public/v1/trading/trades'
+      preLoaderRoute: typeof ApiPublicV1TradingTradesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/market/assets/$symbol': {
       id: '/api/public/v1/market/assets/$symbol'
       path: '/$symbol'
@@ -803,6 +879,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/v1/market/trades/$symbol'
       preLoaderRoute: typeof ApiPublicV1MarketTradesSymbolRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/trading/orders/$id': {
+      id: '/api/public/v1/trading/orders/$id'
+      path: '/$id'
+      fullPath: '/api/public/v1/trading/orders/$id'
+      preLoaderRoute: typeof ApiPublicV1TradingOrdersIdRouteImport
+      parentRoute: typeof ApiPublicV1TradingOrdersRoute
     }
   }
 }
@@ -882,6 +965,20 @@ const ApiPublicV1MarketAssetsRouteWithChildren =
     ApiPublicV1MarketAssetsRouteChildren,
   )
 
+interface ApiPublicV1TradingOrdersRouteChildren {
+  ApiPublicV1TradingOrdersIdRoute: typeof ApiPublicV1TradingOrdersIdRoute
+}
+
+const ApiPublicV1TradingOrdersRouteChildren: ApiPublicV1TradingOrdersRouteChildren =
+  {
+    ApiPublicV1TradingOrdersIdRoute: ApiPublicV1TradingOrdersIdRoute,
+  }
+
+const ApiPublicV1TradingOrdersRouteWithChildren =
+  ApiPublicV1TradingOrdersRoute._addFileChildren(
+    ApiPublicV1TradingOrdersRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -898,6 +995,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
+  ApiPublicV1TradingAccountRoute: ApiPublicV1TradingAccountRoute,
+  ApiPublicV1TradingOrdersRoute: ApiPublicV1TradingOrdersRouteWithChildren,
+  ApiPublicV1TradingTradesRoute: ApiPublicV1TradingTradesRoute,
   ApiPublicV1MarketOrderbookSymbolRoute: ApiPublicV1MarketOrderbookSymbolRoute,
   ApiPublicV1MarketTradesSymbolRoute: ApiPublicV1MarketTradesSymbolRoute,
 }
