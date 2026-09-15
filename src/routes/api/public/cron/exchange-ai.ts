@@ -23,7 +23,7 @@ async function handle(request: Request): Promise<Response> {
   if (unauthorized) return unauthorized;
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { AiNotConfigured } = await import("@/lib/ai/gemini-search.server");
+  const { AiNotConfigured } = await import("@/lib/ai/search.server");
   const { refreshAssetData, loadAgentConfig } = await import("@/lib/exchange/company-data.server");
 
   const config = await loadAgentConfig();

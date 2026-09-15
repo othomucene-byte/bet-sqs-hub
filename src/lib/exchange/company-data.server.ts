@@ -13,7 +13,7 @@
 
 import { z } from "zod";
 
-import { AiNotConfigured, extractJson, groundedSearch, type GroundedSource } from "@/lib/ai/gemini-search.server";
+import { AiNotConfigured, extractJson, groundedSearch, type GroundedSource } from "@/lib/ai/search.server";
 
 const KINDS = ["FINANCIALS", "NEWS", "DIVIDEND", "CORPORATE_EVENT", "PROFILE", "OTHER"] as const;
 
