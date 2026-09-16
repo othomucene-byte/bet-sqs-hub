@@ -42,9 +42,14 @@ import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
+import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
+import { Route as ApiPublicV1OauthRevokeRouteImport } from './routes/api/public/v1/oauth.revoke'
+import { Route as ApiPublicV1OauthTokenRouteImport } from './routes/api/public/v1/oauth.token'
+import { Route as ApiPublicV1StreamMarketRouteImport } from './routes/api/public/v1/stream.market'
+import { Route as ApiPublicV1StreamWsRouteImport } from './routes/api/public/v1/stream.ws'
 import { Route as ApiPublicV1TradingAccountRouteImport } from './routes/api/public/v1/trading.account'
 import { Route as ApiPublicV1TradingOrdersRouteImport } from './routes/api/public/v1/trading.orders'
 import { Route as ApiPublicV1TradingTradesRouteImport } from './routes/api/public/v1/trading.trades'
@@ -231,6 +236,12 @@ const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   path: '/api/public/cron/sports-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronWebhookDispatchRoute =
+  ApiPublicCronWebhookDispatchRouteImport.update({
+    id: '/api/public/cron/webhook-dispatch',
+    path: '/api/public/cron/webhook-dispatch',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1OpenapiDotjsonRoute =
   ApiPublicV1OpenapiDotjsonRouteImport.update({
     id: '/api/public/v1/openapi.json',
@@ -246,6 +257,26 @@ const ApiPublicWebhooksNetshopRoute =
 const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   id: '/api/public/v1/market/assets',
   path: '/api/public/v1/market/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1OauthRevokeRoute = ApiPublicV1OauthRevokeRouteImport.update({
+  id: '/api/public/v1/oauth/revoke',
+  path: '/api/public/v1/oauth/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1OauthTokenRoute = ApiPublicV1OauthTokenRouteImport.update({
+  id: '/api/public/v1/oauth/token',
+  path: '/api/public/v1/oauth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1StreamMarketRoute = ApiPublicV1StreamMarketRouteImport.update({
+  id: '/api/public/v1/stream/market',
+  path: '/api/public/v1/stream/market',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1StreamWsRoute = ApiPublicV1StreamWsRouteImport.update({
+  id: '/api/public/v1/stream/ws',
+  path: '/api/public/v1/stream/ws',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicV1TradingAccountRoute =
@@ -324,9 +355,14 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
+  '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
+  '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
+  '/api/public/v1/stream/ws': typeof ApiPublicV1StreamWsRoute
   '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
   '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
   '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
@@ -368,9 +404,14 @@ export interface FileRoutesByTo {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
+  '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
+  '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
+  '/api/public/v1/stream/ws': typeof ApiPublicV1StreamWsRoute
   '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
   '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
   '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
@@ -414,9 +455,14 @@ export interface FileRoutesById {
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
+  '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
+  '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
+  '/api/public/v1/stream/ws': typeof ApiPublicV1StreamWsRoute
   '/api/public/v1/trading/account': typeof ApiPublicV1TradingAccountRoute
   '/api/public/v1/trading/orders': typeof ApiPublicV1TradingOrdersRouteWithChildren
   '/api/public/v1/trading/trades': typeof ApiPublicV1TradingTradesRoute
@@ -460,9 +506,14 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/revoke'
+    | '/api/public/v1/oauth/token'
+    | '/api/public/v1/stream/market'
+    | '/api/public/v1/stream/ws'
     | '/api/public/v1/trading/account'
     | '/api/public/v1/trading/orders'
     | '/api/public/v1/trading/trades'
@@ -504,9 +555,14 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/revoke'
+    | '/api/public/v1/oauth/token'
+    | '/api/public/v1/stream/market'
+    | '/api/public/v1/stream/ws'
     | '/api/public/v1/trading/account'
     | '/api/public/v1/trading/orders'
     | '/api/public/v1/trading/trades'
@@ -549,9 +605,14 @@ export interface FileRouteTypes {
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-sync'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/revoke'
+    | '/api/public/v1/oauth/token'
+    | '/api/public/v1/stream/market'
+    | '/api/public/v1/stream/ws'
     | '/api/public/v1/trading/account'
     | '/api/public/v1/trading/orders'
     | '/api/public/v1/trading/trades'
@@ -574,9 +635,14 @@ export interface RootRouteChildren {
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
+  ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
+  ApiPublicV1OauthRevokeRoute: typeof ApiPublicV1OauthRevokeRoute
+  ApiPublicV1OauthTokenRoute: typeof ApiPublicV1OauthTokenRoute
+  ApiPublicV1StreamMarketRoute: typeof ApiPublicV1StreamMarketRoute
+  ApiPublicV1StreamWsRoute: typeof ApiPublicV1StreamWsRoute
   ApiPublicV1TradingAccountRoute: typeof ApiPublicV1TradingAccountRoute
   ApiPublicV1TradingOrdersRoute: typeof ApiPublicV1TradingOrdersRouteWithChildren
   ApiPublicV1TradingTradesRoute: typeof ApiPublicV1TradingTradesRoute
@@ -817,6 +883,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSportsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/webhook-dispatch': {
+      id: '/api/public/cron/webhook-dispatch'
+      path: '/api/public/cron/webhook-dispatch'
+      fullPath: '/api/public/cron/webhook-dispatch'
+      preLoaderRoute: typeof ApiPublicCronWebhookDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/openapi.json': {
       id: '/api/public/v1/openapi.json'
       path: '/api/public/v1/openapi.json'
@@ -836,6 +909,34 @@ declare module '@tanstack/react-router' {
       path: '/api/public/v1/market/assets'
       fullPath: '/api/public/v1/market/assets'
       preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/oauth/revoke': {
+      id: '/api/public/v1/oauth/revoke'
+      path: '/api/public/v1/oauth/revoke'
+      fullPath: '/api/public/v1/oauth/revoke'
+      preLoaderRoute: typeof ApiPublicV1OauthRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/oauth/token': {
+      id: '/api/public/v1/oauth/token'
+      path: '/api/public/v1/oauth/token'
+      fullPath: '/api/public/v1/oauth/token'
+      preLoaderRoute: typeof ApiPublicV1OauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/stream/market': {
+      id: '/api/public/v1/stream/market'
+      path: '/api/public/v1/stream/market'
+      fullPath: '/api/public/v1/stream/market'
+      preLoaderRoute: typeof ApiPublicV1StreamMarketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/stream/ws': {
+      id: '/api/public/v1/stream/ws'
+      path: '/api/public/v1/stream/ws'
+      fullPath: '/api/public/v1/stream/ws'
+      preLoaderRoute: typeof ApiPublicV1StreamWsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/trading/account': {
@@ -992,9 +1093,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
+  ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
+  ApiPublicV1OauthRevokeRoute: ApiPublicV1OauthRevokeRoute,
+  ApiPublicV1OauthTokenRoute: ApiPublicV1OauthTokenRoute,
+  ApiPublicV1StreamMarketRoute: ApiPublicV1StreamMarketRoute,
+  ApiPublicV1StreamWsRoute: ApiPublicV1StreamWsRoute,
   ApiPublicV1TradingAccountRoute: ApiPublicV1TradingAccountRoute,
   ApiPublicV1TradingOrdersRoute: ApiPublicV1TradingOrdersRouteWithChildren,
   ApiPublicV1TradingTradesRoute: ApiPublicV1TradingTradesRoute,
