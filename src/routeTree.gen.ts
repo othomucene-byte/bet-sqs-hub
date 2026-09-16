@@ -26,6 +26,7 @@ import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/ky
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
+import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
 import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
 import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeListarRouteImport } from './routes/_authenticated/exchange.listar'
@@ -46,6 +47,7 @@ import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/p
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
+import { Route as ApiPublicV1OauthAuthorizeRouteImport } from './routes/api/public/v1/oauth.authorize'
 import { Route as ApiPublicV1OauthRevokeRouteImport } from './routes/api/public/v1/oauth.revoke'
 import { Route as ApiPublicV1OauthTokenRouteImport } from './routes/api/public/v1/oauth.token'
 import { Route as ApiPublicV1StreamMarketRouteImport } from './routes/api/public/v1/stream.market'
@@ -141,6 +143,11 @@ const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
 const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   id: '/exchange/',
   path: '/exchange/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthAutorizarRoute = OauthAutorizarRouteImport.update({
+  id: '/oauth/autorizar',
+  path: '/oauth/autorizar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminExchangeRoute =
@@ -259,6 +266,12 @@ const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   path: '/api/public/v1/market/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1OauthAuthorizeRoute =
+  ApiPublicV1OauthAuthorizeRouteImport.update({
+    id: '/api/public/v1/oauth/authorize',
+    path: '/api/public/v1/oauth/authorize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1OauthRevokeRoute = ApiPublicV1OauthRevokeRouteImport.update({
   id: '/api/public/v1/oauth/revoke',
   path: '/api/public/v1/oauth/revoke',
@@ -338,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
@@ -359,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
   '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
   '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
@@ -387,6 +402,7 @@ export interface FileRoutesByTo {
   '/kyc': typeof AuthenticatedKycRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange': typeof ExchangeIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
@@ -408,6 +424,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
   '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
   '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
@@ -438,6 +455,7 @@ export interface FileRoutesById {
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
+  '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
@@ -459,6 +477,7 @@ export interface FileRoutesById {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
+  '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
   '/api/public/v1/oauth/token': typeof ApiPublicV1OauthTokenRoute
   '/api/public/v1/stream/market': typeof ApiPublicV1StreamMarketRoute
@@ -489,6 +508,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notificacoes'
     | '/promocoes'
+    | '/oauth/autorizar'
     | '/exchange/'
     | '/admin/exchange'
     | '/exchange/history'
@@ -510,6 +530,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
     | '/api/public/v1/oauth/token'
     | '/api/public/v1/stream/market'
@@ -538,6 +559,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notificacoes'
     | '/promocoes'
+    | '/oauth/autorizar'
     | '/exchange'
     | '/admin/exchange'
     | '/exchange/history'
@@ -559,6 +581,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
     | '/api/public/v1/oauth/token'
     | '/api/public/v1/stream/market'
@@ -588,6 +611,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kyc'
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
+    | '/oauth/autorizar'
     | '/exchange/'
     | '/_authenticated/admin/exchange'
     | '/_authenticated/exchange/history'
@@ -609,6 +633,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/v1/market/assets'
+    | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
     | '/api/public/v1/oauth/token'
     | '/api/public/v1/stream/market'
@@ -630,6 +655,7 @@ export interface RootRouteChildren {
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
+  OauthAutorizarRoute: typeof OauthAutorizarRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
@@ -639,6 +665,7 @@ export interface RootRouteChildren {
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
+  ApiPublicV1OauthAuthorizeRoute: typeof ApiPublicV1OauthAuthorizeRoute
   ApiPublicV1OauthRevokeRoute: typeof ApiPublicV1OauthRevokeRoute
   ApiPublicV1OauthTokenRoute: typeof ApiPublicV1OauthTokenRoute
   ApiPublicV1StreamMarketRoute: typeof ApiPublicV1StreamMarketRoute
@@ -769,6 +796,13 @@ declare module '@tanstack/react-router' {
       path: '/exchange'
       fullPath: '/exchange/'
       preLoaderRoute: typeof ExchangeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/autorizar': {
+      id: '/oauth/autorizar'
+      path: '/oauth/autorizar'
+      fullPath: '/oauth/autorizar'
+      preLoaderRoute: typeof OauthAutorizarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/exchange': {
@@ -909,6 +943,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/v1/market/assets'
       fullPath: '/api/public/v1/market/assets'
       preLoaderRoute: typeof ApiPublicV1MarketAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/oauth/authorize': {
+      id: '/api/public/v1/oauth/authorize'
+      path: '/api/public/v1/oauth/authorize'
+      fullPath: '/api/public/v1/oauth/authorize'
+      preLoaderRoute: typeof ApiPublicV1OauthAuthorizeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/oauth/revoke': {
@@ -1088,6 +1129,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
+  OauthAutorizarRoute: OauthAutorizarRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
@@ -1097,6 +1139,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
+  ApiPublicV1OauthAuthorizeRoute: ApiPublicV1OauthAuthorizeRoute,
   ApiPublicV1OauthRevokeRoute: ApiPublicV1OauthRevokeRoute,
   ApiPublicV1OauthTokenRoute: ApiPublicV1OauthTokenRoute,
   ApiPublicV1StreamMarketRoute: ApiPublicV1StreamMarketRoute,
