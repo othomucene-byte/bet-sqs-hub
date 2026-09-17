@@ -129,6 +129,14 @@ export async function apiPlaceOrder(
   const asset = await findAsset(input.symbol);
   if (!asset) return { error: "Instrumento não encontrado." as const, status: 404 };
 
+  if (environment !== "LIVE") {
+    return {
+      error:
+        "Ainda não existem instrumentos de teste listados: as ordens de teste não podem ser executadas. Use uma chave real, sujeita a KYC e às regras do mercado.",
+      status: 422,
+    };
+  }
+
   const adapter = await adapterFor(environment);
   const order = await adapter.submitOrder({
     userId,
