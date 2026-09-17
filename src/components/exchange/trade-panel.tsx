@@ -297,13 +297,31 @@ export function TradePanel(props: Props) {
       </Button>
 
       <div className="mt-2 grid grid-cols-2 gap-2">
-        <Button asChild variant="secondary" size="sm">
-          <Link to="/exchange/wallet">Depositar fundos</Link>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={deposit.isPending || walletBalance <= 0}
+          onClick={() => moveIn.mutate()}
+        >
+          {moveIn.isPending ? "A transferir…" : "Carteira → conta"}
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/exchange/wallet">Levantar</Link>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={moveOut.isPending || (available ?? 0) <= 0}
+          onClick={() => moveOut.mutate()}
+        >
+          {moveOut.isPending ? "A transferir…" : "Conta → carteira"}
         </Button>
       </div>
+      <p className="mt-1 text-center text-[11px] text-muted-foreground">
+        Move todo o saldo livre no sentido escolhido. Também pode escolher o valor em{" "}
+        <Link to="/exchange/wallet" className="underline">
+          Fundos
+        </Link>
+        .
+      </p>
+
 
       {!marketOpen && (
         <p className="mt-2 text-center text-xs text-amber-400">
