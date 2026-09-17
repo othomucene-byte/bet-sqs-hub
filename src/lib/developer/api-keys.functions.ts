@@ -2,11 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const SCOPES = ["market:read"] as const;
+const SCOPES = ["market:read", "trading:read", "trading:write", "stream:read"] as const;
 
 const createSchema = z.object({
   name: z.string().trim().min(2).max(60),
   environment: z.enum(["SANDBOX", "LIVE"]),
+  scopes: z.array(z.enum(SCOPES)).min(1).default(["market:read"]),
 });
 
 export type ApiKeyRow = {
@@ -92,7 +93,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         prefix,
         key_hash: keyHash,
         environment: data.environment,
-        scopes: [...SCOPES],
+        scopes: data.scopes,
       })
       .select("id, created_at")
       .single();
