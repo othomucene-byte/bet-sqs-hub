@@ -220,7 +220,7 @@ function DevelopersPage() {
             <div className="space-y-2">
               {ENDPOINTS.map((endpoint) => (
                 <div
-                  key={endpoint.path}
+                  key={`${endpoint.method} ${endpoint.path}`}
                   className="rounded-lg border border-border/60 bg-background/40 px-3 py-2"
                 >
                   <div className="flex items-center gap-2">

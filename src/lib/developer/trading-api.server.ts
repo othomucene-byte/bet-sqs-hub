@@ -115,7 +115,7 @@ export type PlaceOrderInput = {
   side: "BUY" | "SELL";
   order_type: "MARKET" | "LIMIT";
   quantity: number;
-  limit_price?: number | null;
+  limit_price?: number | null | undefined;
   idempotency_key: string;
 };
 
@@ -124,10 +124,18 @@ export async function apiPlaceOrder(
   environment: Environment,
   input: PlaceOrderInput,
   callerEnvironment: "SANDBOX" | "LIVE",
-) {
+): Promise<{ error: string; status: number } | { order: Record<string, unknown> }> {
   const { findAsset } = await import("./market-api.server");
   const asset = await findAsset(input.symbol);
   if (!asset) return { error: "Instrumento não encontrado." as const, status: 404 };
+
+  if (environment !== "LIVE") {
+    return {
+      error:
+        "Ainda não existem instrumentos de teste listados: as ordens de teste não podem ser executadas. Use uma chave real, sujeita a KYC e às regras do mercado.",
+      status: 422,
+    };
+  }
 
   const adapter = await adapterFor(environment);
   const order = await adapter.submitOrder({

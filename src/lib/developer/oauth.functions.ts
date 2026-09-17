@@ -95,7 +95,8 @@ export const createOAuthClient = createServerFn({ method: "POST" })
     const clientId = `sqscl_${randomBytes(12).toString("hex")}`;
     const clientSecret = `sqscs_${randomBytes(24).toString("base64url")}`;
 
-    const { data: inserted, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: inserted, error } = await supabaseAdmin
       .from("oauth_clients")
       .insert({
         owner_user_id: context.userId,

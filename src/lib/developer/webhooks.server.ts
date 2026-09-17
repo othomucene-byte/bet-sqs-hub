@@ -7,6 +7,7 @@
  * pressupostos do frontend.
  */
 
+import type { Json } from "@/integrations/supabase/types";
 import { createHmac } from "node:crypto";
 
 export const WEBHOOK_EVENTS = [
@@ -55,7 +56,11 @@ export async function enqueueWebhookEvent(input: {
       endpoints.map((endpoint) => ({
         endpoint_id: endpoint.id as string,
         event: input.event,
-        payload: { event: input.event, environment: input.environment, data: input.payload },
+        payload: {
+          event: input.event,
+          environment: input.environment,
+          data: input.payload,
+        } as unknown as Json,
       })),
     );
     // Entrega imediata: a tarefa agendada é apenas a rede de segurança das

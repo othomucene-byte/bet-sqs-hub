@@ -85,7 +85,10 @@ export const createApiKey = createServerFn({ method: "POST" })
     const prefix = token.slice(0, 16);
     const keyHash = createHash("sha256").update(token, "utf8").digest("hex");
 
-    const { data: inserted, error } = await supabase
+    // A tabela não permite inserção pelo utilizador: as credenciais são
+    // sempre criadas pelo servidor, depois de confirmada a sessão.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: inserted, error } = await supabaseAdmin
       .from("api_keys")
       .insert({
         user_id: userId,
