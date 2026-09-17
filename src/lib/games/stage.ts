@@ -572,11 +572,12 @@ export function startStage(
     }
 
     drawBackground(dt, state);
-    if (theme.medium === "road") drawRoad(dt, state);
     drawAmbient(dt, state);
 
     drawTrail(dt, crashed);
-    drawCurve(crashed, p);
+    if (theme.medium === "road") drawRoadRibbon(dt, state, crashed, p);
+    else drawCurve(crashed, p);
+
     drawHero(dt, state, p, crashed, now, scale);
 
     if (flash > 0.01) {
