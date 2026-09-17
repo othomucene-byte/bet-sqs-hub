@@ -81,17 +81,23 @@ function CarteiraPage() {
   const [transferAmount, setTransferAmount] = useState("");
 
   const transferMutation = useMutation({
-    mutationFn: async () =>
-      doTransfer({ data: { amount: Number(transferAmount), direction: "to_investment" } }),
-    onSuccess: () => {
-      toast.success("Transferência concluída.");
+    mutationFn: async (direction: "to_investment" | "to_betting") =>
+      doTransfer({ data: { amount: Number(transferAmount), direction } }),
+    onSuccess: (_r, direction) => {
+      toast.success(
+        direction === "to_investment"
+          ? "Transferido para a carteira de investimentos."
+          : "Transferido para a carteira de apostas.",
+      );
       setTransferAmount("");
       queryClient.invalidateQueries({ queryKey: ["portfolio"] });
       queryClient.invalidateQueries({ queryKey: ["wallet-balances"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível transferir."),
   });
+
 
   const openProducts = (products.data ?? []).filter((p) => p.status === "open");
   const selected = openProducts.find((p) => p.id === productId) ?? null;
