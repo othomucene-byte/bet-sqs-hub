@@ -58,6 +58,11 @@ export async function enqueueWebhookEvent(input: {
         payload: { event: input.event, environment: input.environment, data: input.payload },
       })),
     );
+    // Entrega imediata: a tarefa agendada é apenas a rede de segurança das
+    // tentativas seguintes, não o caminho normal.
+    void dispatchPendingWebhooks(endpoints.length).catch((error) => {
+      console.error("[webhooks] falha na entrega imediata", error);
+    });
     return endpoints.length;
   } catch (error) {
     console.error("[webhooks] falha ao enfileirar", error);
