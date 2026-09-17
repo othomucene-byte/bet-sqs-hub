@@ -1,12 +1,13 @@
 /**
  * Arquitetura de integração do SQs Exchange.
  *
- * Todo o encaminhamento de ordens passa por um ExchangeAdapter. Hoje existe
- * apenas o PaperTradingAdapter (ambiente de SIMULAÇÃO, cruzamento interno no
- * PostgreSQL). O BvmExchangeAdapter existe como ponto de integração futura e
- * falha explicitamente enquanto não houver operador/corretora autorizada, com
- * credenciais e API oficial — nunca finge ligação a nenhuma bolsa.
+ * A Betfcom SQs opera o seu próprio mercado: o SqsMarketAdapter encaminha as
+ * ordens para o motor interno (order engine, matching engine, livro, trades e
+ * liquidação em PostgreSQL), tanto em PAPER como em LIVE. O BvmExchangeAdapter
+ * existe apenas como ponto de encaminhamento externo opcional e nunca finge
+ * ligação a nenhuma bolsa.
  */
+
 
 export type ExchangeEnvironment = "PAPER" | "LIVE";
 
