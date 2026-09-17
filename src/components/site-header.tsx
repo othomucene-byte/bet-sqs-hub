@@ -7,27 +7,22 @@ import {
   Banknote,
   Bell,
   Building2,
-  Car,
   ChevronDown,
   Code2,
   CreditCard,
-  Crown,
-  Disc3,
-  Egg,
-  Fish,
+  Gamepad2,
   IdCard,
   LineChart,
   LogOut,
   Menu,
-  Plane,
   ShieldCheck,
   ShieldHalf,
-  Ship,
   Ticket,
   Trophy,
   UserRound,
   Wallet,
 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
@@ -57,8 +52,12 @@ type NavGroup = { title: string; links: NavLink[] };
 const publicGroups: NavGroup[] = [
   {
     title: "Apostas",
-    links: [{ href: "/desportos", label: "Desportos", icon: Trophy }],
+    links: [
+      { href: "/jogos", label: "Jogos", icon: Gamepad2 },
+      { href: "/desportos", label: "Desportos", icon: Trophy },
+    ],
   },
+
   {
     title: "Investimentos",
     links: [
@@ -89,18 +88,13 @@ const memberGroups: NavGroup[] = [
   {
     title: "Apostas",
     links: [
+      { href: "/jogos", label: "Jogos", icon: Gamepad2 },
       { href: "/desportos", label: "Desportos", icon: Trophy },
       { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
-      { href: "/crash", label: "Aviator", icon: Plane },
-      { href: "/fish", label: "Fish Crash", icon: Fish },
-      { href: "/navigator", label: "Navigator", icon: Ship },
-      { href: "/boost", label: "Boost Race", icon: Car },
-      { href: "/roda", label: "Roda da Betfcom", icon: Disc3 },
-      { href: "/chicken", label: "Chicken Choice", icon: Egg },
-      { href: "/leao", label: "Leão Rei da Selva", icon: Crown },
       { href: "/promocoes", label: "Promoções", icon: Gift },
     ],
   },
+
   {
     title: "Investimentos",
     links: [
