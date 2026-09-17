@@ -88,6 +88,8 @@ const memberGroups: NavGroup[] = [
       { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
       { href: "/crash", label: "Aviator", icon: Plane },
       { href: "/fish", label: "Fish Crash", icon: Fish },
+      { href: "/navigator", label: "Navigator", icon: Ship },
+      { href: "/boost", label: "Boost Race", icon: Car },
       { href: "/promocoes", label: "Promoções", icon: Gift },
     ],
   },
