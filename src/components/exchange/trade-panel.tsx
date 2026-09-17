@@ -323,7 +323,7 @@ export function TradePanel(props: Props) {
         <Button
           variant="secondary"
           size="sm"
-          disabled={deposit.isPending || walletBalance <= 0}
+          disabled={moveIn.isPending || walletBalance <= 0}
           onClick={() => moveIn.mutate()}
         >
           {moveIn.isPending ? "A transferir…" : "Carteira → conta"}
