@@ -506,11 +506,8 @@ function FairnessCard({
           <dt className="text-fish-muted">Nonce</dt>
           <dd className="font-mono">{nonce ?? "—"}</dd>
         </div>
-        <div className="flex justify-between gap-2">
-          <dt className="text-fish-muted">Vantagem da casa</dt>
-          <dd className="font-mono">{(houseEdge * 100).toFixed(1)}%</dd>
-        </div>
       </dl>
+
       <div className="flex gap-2">
         <Input
           value={target}

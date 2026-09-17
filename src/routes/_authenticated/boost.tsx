@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/boost")({
 });
 
 const boostTheme: StageTheme = {
-  medium: "air",
+  medium: "road",
   fixedBackground: true,
   background: gameAssets.boost.background,
   character: gameAssets.boost.character,
