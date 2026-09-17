@@ -14,8 +14,9 @@ export type StageState = {
 };
 
 export type StageTheme = {
-  /** "air" → fumo e turbulência. "water" → bolhas, caustics e poeira suspensa. */
-  medium: "air" | "water";
+  /** "air" → fumo. "water" → bolhas e caustics. "road" → asfalto em perspetiva. */
+  medium: "air" | "water" | "road";
+
   /** Imagem de cenário (parallax + zoom suave). */
   background: string;
   /** Mantém o cenário imóvel; usado no Aviator para o voo não arrastar o horizonte. */
@@ -500,7 +501,9 @@ export function startStage(
     }
 
     drawBackground(dt, state);
+    if (theme.medium === "road") drawRoad(dt, state);
     drawAmbient(dt, state);
+
     drawTrail(dt, crashed);
     drawCurve(crashed, p);
     drawHero(dt, state, p, crashed, now, scale);
