@@ -24,6 +24,7 @@ import { Route as AuthenticatedChickenRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedDevelopersRouteImport } from './routes/_authenticated/developers'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
+import { Route as AuthenticatedJogosRouteImport } from './routes/_authenticated/jogos'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
 import { Route as AuthenticatedLeaoRouteImport } from './routes/_authenticated/leao'
 import { Route as AuthenticatedNavigatorRouteImport } from './routes/_authenticated/navigator'
@@ -137,6 +138,11 @@ const AuthenticatedDevelopersRoute = AuthenticatedDevelopersRouteImport.update({
 const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
   id: '/fish',
   path: '/fish',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJogosRoute = AuthenticatedJogosRouteImport.update({
+  id: '/jogos',
+  path: '/jogos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/jogos': typeof AuthenticatedJogosRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/leao': typeof AuthenticatedLeaoRoute
   '/navigator': typeof AuthenticatedNavigatorRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
+  '/jogos': typeof AuthenticatedJogosRoute
   '/kyc': typeof AuthenticatedKycRoute
   '/leao': typeof AuthenticatedLeaoRoute
   '/navigator': typeof AuthenticatedNavigatorRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/developers': typeof AuthenticatedDevelopersRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
+  '/_authenticated/jogos': typeof AuthenticatedJogosRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
   '/_authenticated/leao': typeof AuthenticatedLeaoRoute
   '/_authenticated/navigator': typeof AuthenticatedNavigatorRoute
@@ -552,6 +561,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/developers'
     | '/fish'
+    | '/jogos'
     | '/kyc'
     | '/leao'
     | '/navigator'
@@ -608,6 +618,7 @@ export interface FileRouteTypes {
     | '/crash'
     | '/developers'
     | '/fish'
+    | '/jogos'
     | '/kyc'
     | '/leao'
     | '/navigator'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crash'
     | '/_authenticated/developers'
     | '/_authenticated/fish'
+    | '/_authenticated/jogos'
     | '/_authenticated/kyc'
     | '/_authenticated/leao'
     | '/_authenticated/navigator'
@@ -842,6 +854,13 @@ declare module '@tanstack/react-router' {
       path: '/fish'
       fullPath: '/fish'
       preLoaderRoute: typeof AuthenticatedFishRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jogos': {
+      id: '/_authenticated/jogos'
+      path: '/jogos'
+      fullPath: '/jogos'
+      preLoaderRoute: typeof AuthenticatedJogosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/kyc': {
@@ -1147,6 +1166,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedDevelopersRoute: typeof AuthenticatedDevelopersRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
+  AuthenticatedJogosRoute: typeof AuthenticatedJogosRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
   AuthenticatedLeaoRoute: typeof AuthenticatedLeaoRoute
   AuthenticatedNavigatorRoute: typeof AuthenticatedNavigatorRoute
@@ -1175,6 +1195,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedDevelopersRoute: AuthenticatedDevelopersRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
+  AuthenticatedJogosRoute: AuthenticatedJogosRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
   AuthenticatedLeaoRoute: AuthenticatedLeaoRoute,
   AuthenticatedNavigatorRoute: AuthenticatedNavigatorRoute,
