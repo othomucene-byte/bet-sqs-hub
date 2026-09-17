@@ -20,13 +20,16 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
 import { Route as AuthenticatedBoostRouteImport } from './routes/_authenticated/boost'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
+import { Route as AuthenticatedChickenRouteImport } from './routes/_authenticated/chicken'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedDevelopersRouteImport } from './routes/_authenticated/developers'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
+import { Route as AuthenticatedLeaoRouteImport } from './routes/_authenticated/leao'
 import { Route as AuthenticatedNavigatorRouteImport } from './routes/_authenticated/navigator'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
+import { Route as AuthenticatedRodaRouteImport } from './routes/_authenticated/roda'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
 import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
@@ -116,6 +119,11 @@ const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
   path: '/carteira',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChickenRoute = AuthenticatedChickenRouteImport.update({
+  id: '/chicken',
+  path: '/chicken',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCrashRoute = AuthenticatedCrashRouteImport.update({
   id: '/crash',
   path: '/crash',
@@ -136,6 +144,11 @@ const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLeaoRoute = AuthenticatedLeaoRouteImport.update({
+  id: '/leao',
+  path: '/leao',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNavigatorRoute = AuthenticatedNavigatorRouteImport.update({
   id: '/navigator',
   path: '/navigator',
@@ -150,6 +163,11 @@ const AuthenticatedNotificacoesRoute =
 const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
   id: '/promocoes',
   path: '/promocoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRodaRoute = AuthenticatedRodaRouteImport.update({
+  id: '/roda',
+  path: '/roda',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
@@ -358,13 +376,16 @@ export interface FileRoutesByFullPath {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/boost': typeof AuthenticatedBoostRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
+  '/chicken': typeof AuthenticatedChickenRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/leao': typeof AuthenticatedLeaoRoute
   '/navigator': typeof AuthenticatedNavigatorRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -411,13 +432,16 @@ export interface FileRoutesByTo {
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/boost': typeof AuthenticatedBoostRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
+  '/chicken': typeof AuthenticatedChickenRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/leao': typeof AuthenticatedLeaoRoute
   '/navigator': typeof AuthenticatedNavigatorRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
+  '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange': typeof ExchangeIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -466,13 +490,16 @@ export interface FileRoutesById {
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/boost': typeof AuthenticatedBoostRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
+  '/_authenticated/chicken': typeof AuthenticatedChickenRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/developers': typeof AuthenticatedDevelopersRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
+  '/_authenticated/leao': typeof AuthenticatedLeaoRoute
   '/_authenticated/navigator': typeof AuthenticatedNavigatorRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
+  '/_authenticated/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -521,13 +548,16 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/boost'
     | '/carteira'
+    | '/chicken'
     | '/crash'
     | '/developers'
     | '/fish'
     | '/kyc'
+    | '/leao'
     | '/navigator'
     | '/notificacoes'
     | '/promocoes'
+    | '/roda'
     | '/oauth/autorizar'
     | '/exchange/'
     | '/admin/exchange'
@@ -574,13 +604,16 @@ export interface FileRouteTypes {
     | '/bilhetes'
     | '/boost'
     | '/carteira'
+    | '/chicken'
     | '/crash'
     | '/developers'
     | '/fish'
     | '/kyc'
+    | '/leao'
     | '/navigator'
     | '/notificacoes'
     | '/promocoes'
+    | '/roda'
     | '/oauth/autorizar'
     | '/exchange'
     | '/admin/exchange'
@@ -628,13 +661,16 @@ export interface FileRouteTypes {
     | '/_authenticated/bilhetes'
     | '/_authenticated/boost'
     | '/_authenticated/carteira'
+    | '/_authenticated/chicken'
     | '/_authenticated/crash'
     | '/_authenticated/developers'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
+    | '/_authenticated/leao'
     | '/_authenticated/navigator'
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
+    | '/_authenticated/roda'
     | '/oauth/autorizar'
     | '/exchange/'
     | '/_authenticated/admin/exchange'
@@ -780,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarteiraRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/chicken': {
+      id: '/_authenticated/chicken'
+      path: '/chicken'
+      fullPath: '/chicken'
+      preLoaderRoute: typeof AuthenticatedChickenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crash': {
       id: '/_authenticated/crash'
       path: '/crash'
@@ -808,6 +851,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKycRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/leao': {
+      id: '/_authenticated/leao'
+      path: '/leao'
+      fullPath: '/leao'
+      preLoaderRoute: typeof AuthenticatedLeaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/navigator': {
       id: '/_authenticated/navigator'
       path: '/navigator'
@@ -827,6 +877,13 @@ declare module '@tanstack/react-router' {
       path: '/promocoes'
       fullPath: '/promocoes'
       preLoaderRoute: typeof AuthenticatedPromocoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roda': {
+      id: '/_authenticated/roda'
+      path: '/roda'
+      fullPath: '/roda'
+      preLoaderRoute: typeof AuthenticatedRodaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/exchange/': {
@@ -1086,13 +1143,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
   AuthenticatedBoostRoute: typeof AuthenticatedBoostRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
+  AuthenticatedChickenRoute: typeof AuthenticatedChickenRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedDevelopersRoute: typeof AuthenticatedDevelopersRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
+  AuthenticatedLeaoRoute: typeof AuthenticatedLeaoRoute
   AuthenticatedNavigatorRoute: typeof AuthenticatedNavigatorRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
+  AuthenticatedRodaRoute: typeof AuthenticatedRodaRoute
   AuthenticatedExchangeHistoryRoute: typeof AuthenticatedExchangeHistoryRoute
   AuthenticatedExchangeListarRoute: typeof AuthenticatedExchangeListarRoute
   AuthenticatedExchangeOrdersRoute: typeof AuthenticatedExchangeOrdersRoute
@@ -1111,13 +1171,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
   AuthenticatedBoostRoute: AuthenticatedBoostRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
+  AuthenticatedChickenRoute: AuthenticatedChickenRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedDevelopersRoute: AuthenticatedDevelopersRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
+  AuthenticatedLeaoRoute: AuthenticatedLeaoRoute,
   AuthenticatedNavigatorRoute: AuthenticatedNavigatorRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
+  AuthenticatedRodaRoute: AuthenticatedRodaRoute,
   AuthenticatedExchangeHistoryRoute: AuthenticatedExchangeHistoryRoute,
   AuthenticatedExchangeListarRoute: AuthenticatedExchangeListarRoute,
   AuthenticatedExchangeOrdersRoute: AuthenticatedExchangeOrdersRoute,
