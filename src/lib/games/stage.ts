@@ -472,7 +472,7 @@ export function startStage(
     roadScroll += dt * (state.status === "RUNNING" ? 220 + Math.min(600, shownMultiplier * 90) : 40);
 
     const steps = 46;
-    const half = (t: number) => Math.max(5, 54 * (1 - t * 0.82)) * Math.max(0.5, width / 780);
+    const half = (u: number) => (10 + 58 * u) * Math.max(0.55, width / 780);
     const left: { x: number; y: number }[] = [];
     const right: { x: number; y: number }[] = [];
     const centre: { x: number; y: number }[] = [];
@@ -493,8 +493,8 @@ export function startStage(
     }
 
     const asphalt = ctx.createLinearGradient(g.x0, g.y0, pointAt(end).x, pointAt(end).y);
-    asphalt.addColorStop(0, "rgba(22,22,30,0.95)");
-    asphalt.addColorStop(1, "rgba(48,44,66,0.7)");
+    asphalt.addColorStop(0, "rgba(14,14,22,0.55)");
+    asphalt.addColorStop(1, "rgba(40,32,60,0.92)");
 
     ctx.save();
     ctx.beginPath();
