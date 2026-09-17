@@ -66,14 +66,19 @@ function toAdapterOrder(row: OrderRow): AdapterOrder {
   };
 }
 
-/** Simulação: o matching engine é o do PostgreSQL da própria plataforma. */
-export class PaperTradingAdapter implements ExchangeAdapter {
-  readonly name = "PaperTradingAdapter";
+/**
+ * Motor de mercado da própria plataforma: order engine, matching engine, livro,
+ * trades e liquidação correm no PostgreSQL da Betfcom SQs. Serve tanto o
+ * ambiente de testes (PAPER) como o mercado real (LIVE).
+ */
+export class SqsMarketAdapter implements ExchangeAdapter {
+  readonly name = "SqsMarketAdapter";
   readonly environment: ExchangeEnvironment = "PAPER";
 
   constructor(environment: ExchangeEnvironment = "PAPER") {
     this.environment = environment;
   }
+
 
   private async admin() {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
