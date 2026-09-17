@@ -8,6 +8,7 @@ import {
   Bell,
   Building2,
   ChevronDown,
+  Code2,
   CreditCard,
   Fish,
   IdCard,
@@ -103,7 +104,10 @@ const memberGroups: NavGroup[] = [
 
   {
     title: "Plataforma",
-    links: [{ href: "/#seguranca", label: "Segurança", icon: ShieldCheck }],
+    links: [
+      { href: "/developers", label: "API developers", icon: Code2 },
+      { href: "/#seguranca", label: "Segurança", icon: ShieldCheck },
+    ],
   },
 ];
 
@@ -251,6 +255,11 @@ export function SiteHeader() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="h-10 text-sm">
                     <a href="/investidor">A minha conta</a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="h-10 text-sm">
+                    <a href="/developers">
+                      <Code2 className="size-4" /> API developers
+                    </a>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild className="h-10 text-sm">

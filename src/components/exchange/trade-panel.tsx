@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Panel } from "@/components/exchange/terminal";
 import { supabase } from "@/integrations/supabase/client";
-import { createOrder } from "@/lib/exchange/trading.functions";
+import { createOrder, getExchangeAccount, transferWallet } from "@/lib/exchange/trading.functions";
 import { estimatedCost, netProceeds, price as fmtPrice } from "@/lib/exchange/format";
 
 type Props = {
@@ -45,6 +45,17 @@ export function TradePanel(props: Props) {
     if (reference != null) setLimitPrice(reference.toFixed(2));
   }, [side, props.bestAsk, props.bestBid, props.lastPrice]);
 
+  const queryClient = useQueryClient();
+  const fetchAccount = useServerFn(getExchangeAccount);
+  const doTransfer = useServerFn(transferWallet);
+
+  const account = useQuery({
+    queryKey: ["exchange-account"],
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
+    enabled: signedIn === true,
+    staleTime: 10_000,
+  });
+
   const submit = useServerFn(createOrder);
   const mutation = useMutation({
     mutationFn: async () =>
@@ -60,6 +71,7 @@ export function TradePanel(props: Props) {
         },
       }),
     onSuccess: (order) => {
+      queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
       const filled = Number(order.filledQuantity);
       toast.success(
         filled > 0
@@ -78,6 +90,30 @@ export function TradePanel(props: Props) {
     () => (side === "BUY" ? estimatedCost(qty, unit, FEE_PCT) : netProceeds(qty, unit, FEE_PCT)),
     [side, qty, unit],
   );
+
+  const available = account.data?.available ?? null;
+  const walletBalance = account.data?.investmentWalletBalance ?? 0;
+  const needed = side === "BUY" && Number.isFinite(estimate) ? Number(estimate.toFixed(2)) : 0;
+  const shortfall =
+    available == null || needed <= 0 ? 0 : Number(Math.max(0, needed - available).toFixed(2));
+  const depositAmount = Number(Math.min(shortfall, walletBalance).toFixed(2));
+
+  const deposit = useMutation({
+    mutationFn: async () =>
+      doTransfer({
+        data: {
+          direction: "IN" as const,
+          amount: depositAmount,
+          idempotencyKey: `xfer-${crypto.randomUUID()}`,
+        },
+      }),
+    onSuccess: async () => {
+      toast.success(`${depositAmount.toFixed(2)} MZN disponíveis para investir`);
+      await queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
+      await queryClient.invalidateQueries({ queryKey: ["wallet-balances"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const marketOpen = props.marketStatus === "OPEN";
   const disabled =
@@ -195,6 +231,57 @@ export function TradePanel(props: Props) {
           </span>
         </div>
       </div>
+
+      {available != null && (
+        <div className="mt-3 space-y-1 rounded-lg border border-border/60 bg-secondary/20 p-2.5 text-xs text-muted-foreground">
+          <div className="flex justify-between">
+            <span>Disponível na conta de mercado</span>
+            <span className="font-mono font-semibold tabular-nums text-foreground">
+              {available.toFixed(2)} MZN
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Na carteira de investimentos</span>
+            <span className="font-mono tabular-nums text-foreground">
+              {walletBalance.toFixed(2)} MZN
+            </span>
+          </div>
+        </div>
+      )}
+
+      {side === "BUY" && shortfall > 0 && (
+        <div className="mt-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-300">
+          {depositAmount > 0 ? (
+            <>
+              <p>
+                Faltam {shortfall.toFixed(2)} MZN na conta de mercado. Coloque fundos e a compra segue
+                imediatamente.
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="mt-2 h-9 w-full font-semibold"
+                disabled={deposit.isPending}
+                onClick={() => deposit.mutate()}
+              >
+                {deposit.isPending
+                  ? "A transferir…"
+                  : `Colocar ${depositAmount.toFixed(2)} MZN na conta de mercado`}
+              </Button>
+            </>
+          ) : (
+            <>
+              <p>
+                Saldo insuficiente: faltam {shortfall.toFixed(2)} MZN e a carteira de investimentos está
+                sem fundos.
+              </p>
+              <Button asChild size="sm" variant="secondary" className="mt-2 h-9 w-full font-semibold">
+                <Link to="/pagamentos">Depositar por M-Pesa, e-Mola ou cartão</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      )}
 
       <Button
         className="mt-3 h-12 w-full text-base font-semibold"

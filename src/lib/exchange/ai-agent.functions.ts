@@ -181,6 +181,7 @@ export const getAgentAdmin = createServerFn({ method: "POST" })
         .from("exchange_assets")
         .select("id, symbol, name, ai_monitored, companies(name)")
         .eq("status", "ACTIVE")
+        .eq("environment", "LIVE")
         .order("symbol"),
     ]);
 
