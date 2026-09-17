@@ -132,7 +132,9 @@ export const startInstantRound = createServerFn({ method: "POST" })
       _game: data.game,
       _stake: data.stake,
       _funding: data.funding,
-      _free_bet_id: data.funding === "free_bet" ? (data.freeBetId ?? null) : null,
+      ...(data.funding === "free_bet" && data.freeBetId
+        ? { _free_bet_id: data.freeBetId }
+        : {}),
       _config: config,
     });
 
