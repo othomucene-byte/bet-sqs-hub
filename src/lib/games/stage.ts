@@ -14,8 +14,9 @@ export type StageState = {
 };
 
 export type StageTheme = {
-  /** "air" → fumo e turbulência. "water" → bolhas, caustics e poeira suspensa. */
-  medium: "air" | "water";
+  /** "air" → fumo. "water" → bolhas e caustics. "road" → asfalto em perspetiva. */
+  medium: "air" | "water" | "road";
+
   /** Imagem de cenário (parallax + zoom suave). */
   background: string;
   /** Mantém o cenário imóvel; usado no Aviator para o voo não arrastar o horizonte. */
@@ -460,6 +461,77 @@ export function startStage(
     ctx.restore();
   };
 
+  /**
+   * Pista em perspetiva: o "gráfico" do Boost Race é a própria estrada, que se
+   * estende ao longo do percurso do carro e se estreita com a distância.
+   */
+  let roadScroll = 0;
+  const drawRoadRibbon = (dt: number, state: StageState, crashed: boolean, p: number) => {
+    const g = geometry();
+    const end = Math.max(0.02, p);
+    roadScroll += dt * (state.status === "RUNNING" ? 220 + Math.min(600, shownMultiplier * 90) : 40);
+
+    const steps = 46;
+    const half = (u: number) => (10 + 58 * u) * Math.max(0.55, width / 780);
+    const left: { x: number; y: number }[] = [];
+    const right: { x: number; y: number }[] = [];
+    const centre: { x: number; y: number }[] = [];
+
+    for (let i = 0; i <= steps; i += 1) {
+      const t = (i / steps) * end;
+      const a = pointAt(t);
+      const b = pointAt(Math.min(1, t + 0.01));
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const h = half(t / Math.max(0.001, end));
+      left.push({ x: a.x + nx * h, y: a.y + ny * h });
+      right.push({ x: a.x - nx * h, y: a.y - ny * h });
+      centre.push(a);
+    }
+
+    const asphalt = ctx.createLinearGradient(g.x0, g.y0, pointAt(end).x, pointAt(end).y);
+    asphalt.addColorStop(0, "rgba(14,14,22,0.55)");
+    asphalt.addColorStop(1, "rgba(40,32,60,0.92)");
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(left[0]!.x, left[0]!.y);
+    for (const pt of left) ctx.lineTo(pt.x, pt.y);
+    for (let i = right.length - 1; i >= 0; i -= 1) ctx.lineTo(right[i]!.x, right[i]!.y);
+    ctx.closePath();
+    ctx.fillStyle = asphalt;
+    ctx.shadowColor = crashed ? theme.crashGlow : theme.lineSoft;
+    ctx.shadowBlur = 30;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Guardas laterais luminosas
+    ctx.lineWidth = Math.max(2, width * 0.0035);
+    ctx.strokeStyle = crashed ? theme.crashLine : theme.line;
+    ctx.globalAlpha = 0.85;
+    for (const side of [left, right]) {
+      ctx.beginPath();
+      side.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+      ctx.stroke();
+    }
+
+    // Marcação central tracejada, a correr para trás
+    ctx.globalAlpha = 0.75;
+    ctx.setLineDash([26, 22]);
+    ctx.lineDashOffset = -roadScroll;
+    ctx.lineWidth = Math.max(2, width * 0.004);
+    ctx.strokeStyle = "rgba(255,244,214,0.85)";
+    ctx.beginPath();
+    centre.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  };
+
+
   const frame = (now: number) => {
     const rawDt = (now - last) / 1000;
     last = now;
@@ -501,8 +573,11 @@ export function startStage(
 
     drawBackground(dt, state);
     drawAmbient(dt, state);
+
     drawTrail(dt, crashed);
-    drawCurve(crashed, p);
+    if (theme.medium === "road") drawRoadRibbon(dt, state, crashed, p);
+    else drawCurve(crashed, p);
+
     drawHero(dt, state, p, crashed, now, scale);
 
     if (flash > 0.01) {

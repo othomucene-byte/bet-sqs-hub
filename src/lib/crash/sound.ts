@@ -75,21 +75,26 @@ function beep(options: {
   osc.stop(start + options.duration + 0.05);
 }
 
-/** Motor do avião — som contínuo cuja altura sobe com o multiplicador. */
+/** Motor — timbre quente e discreto, filtrado, ao estilo de sala de casino. */
 export function startEngine(): void {
   const audio = ensureAudio();
   if (!audio || !master || muted || engine) return;
   const osc = audio.createOscillator();
   const sub = audio.createOscillator();
   const gain = audio.createGain();
-  osc.type = "sawtooth";
-  sub.type = "triangle";
-  osc.frequency.value = 90;
-  sub.frequency.value = 45;
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 620;
+  filter.Q.value = 0.6;
+  osc.type = "triangle";
+  sub.type = "sine";
+  osc.frequency.value = 110;
+  sub.frequency.value = 55;
   gain.gain.value = 0.0001;
-  gain.gain.setTargetAtTime(0.06, audio.currentTime, 0.2);
-  osc.connect(gain);
-  sub.connect(gain);
+  gain.gain.setTargetAtTime(0.035, audio.currentTime, 0.35);
+  osc.connect(filter);
+  sub.connect(filter);
+  filter.connect(gain);
   gain.connect(master);
   osc.start();
   sub.start();
@@ -98,57 +103,68 @@ export function startEngine(): void {
 
 export function updateEngine(multiplier: number): void {
   if (!engine || !ctx) return;
-  const freq = Math.min(90 + (multiplier - 1) * 55, 620);
-  engine.osc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.08);
-  engine.sub.frequency.setTargetAtTime(freq / 2, ctx.currentTime, 0.08);
-  engine.gain.gain.setTargetAtTime(Math.min(0.06 + multiplier * 0.006, 0.14), ctx.currentTime, 0.2);
+  // Sobe por semitons, não linearmente: soa musical em vez de mecânico.
+  const semitones = Math.min(24, Math.log2(Math.max(1, multiplier)) * 7);
+  const freq = 110 * Math.pow(2, semitones / 12);
+  engine.osc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.18);
+  engine.sub.frequency.setTargetAtTime(freq / 2, ctx.currentTime, 0.18);
+  engine.gain.gain.setTargetAtTime(Math.min(0.035 + multiplier * 0.003, 0.075), ctx.currentTime, 0.3);
 }
 
 export function stopEngine(): void {
   if (!engine || !ctx) return;
   const { osc, sub, gain } = engine;
   engine = null;
-  gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.05);
-  const stopAt = ctx.currentTime + 0.35;
+  gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08);
+  const stopAt = ctx.currentTime + 0.45;
   osc.stop(stopAt);
   sub.stop(stopAt);
 }
 
+/** Contagem — bloco de madeira curto e seco. */
 export function playTick(): void {
-  beep({ freq: 880, duration: 0.06, type: "square", volume: 0.08 });
+  beep({ freq: 1046, toFreq: 880, duration: 0.05, type: "sine", volume: 0.07 });
 }
 
+/** Aposta aceite — duas notas ascendentes limpas. */
 export function playBet(): void {
-  beep({ freq: 420, toFreq: 700, duration: 0.14, type: "triangle", volume: 0.18 });
+  beep({ freq: 523.25, duration: 0.1, type: "sine", volume: 0.14 });
+  beep({ freq: 659.25, duration: 0.14, type: "sine", volume: 0.12, delay: 0.08 });
 }
 
+/** Levantamento — acorde maior em arpejo, som de sino. */
 export function playCashout(): void {
-  beep({ freq: 660, duration: 0.16, type: "sine", volume: 0.28 });
-  beep({ freq: 990, duration: 0.22, type: "sine", volume: 0.22, delay: 0.1 });
-  beep({ freq: 1320, duration: 0.3, type: "sine", volume: 0.16, delay: 0.2 });
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+  notes.forEach((freq, i) => {
+    beep({ freq, duration: 0.5, type: "sine", volume: 0.16 - i * 0.02, delay: i * 0.07 });
+    beep({ freq: freq * 2, duration: 0.35, type: "sine", volume: 0.05, delay: i * 0.07 });
+  });
 }
 
+/** Fim da ronda — nota grave curta com um toque de ar, sem estrondo. */
 export function playCrash(): void {
   const audio = ensureAudio();
   if (!audio || !master || muted) return;
   stopEngine();
   const start = audio.currentTime;
-  const length = Math.floor(audio.sampleRate * 0.6);
+  const length = Math.floor(audio.sampleRate * 0.35);
   const buffer = audio.createBuffer(1, length, audio.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < length; i += 1) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 2;
+    data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 3;
   }
   const noise = audio.createBufferSource();
   noise.buffer = buffer;
   const filter = audio.createBiquadFilter();
   filter.type = "lowpass";
-  filter.frequency.setValueAtTime(1800, start);
-  filter.frequency.exponentialRampToValueAtTime(180, start + 0.55);
+  filter.frequency.setValueAtTime(900, start);
+  filter.frequency.exponentialRampToValueAtTime(160, start + 0.3);
   const gain = audio.createGain();
-  gain.gain.setValueAtTime(0.45, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
+  gain.gain.setValueAtTime(0.16, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
   noise.connect(filter).connect(gain).connect(master);
   noise.start(start);
-  beep({ freq: 200, toFreq: 40, duration: 0.5, type: "sawtooth", volume: 0.2 });
+  beep({ freq: 220, toFreq: 110, duration: 0.45, type: "sine", volume: 0.18 });
+  beep({ freq: 174.61, duration: 0.5, type: "sine", volume: 0.1, delay: 0.05 });
 }
+

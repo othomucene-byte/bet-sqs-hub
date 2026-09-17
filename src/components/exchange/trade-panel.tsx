@@ -115,6 +115,29 @@ export function TradePanel(props: Props) {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  /** Transferência nos dois sentidos, com todo o saldo livre do lado de origem. */
+  const makeTransfer = (direction: "IN" | "OUT", amountOf: () => number) => ({
+    mutationFn: async () => {
+      const amount = Number(amountOf().toFixed(2));
+      if (amount <= 0) throw new Error("Sem saldo livre para transferir");
+      return doTransfer({
+        data: { direction, amount, idempotencyKey: `xfer-${crypto.randomUUID()}` },
+      });
+    },
+    onSuccess: async () => {
+      toast.success(
+        direction === "IN" ? "Fundos na conta de mercado" : "Fundos devolvidos à sua carteira",
+      );
+      await queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
+      await queryClient.invalidateQueries({ queryKey: ["wallet-balances"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const moveIn = useMutation(makeTransfer("IN", () => walletBalance));
+  const moveOut = useMutation(makeTransfer("OUT", () => available ?? 0));
+
+
   const marketOpen = props.marketStatus === "OPEN";
   const disabled =
     !marketOpen ||
@@ -297,13 +320,31 @@ export function TradePanel(props: Props) {
       </Button>
 
       <div className="mt-2 grid grid-cols-2 gap-2">
-        <Button asChild variant="secondary" size="sm">
-          <Link to="/exchange/wallet">Depositar fundos</Link>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={moveIn.isPending || walletBalance <= 0}
+          onClick={() => moveIn.mutate()}
+        >
+          {moveIn.isPending ? "A transferir…" : "Carteira → conta"}
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/exchange/wallet">Levantar</Link>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={moveOut.isPending || (available ?? 0) <= 0}
+          onClick={() => moveOut.mutate()}
+        >
+          {moveOut.isPending ? "A transferir…" : "Conta → carteira"}
         </Button>
       </div>
+      <p className="mt-1 text-center text-[11px] text-muted-foreground">
+        Move todo o saldo livre no sentido escolhido. Também pode escolher o valor em{" "}
+        <Link to="/exchange/wallet" className="underline">
+          Fundos
+        </Link>
+        .
+      </p>
+
 
       {!marketOpen && (
         <p className="mt-2 text-center text-xs text-amber-400">
