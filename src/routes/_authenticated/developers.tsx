@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/developer/api-keys.functions";
+import { WebhooksPanel } from "@/components/developer/WebhooksPanel";
+import { OAuthPanel } from "@/components/developer/OAuthPanel";
 
 export const Route = createFileRoute("/_authenticated/developers")({
   head: () => ({
@@ -57,10 +59,58 @@ const ENDPOINTS = [
   },
   {
     method: "GET",
+    path: "/api/public/v1/trading/account",
+    desc: "Conta de investidor: saldo disponível, reservado e títulos (trading:read).",
+  },
+  {
+    method: "GET",
+    path: "/api/public/v1/trading/orders",
+    desc: "As suas ordens, do ambiente da chave usada (trading:read).",
+  },
+  {
+    method: "POST",
+    path: "/api/public/v1/trading/orders",
+    desc: "Cria uma ordem de compra ou venda. Exige Idempotency-Key (trading:write).",
+  },
+  {
+    method: "GET",
+    path: "/api/public/v1/trading/orders/{id}",
+    desc: "Estado de uma ordem, incluindo quantidade executada (trading:read).",
+  },
+  {
+    method: "DELETE",
+    path: "/api/public/v1/trading/orders/{id}",
+    desc: "Cancela uma ordem ainda aberta (trading:write).",
+  },
+  {
+    method: "GET",
+    path: "/api/public/v1/trading/trades",
+    desc: "Os seus negócios executados (trading:read).",
+  },
+  {
+    method: "GET",
+    path: "/api/public/v1/stream/market",
+    desc: "Cotações em tempo real por SSE (stream:read). Parâmetros: symbols, interval.",
+  },
+  {
+    method: "POST",
+    path: "/api/public/v1/oauth/token",
+    desc: "Troca de código por token e renovação, para aplicações externas.",
+  },
+  {
+    method: "GET",
     path: "/api/public/v1/openapi.json",
     desc: "Especificação OpenAPI 3.1 completa (aberta, sem chave).",
   },
 ] as const;
+
+const API_SCOPE_OPTIONS = [
+  "market:read",
+  "trading:read",
+  "trading:write",
+  "stream:read",
+] as const;
+type ApiScope = (typeof API_SCOPE_OPTIONS)[number];
 
 function DevelopersPage() {
   const queryClient = useQueryClient();
@@ -70,13 +120,14 @@ function DevelopersPage() {
 
   const [name, setName] = useState("");
   const [environment, setEnvironment] = useState<"SANDBOX" | "LIVE">("SANDBOX");
+  const [scopes, setScopes] = useState<ApiScope[]>(["market:read"]);
   const [issued, setIssued] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const query = useQuery({ queryKey: ["api-keys"], queryFn: () => fetchKeys({}) });
 
   const create = useMutation({
-    mutationFn: () => createKey({ data: { name: name.trim(), environment } }),
+    mutationFn: () => createKey({ data: { name: name.trim(), environment, scopes } }),
     onSuccess: (result) => {
       setIssued(result.token);
       setName("");
@@ -193,6 +244,9 @@ function DevelopersPage() {
               com o ambiente, para poder validar a integração antes de passar a real.
             </p>
           </Panel>
+
+          <WebhooksPanel />
+          <OAuthPanel />
         </div>
 
         <div className="space-y-3">
@@ -226,9 +280,32 @@ function DevelopersPage() {
                   ))}
                 </div>
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-[12px]">Permissões</Label>
+                <div className="flex flex-wrap gap-2">
+                  {API_SCOPE_OPTIONS.map((scope) => (
+                    <Button
+                      key={scope}
+                      type="button"
+                      size="sm"
+                      variant={scopes.includes(scope) ? "default" : "outline"}
+                      className="font-mono text-[11px]"
+                      onClick={() =>
+                        setScopes((current) =>
+                          current.includes(scope)
+                            ? current.filter((item) => item !== scope)
+                            : [...current, scope],
+                        )
+                      }
+                    >
+                      {scope}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <Button
                 className="w-full"
-                disabled={name.trim().length < 2 || create.isPending}
+                disabled={name.trim().length < 2 || scopes.length === 0 || create.isPending}
                 onClick={() => create.mutate()}
               >
                 {create.isPending ? "A criar..." : "Criar chave"}
