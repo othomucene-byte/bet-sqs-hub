@@ -229,5 +229,3 @@ export function getExchangeAdapter(environment: ExchangeEnvironment = "PAPER"): 
   }
   return new SqsMarketAdapter(environment);
 }
-
-}
