@@ -1382,6 +1382,75 @@ export type Database = {
         }
         Relationships: []
       }
+      instant_rounds: {
+        Row: {
+          client_seed: string
+          config: Json
+          created_at: string
+          finished_at: string | null
+          free_bet_id: string | null
+          funding: string
+          game: string
+          id: string
+          multiplier: number
+          nonce: number
+          outcome: Json
+          payout: number | null
+          picks: Json
+          round_number: number
+          server_seed: string
+          server_seed_hash: string
+          stake: number
+          status: string
+          step: number
+          user_id: string
+        }
+        Insert: {
+          client_seed: string
+          config?: Json
+          created_at?: string
+          finished_at?: string | null
+          free_bet_id?: string | null
+          funding?: string
+          game: string
+          id?: string
+          multiplier?: number
+          nonce: number
+          outcome?: Json
+          payout?: number | null
+          picks?: Json
+          round_number?: number
+          server_seed: string
+          server_seed_hash: string
+          stake: number
+          status?: string
+          step?: number
+          user_id: string
+        }
+        Update: {
+          client_seed?: string
+          config?: Json
+          created_at?: string
+          finished_at?: string | null
+          free_bet_id?: string | null
+          funding?: string
+          game?: string
+          id?: string
+          multiplier?: number
+          nonce?: number
+          outcome?: Json
+          payout?: number | null
+          picks?: Json
+          round_number?: number
+          server_seed?: string
+          server_seed_hash?: string
+          stake?: number
+          status?: string
+          step?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_accounts: {
         Row: {
           account_type: string
@@ -3249,6 +3318,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      chicken_multiplier: {
+        Args: { _doors: number; _step: number }
+        Returns: number
+      }
+      chicken_traps: {
+        Args: {
+          _client_seed: string
+          _doors: number
+          _levels: number
+          _nonce: number
+          _server_seed: string
+        }
+        Returns: number[]
+      }
       crash_multiplier_at: {
         Args: { _at?: string; _started_at: string }
         Returns: number
@@ -3568,6 +3651,143 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      instant_cashout: {
+        Args: { _round_id: string; _user_id: string }
+        Returns: {
+          client_seed: string
+          config: Json
+          created_at: string
+          finished_at: string | null
+          free_bet_id: string | null
+          funding: string
+          game: string
+          id: string
+          multiplier: number
+          nonce: number
+          outcome: Json
+          payout: number | null
+          picks: Json
+          round_number: number
+          server_seed: string
+          server_seed_hash: string
+          stake: number
+          status: string
+          step: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "instant_rounds"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      instant_credit: {
+        Args: {
+          _round: Database["public"]["Tables"]["instant_rounds"]["Row"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      instant_debit: {
+        Args: {
+          _round: Database["public"]["Tables"]["instant_rounds"]["Row"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      instant_float: {
+        Args: {
+          _client_seed: string
+          _index: number
+          _nonce: number
+          _server_seed: string
+        }
+        Returns: number
+      }
+      instant_pick: {
+        Args: { _pick: number; _round_id: string; _user_id: string }
+        Returns: {
+          client_seed: string
+          config: Json
+          created_at: string
+          finished_at: string | null
+          free_bet_id: string | null
+          funding: string
+          game: string
+          id: string
+          multiplier: number
+          nonce: number
+          outcome: Json
+          payout: number | null
+          picks: Json
+          round_number: number
+          server_seed: string
+          server_seed_hash: string
+          stake: number
+          status: string
+          step: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "instant_rounds"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      instant_start: {
+        Args: {
+          _config?: Json
+          _free_bet_id?: string
+          _funding?: string
+          _game: string
+          _stake: number
+          _user_id: string
+        }
+        Returns: {
+          client_seed: string
+          config: Json
+          created_at: string
+          finished_at: string | null
+          free_bet_id: string | null
+          funding: string
+          game: string
+          id: string
+          multiplier: number
+          nonce: number
+          outcome: Json
+          payout: number | null
+          picks: Json
+          round_number: number
+          server_seed: string
+          server_seed_hash: string
+          stake: number
+          status: string
+          step: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "instant_rounds"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      lion_multiplier: {
+        Args: { _step: number; _tiles: number; _traps: number }
+        Returns: number
+      }
+      lion_traps: {
+        Args: {
+          _client_seed: string
+          _nonce: number
+          _server_seed: string
+          _tiles: number
+          _traps: number
+        }
+        Returns: number[]
       }
       maybe_grant_loss_recovery: {
         Args: { _user_id: string }
@@ -3942,6 +4162,11 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      wheel_layout: { Args: never; Returns: number[] }
+      wheel_spin: {
+        Args: { _client_seed: string; _nonce: number; _server_seed: string }
+        Returns: Json
       }
     }
     Enums: {
