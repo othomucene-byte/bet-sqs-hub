@@ -10,7 +10,7 @@
  */
 import { GAME_CONFIG, msForMultiplier, multiplierAt, sha256Hex } from "./fair";
 
-export type GameKey = "aviator" | "fish";
+export type GameKey = "aviator" | "fish" | "navigator" | "boost";
 
 export type RoundStatus = "WAITING" | "BETTING" | "RUNNING" | "CRASHED" | "SETTLED";
 

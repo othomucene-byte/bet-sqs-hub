@@ -8,7 +8,9 @@ import { GAME_CONFIG } from "./fair";
  * Estado da ronda corrente. Público (o histórico do Crash é público) e é este
  * pedido que faz avançar a máquina de estados no servidor.
  */
-const gameInput = z.object({ game: z.enum(["aviator", "fish"]).default("aviator") });
+const gameInput = z.object({
+  game: z.enum(["aviator", "fish", "navigator", "boost"]).default("aviator"),
+});
 
 export const getCurrentRound = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => gameInput.parse(input ?? {}))

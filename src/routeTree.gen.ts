@@ -18,11 +18,13 @@ import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
+import { Route as AuthenticatedBoostRouteImport } from './routes/_authenticated/boost'
 import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
 import { Route as AuthenticatedCrashRouteImport } from './routes/_authenticated/crash'
 import { Route as AuthenticatedDevelopersRouteImport } from './routes/_authenticated/developers'
 import { Route as AuthenticatedFishRouteImport } from './routes/_authenticated/fish'
 import { Route as AuthenticatedKycRouteImport } from './routes/_authenticated/kyc'
+import { Route as AuthenticatedNavigatorRouteImport } from './routes/_authenticated/navigator'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
@@ -104,6 +106,11 @@ const AuthenticatedBilhetesRoute = AuthenticatedBilhetesRouteImport.update({
   path: '/bilhetes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBoostRoute = AuthenticatedBoostRouteImport.update({
+  id: '/boost',
+  path: '/boost',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
   id: '/carteira',
   path: '/carteira',
@@ -127,6 +134,11 @@ const AuthenticatedFishRoute = AuthenticatedFishRouteImport.update({
 const AuthenticatedKycRoute = AuthenticatedKycRouteImport.update({
   id: '/kyc',
   path: '/kyc',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNavigatorRoute = AuthenticatedNavigatorRouteImport.update({
+  id: '/navigator',
+  path: '/navigator',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificacoesRoute =
@@ -344,11 +356,13 @@ export interface FileRoutesByFullPath {
   '/pagamentos': typeof PagamentosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
+  '/boost': typeof AuthenticatedBoostRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/navigator': typeof AuthenticatedNavigatorRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
@@ -395,11 +409,13 @@ export interface FileRoutesByTo {
   '/pagamentos': typeof PagamentosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
+  '/boost': typeof AuthenticatedBoostRoute
   '/carteira': typeof AuthenticatedCarteiraRoute
   '/crash': typeof AuthenticatedCrashRoute
   '/developers': typeof AuthenticatedDevelopersRoute
   '/fish': typeof AuthenticatedFishRoute
   '/kyc': typeof AuthenticatedKycRoute
+  '/navigator': typeof AuthenticatedNavigatorRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
@@ -448,11 +464,13 @@ export interface FileRoutesById {
   '/pagamentos': typeof PagamentosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
+  '/_authenticated/boost': typeof AuthenticatedBoostRoute
   '/_authenticated/carteira': typeof AuthenticatedCarteiraRoute
   '/_authenticated/crash': typeof AuthenticatedCrashRoute
   '/_authenticated/developers': typeof AuthenticatedDevelopersRoute
   '/_authenticated/fish': typeof AuthenticatedFishRoute
   '/_authenticated/kyc': typeof AuthenticatedKycRoute
+  '/_authenticated/navigator': typeof AuthenticatedNavigatorRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
@@ -501,11 +519,13 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/admin'
     | '/bilhetes'
+    | '/boost'
     | '/carteira'
     | '/crash'
     | '/developers'
     | '/fish'
     | '/kyc'
+    | '/navigator'
     | '/notificacoes'
     | '/promocoes'
     | '/oauth/autorizar'
@@ -552,11 +572,13 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/admin'
     | '/bilhetes'
+    | '/boost'
     | '/carteira'
     | '/crash'
     | '/developers'
     | '/fish'
     | '/kyc'
+    | '/navigator'
     | '/notificacoes'
     | '/promocoes'
     | '/oauth/autorizar'
@@ -604,11 +626,13 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/_authenticated/admin'
     | '/_authenticated/bilhetes'
+    | '/_authenticated/boost'
     | '/_authenticated/carteira'
     | '/_authenticated/crash'
     | '/_authenticated/developers'
     | '/_authenticated/fish'
     | '/_authenticated/kyc'
+    | '/_authenticated/navigator'
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/oauth/autorizar'
@@ -742,6 +766,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBilhetesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/boost': {
+      id: '/_authenticated/boost'
+      path: '/boost'
+      fullPath: '/boost'
+      preLoaderRoute: typeof AuthenticatedBoostRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/carteira': {
       id: '/_authenticated/carteira'
       path: '/carteira'
@@ -775,6 +806,13 @@ declare module '@tanstack/react-router' {
       path: '/kyc'
       fullPath: '/kyc'
       preLoaderRoute: typeof AuthenticatedKycRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/navigator': {
+      id: '/_authenticated/navigator'
+      path: '/navigator'
+      fullPath: '/navigator'
+      preLoaderRoute: typeof AuthenticatedNavigatorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notificacoes': {
@@ -1046,11 +1084,13 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedBilhetesRoute: typeof AuthenticatedBilhetesRoute
+  AuthenticatedBoostRoute: typeof AuthenticatedBoostRoute
   AuthenticatedCarteiraRoute: typeof AuthenticatedCarteiraRoute
   AuthenticatedCrashRoute: typeof AuthenticatedCrashRoute
   AuthenticatedDevelopersRoute: typeof AuthenticatedDevelopersRoute
   AuthenticatedFishRoute: typeof AuthenticatedFishRoute
   AuthenticatedKycRoute: typeof AuthenticatedKycRoute
+  AuthenticatedNavigatorRoute: typeof AuthenticatedNavigatorRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
   AuthenticatedExchangeHistoryRoute: typeof AuthenticatedExchangeHistoryRoute
@@ -1069,11 +1109,13 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedBilhetesRoute: AuthenticatedBilhetesRoute,
+  AuthenticatedBoostRoute: AuthenticatedBoostRoute,
   AuthenticatedCarteiraRoute: AuthenticatedCarteiraRoute,
   AuthenticatedCrashRoute: AuthenticatedCrashRoute,
   AuthenticatedDevelopersRoute: AuthenticatedDevelopersRoute,
   AuthenticatedFishRoute: AuthenticatedFishRoute,
   AuthenticatedKycRoute: AuthenticatedKycRoute,
+  AuthenticatedNavigatorRoute: AuthenticatedNavigatorRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
   AuthenticatedExchangeHistoryRoute: AuthenticatedExchangeHistoryRoute,
