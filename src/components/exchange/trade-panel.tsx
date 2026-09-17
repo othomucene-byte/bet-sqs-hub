@@ -115,6 +115,29 @@ export function TradePanel(props: Props) {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  /** Transferência nos dois sentidos, com todo o saldo livre do lado de origem. */
+  const makeTransfer = (direction: "IN" | "OUT", amountOf: () => number) => ({
+    mutationFn: async () => {
+      const amount = Number(amountOf().toFixed(2));
+      if (amount <= 0) throw new Error("Sem saldo livre para transferir");
+      return doTransfer({
+        data: { direction, amount, idempotencyKey: `xfer-${crypto.randomUUID()}` },
+      });
+    },
+    onSuccess: async () => {
+      toast.success(
+        direction === "IN" ? "Fundos na conta de mercado" : "Fundos devolvidos à sua carteira",
+      );
+      await queryClient.invalidateQueries({ queryKey: ["exchange-account"] });
+      await queryClient.invalidateQueries({ queryKey: ["wallet-balances"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const moveIn = useMutation(makeTransfer("IN", () => walletBalance));
+  const moveOut = useMutation(makeTransfer("OUT", () => available ?? 0));
+
+
   const marketOpen = props.marketStatus === "OPEN";
   const disabled =
     !marketOpen ||
