@@ -53,12 +53,12 @@ export async function listAssets() {
   });
 }
 
-export async function findAsset(symbol: string) {
+export async function findAsset(symbol: string, environment: "LIVE" | "PAPER" = "LIVE") {
   const client = await db();
   const { data } = await client
     .from("exchange_assets")
     .select("id, symbol, name, environment")
-    .eq("environment", "LIVE")
+    .eq("environment", environment)
     .ilike("symbol", symbol)
     .maybeSingle();
   return data ? { id: data.id as string, symbol: data.symbol as string, name: data.name as string } : null;

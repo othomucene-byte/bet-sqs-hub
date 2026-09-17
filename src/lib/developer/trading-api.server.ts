@@ -126,7 +126,7 @@ export async function apiPlaceOrder(
   callerEnvironment: "SANDBOX" | "LIVE",
 ): Promise<{ error: string; status: number } | { order: Record<string, unknown> }> {
   const { findAsset } = await import("./market-api.server");
-  const asset = await findAsset(input.symbol);
+  const asset = await findAsset(input.symbol, environment);
   if (!asset) return { error: "Instrumento não encontrado." as const, status: 404 };
 
   const adapter = await adapterFor(environment);
