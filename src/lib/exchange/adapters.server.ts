@@ -166,7 +166,7 @@ export class SqsMarketAdapter implements ExchangeAdapter {
   }
 
   async settleTrade(tradeId: string) {
-    // Em simulação a liquidação é instantânea no próprio cruzamento.
+    // A liquidação acontece no próprio cruzamento, com registo no ledger.
     const db = await this.admin();
     const { data } = await db
       .from("trades")
@@ -180,13 +180,20 @@ export class SqsMarketAdapter implements ExchangeAdapter {
   }
 }
 
+/** Compatibilidade: o ambiente de testes usa o mesmo motor próprio. */
+export const PaperTradingAdapter = SqsMarketAdapter;
+
+/**
+ * Encaminhamento externo opcional. Só é usado quando um operador externo for
+ * explicitamente configurado; nunca finge ligação a nenhuma bolsa.
+ */
 export class BvmExchangeAdapter implements ExchangeAdapter {
   readonly name = "BvmExchangeAdapter";
   readonly environment: ExchangeEnvironment = "LIVE";
 
   private pending(): never {
     throw new Error(
-      "Integração com operador/corretora autorizada pendente: sem credenciais e API oficial não são enviadas ordens reais.",
+      "Encaminhamento externo configurado sem credenciais válidas: nenhuma ordem foi enviada.",
     );
   }
 
@@ -210,12 +217,16 @@ export class BvmExchangeAdapter implements ExchangeAdapter {
   }
 }
 
-/** LIVE só é servido por adaptador oficial quando existir; por omissão é PAPER. */
+/**
+ * A Betfcom SQs é o operador do seu próprio mercado: LIVE e PAPER correm no
+ * motor interno. O encaminhamento externo só entra se for pedido por
+ * configuração explícita.
+ */
 export function getExchangeAdapter(environment: ExchangeEnvironment = "PAPER"): ExchangeAdapter {
-  if (environment === "LIVE") {
-    if (process.env["EXCHANGE_LIVE_ADAPTER"] === "BVM") return new BvmExchangeAdapter();
-    // Sem operador configurado, a conta LIVE existe mas não encaminha ordens.
+  if (environment === "LIVE" && process.env["EXCHANGE_LIVE_ADAPTER"] === "BVM") {
     return new BvmExchangeAdapter();
   }
-  return new PaperTradingAdapter("PAPER");
+  return new SqsMarketAdapter(environment);
+}
+
 }
