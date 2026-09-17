@@ -1,12 +1,13 @@
 /**
  * Arquitetura de integração do SQs Exchange.
  *
- * Todo o encaminhamento de ordens passa por um ExchangeAdapter. Hoje existe
- * apenas o PaperTradingAdapter (ambiente de SIMULAÇÃO, cruzamento interno no
- * PostgreSQL). O BvmExchangeAdapter existe como ponto de integração futura e
- * falha explicitamente enquanto não houver operador/corretora autorizada, com
- * credenciais e API oficial — nunca finge ligação a nenhuma bolsa.
+ * A Betfcom SQs opera o seu próprio mercado: o SqsMarketAdapter encaminha as
+ * ordens para o motor interno (order engine, matching engine, livro, trades e
+ * liquidação em PostgreSQL), tanto em PAPER como em LIVE. O BvmExchangeAdapter
+ * existe apenas como ponto de encaminhamento externo opcional e nunca finge
+ * ligação a nenhuma bolsa.
  */
+
 
 export type ExchangeEnvironment = "PAPER" | "LIVE";
 
@@ -66,14 +67,19 @@ function toAdapterOrder(row: OrderRow): AdapterOrder {
   };
 }
 
-/** Simulação: o matching engine é o do PostgreSQL da própria plataforma. */
-export class PaperTradingAdapter implements ExchangeAdapter {
-  readonly name = "PaperTradingAdapter";
+/**
+ * Motor de mercado da própria plataforma: order engine, matching engine, livro,
+ * trades e liquidação correm no PostgreSQL da Betfcom SQs. Serve tanto o
+ * ambiente de testes (PAPER) como o mercado real (LIVE).
+ */
+export class SqsMarketAdapter implements ExchangeAdapter {
+  readonly name = "SqsMarketAdapter";
   readonly environment: ExchangeEnvironment = "PAPER";
 
   constructor(environment: ExchangeEnvironment = "PAPER") {
     this.environment = environment;
   }
+
 
   private async admin() {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -161,7 +167,7 @@ export class PaperTradingAdapter implements ExchangeAdapter {
   }
 
   async settleTrade(tradeId: string) {
-    // Em simulação a liquidação é instantânea no próprio cruzamento.
+    // A liquidação acontece no próprio cruzamento, com registo no ledger.
     const db = await this.admin();
     const { data } = await db
       .from("trades")
@@ -175,13 +181,20 @@ export class PaperTradingAdapter implements ExchangeAdapter {
   }
 }
 
+/** Compatibilidade: o ambiente de testes usa o mesmo motor próprio. */
+export const PaperTradingAdapter = SqsMarketAdapter;
+
+/**
+ * Encaminhamento externo opcional. Só é usado quando um operador externo for
+ * explicitamente configurado; nunca finge ligação a nenhuma bolsa.
+ */
 export class BvmExchangeAdapter implements ExchangeAdapter {
   readonly name = "BvmExchangeAdapter";
   readonly environment: ExchangeEnvironment = "LIVE";
 
   private pending(): never {
     throw new Error(
-      "Integração com operador/corretora autorizada pendente: sem credenciais e API oficial não são enviadas ordens reais.",
+      "Encaminhamento externo configurado sem credenciais válidas: nenhuma ordem foi enviada.",
     );
   }
 
@@ -205,12 +218,14 @@ export class BvmExchangeAdapter implements ExchangeAdapter {
   }
 }
 
-/** LIVE só é servido por adaptador oficial quando existir; por omissão é PAPER. */
+/**
+ * A Betfcom SQs é o operador do seu próprio mercado: LIVE e PAPER correm no
+ * motor interno. O encaminhamento externo só entra se for pedido por
+ * configuração explícita.
+ */
 export function getExchangeAdapter(environment: ExchangeEnvironment = "PAPER"): ExchangeAdapter {
-  if (environment === "LIVE") {
-    if (process.env["EXCHANGE_LIVE_ADAPTER"] === "BVM") return new BvmExchangeAdapter();
-    // Sem operador configurado, a conta LIVE existe mas não encaminha ordens.
+  if (environment === "LIVE" && process.env["EXCHANGE_LIVE_ADAPTER"] === "BVM") {
     return new BvmExchangeAdapter();
   }
-  return new PaperTradingAdapter("PAPER");
+  return new SqsMarketAdapter(environment);
 }
