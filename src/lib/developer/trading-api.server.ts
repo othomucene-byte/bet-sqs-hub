@@ -115,7 +115,7 @@ export type PlaceOrderInput = {
   side: "BUY" | "SELL";
   order_type: "MARKET" | "LIMIT";
   quantity: number;
-  limit_price?: number | null;
+  limit_price?: number | null | undefined;
   idempotency_key: string;
 };
 
@@ -124,7 +124,7 @@ export async function apiPlaceOrder(
   environment: Environment,
   input: PlaceOrderInput,
   callerEnvironment: "SANDBOX" | "LIVE",
-) {
+): Promise<{ error: string; status: number } | { order: Record<string, unknown> }> {
   const { findAsset } = await import("./market-api.server");
   const asset = await findAsset(input.symbol);
   if (!asset) return { error: "Instrumento não encontrado." as const, status: 404 };
