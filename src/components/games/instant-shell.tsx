@@ -36,7 +36,7 @@ export function InstantShell({
   useEffect(() => setMuted(sound.loadMutePreference()), []);
 
   return (
-    <div className="min-h-screen bg-fish-bg text-fish-text">
+    <div className="min-h-screen bg-fish-bg text-fish-foreground">
       <GameTopBar
         title={title}
         accent={accent}
