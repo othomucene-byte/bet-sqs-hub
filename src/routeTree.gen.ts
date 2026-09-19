@@ -52,6 +52,7 @@ import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public
 import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
+import { Route as ApiPublicWebhooksPaytedRouteImport } from './routes/api/public/webhooks/payted'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
 import { Route as ApiPublicV1OauthAuthorizeRouteImport } from './routes/api/public/v1/oauth.authorize'
 import { Route as ApiPublicV1OauthRevokeRouteImport } from './routes/api/public/v1/oauth.revoke'
@@ -297,6 +298,11 @@ const ApiPublicWebhooksNetshopRoute =
     path: '/api/public/webhooks/netshop',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksPaytedRoute = ApiPublicWebhooksPaytedRouteImport.update({
+  id: '/api/public/webhooks/payted',
+  path: '/api/public/webhooks/payted',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   id: '/api/public/v1/market/assets',
   path: '/api/public/v1/market/assets',
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -471,6 +478,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -530,6 +538,7 @@ export interface FileRoutesById {
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
+  '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -589,6 +598,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/webhooks/payted'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -646,6 +656,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/webhooks/payted'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -704,6 +715,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/webhook-dispatch'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
+    | '/api/public/webhooks/payted'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -736,6 +748,7 @@ export interface RootRouteChildren {
   ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
+  ApiPublicWebhooksPaytedRoute: typeof ApiPublicWebhooksPaytedRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
   ApiPublicV1OauthAuthorizeRoute: typeof ApiPublicV1OauthAuthorizeRoute
   ApiPublicV1OauthRevokeRoute: typeof ApiPublicV1OauthRevokeRoute
@@ -1052,6 +1065,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksNetshopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/payted': {
+      id: '/api/public/webhooks/payted'
+      path: '/api/public/webhooks/payted'
+      fullPath: '/api/public/webhooks/payted'
+      preLoaderRoute: typeof ApiPublicWebhooksPaytedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/market/assets': {
       id: '/api/public/v1/market/assets'
       path: '/api/public/v1/market/assets'
@@ -1264,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
+  ApiPublicWebhooksPaytedRoute: ApiPublicWebhooksPaytedRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
   ApiPublicV1OauthAuthorizeRoute: ApiPublicV1OauthAuthorizeRoute,
   ApiPublicV1OauthRevokeRoute: ApiPublicV1OauthRevokeRoute,

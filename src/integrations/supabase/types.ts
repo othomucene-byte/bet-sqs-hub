@@ -2456,8 +2456,10 @@ export type Database = {
           id: string
           metadata: Json
           method: string
+          net_amount: number | null
           payer_identifier: string | null
           provider: string
+          provider_fee: number
           provider_transaction_id: string | null
           reference: string
           status: string
@@ -2473,8 +2475,10 @@ export type Database = {
           id?: string
           metadata?: Json
           method: string
+          net_amount?: number | null
           payer_identifier?: string | null
           provider?: string
+          provider_fee?: number
           provider_transaction_id?: string | null
           reference: string
           status?: string
@@ -2490,8 +2494,10 @@ export type Database = {
           id?: string
           metadata?: Json
           method?: string
+          net_amount?: number | null
           payer_identifier?: string | null
           provider?: string
+          provider_fee?: number
           provider_transaction_id?: string | null
           reference?: string
           status?: string
@@ -2508,6 +2514,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payted_webhook_events: {
+        Row: {
+          created_at: string
+          event: string
+          handled: boolean
+          id: string
+          note: string | null
+          payload: Json
+          payted_payment_id: string | null
+          received_at: string
+          reference: string | null
+          signature_valid: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          handled?: boolean
+          id?: string
+          note?: string | null
+          payload?: Json
+          payted_payment_id?: string | null
+          received_at?: string
+          reference?: string | null
+          signature_valid?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          handled?: boolean
+          id?: string
+          note?: string | null
+          payload?: Json
+          payted_payment_id?: string | null
+          received_at?: string
+          reference?: string | null
+          signature_valid?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       positions: {
         Row: {

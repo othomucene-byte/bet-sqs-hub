@@ -101,15 +101,27 @@ function normalizeMsisdn(method: Method, raw: string): string | null {
   return `+258${value.replace(/^\+?258/, "")}`;
 }
 
+/**
+ * Payment router: e-Mola é servido pela PayTED; os restantes métodos continuam
+ * exactamente como estão, na NetShop.
+ */
+function paytedHandlesEmola(): boolean {
+  return Boolean(
+    process.env["PAYTED_SECRET_KEY"] &&
+      process.env["PAYTED_APP_ID"] &&
+      process.env["PAYTED_WEBHOOK_SECRET"],
+  );
+}
+
 /** Estado da integração, lido do servidor — nunca presumido no browser. */
 export const getPaymentsStatus = createServerFn({ method: "GET" }).handler(async () => {
   const methods = {
     mpesa: isMethodConfigured("mpesa"),
-    emola: isMethodConfigured("emola"),
+    emola: paytedHandlesEmola() || isMethodConfigured("emola"),
     mkesh: isMethodConfigured("mkesh"),
     card: isMethodConfigured("card"),
   };
-  const configured = isConfigured();
+  const configured = isConfigured() || paytedHandlesEmola();
   if (!configured) {
     return {
       configured: false,
@@ -134,6 +146,15 @@ export const createDepositIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
+    // e-Mola → PayTED (gateway dedicado). Restantes métodos → NetShop.
+    if (data.method === "emola" && paytedHandlesEmola()) {
+      const payted = await import("@/lib/payments/payted.server");
+      return payted.paytedDeposit({
+        userId: context.userId,
+        amount: data.amount,
+        payerIdentifier: data.payerIdentifier,
+      });
+    }
     if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (data.amount < MIN_CHARGE[data.method]) return { ok: false, error: "amount_below_minimum" };
 
@@ -221,6 +242,15 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
+    // Levantamento e-Mola → PayTED. M-Pesa e restantes → NetShop, sem alteração.
+    if (data.method === "emola" && paytedHandlesEmola()) {
+      const payted = await import("@/lib/payments/payted.server");
+      return payted.paytedWithdrawal({
+        userId: context.userId,
+        amount: data.amount,
+        payerIdentifier: data.payerIdentifier,
+      });
+    }
     if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (!PAYOUT_METHODS.has(data.method)) return { ok: false, error: "method_unavailable" };
     if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
@@ -327,7 +357,7 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
       const { data: intent } = await context.supabase
         .from("payment_intents")
         .select(
-          "id, wallet_id, direction, method, amount, status, reference, provider_transaction_id",
+          "id, user_id, wallet_id, direction, provider, method, amount, status, reference, provider_transaction_id",
         )
         .eq("reference", data.reference)
         .eq("user_id", context.userId)
@@ -335,6 +365,22 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
       if (!intent) return { status: "unknown" };
       if (intent.status === "succeeded") return { status: "succeeded" };
       if (intent.status === "expired") return { status: "failed" };
+
+      // Intenções PayTED reconciliam contra a PayTED; NetShop continua igual.
+      if (intent.provider === "payted") {
+        const payted = await import("@/lib/payments/payted.server");
+        return payted.syncPaytedIntent({
+          id: intent.id as string,
+          user_id: intent.user_id as string,
+          wallet_id: intent.wallet_id as string,
+          direction: intent.direction as string,
+          amount: intent.amount as number,
+          reference: intent.reference as string,
+          status: intent.status as string,
+          provider_transaction_id: (intent.provider_transaction_id as string | null) ?? null,
+        });
+      }
+
 
       const netshop = await import("@/lib/payments/netshop.server");
       const lookupIds = [intent.reference as string];
