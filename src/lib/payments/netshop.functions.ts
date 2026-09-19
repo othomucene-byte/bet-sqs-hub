@@ -146,6 +146,15 @@ export const createDepositIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
+    // e-Mola → PayTED (gateway dedicado). Restantes métodos → NetShop.
+    if (data.method === "emola" && paytedHandlesEmola()) {
+      const payted = await import("@/lib/payments/payted.server");
+      return payted.paytedDeposit({
+        userId: context.userId,
+        amount: data.amount,
+        payerIdentifier: data.payerIdentifier,
+      });
+    }
     if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (data.amount < MIN_CHARGE[data.method]) return { ok: false, error: "amount_below_minimum" };
 
@@ -233,6 +242,15 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => intentInput.parse(input))
   .handler(async ({ data, context }): Promise<IntentResult> => {
+    // Levantamento e-Mola → PayTED. M-Pesa e restantes → NetShop, sem alteração.
+    if (data.method === "emola" && paytedHandlesEmola()) {
+      const payted = await import("@/lib/payments/payted.server");
+      return payted.paytedWithdrawal({
+        userId: context.userId,
+        amount: data.amount,
+        payerIdentifier: data.payerIdentifier,
+      });
+    }
     if (!isMethodConfigured(data.method)) return { ok: false, error: "not_configured" };
     if (!PAYOUT_METHODS.has(data.method)) return { ok: false, error: "method_unavailable" };
     if (!data.payerIdentifier) return { ok: false, error: "identifier_required" };
