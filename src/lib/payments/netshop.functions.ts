@@ -101,15 +101,27 @@ function normalizeMsisdn(method: Method, raw: string): string | null {
   return `+258${value.replace(/^\+?258/, "")}`;
 }
 
+/**
+ * Payment router: e-Mola é servido pela PayTED; os restantes métodos continuam
+ * exactamente como estão, na NetShop.
+ */
+function paytedHandlesEmola(): boolean {
+  return Boolean(
+    process.env["PAYTED_SECRET_KEY"] &&
+      process.env["PAYTED_APP_ID"] &&
+      process.env["PAYTED_WEBHOOK_SECRET"],
+  );
+}
+
 /** Estado da integração, lido do servidor — nunca presumido no browser. */
 export const getPaymentsStatus = createServerFn({ method: "GET" }).handler(async () => {
   const methods = {
     mpesa: isMethodConfigured("mpesa"),
-    emola: isMethodConfigured("emola"),
+    emola: paytedHandlesEmola() || isMethodConfigured("emola"),
     mkesh: isMethodConfigured("mkesh"),
     card: isMethodConfigured("card"),
   };
-  const configured = isConfigured();
+  const configured = isConfigured() || paytedHandlesEmola();
   if (!configured) {
     return {
       configured: false,
