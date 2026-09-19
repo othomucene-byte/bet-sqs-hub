@@ -357,7 +357,7 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
       const { data: intent } = await context.supabase
         .from("payment_intents")
         .select(
-          "id, wallet_id, direction, method, amount, status, reference, provider_transaction_id",
+          "id, user_id, wallet_id, direction, provider, method, amount, status, reference, provider_transaction_id",
         )
         .eq("reference", data.reference)
         .eq("user_id", context.userId)
@@ -365,6 +365,22 @@ export const syncPaymentIntent = createServerFn({ method: "POST" })
       if (!intent) return { status: "unknown" };
       if (intent.status === "succeeded") return { status: "succeeded" };
       if (intent.status === "expired") return { status: "failed" };
+
+      // Intenções PayTED reconciliam contra a PayTED; NetShop continua igual.
+      if (intent.provider === "payted") {
+        const payted = await import("@/lib/payments/payted.server");
+        return payted.syncPaytedIntent({
+          id: intent.id as string,
+          user_id: intent.user_id as string,
+          wallet_id: intent.wallet_id as string,
+          direction: intent.direction as string,
+          amount: intent.amount as number,
+          reference: intent.reference as string,
+          status: intent.status as string,
+          provider_transaction_id: (intent.provider_transaction_id as string | null) ?? null,
+        });
+      }
+
 
       const netshop = await import("@/lib/payments/netshop.server");
       const lookupIds = [intent.reference as string];
