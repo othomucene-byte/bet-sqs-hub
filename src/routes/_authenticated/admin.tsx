@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
+import { PaytedPanel } from "@/components/payments/payted-panel";
 import { syncSportsNow } from "@/lib/sports/sports.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,6 +118,7 @@ function AdminPage() {
             <TabsTrigger value="ordens">Ordens</TabsTrigger>
             <TabsTrigger value="investimentos">Investimentos</TabsTrigger>
             <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
+            <TabsTrigger value="payted">PayTED e-Mola</TabsTrigger>
             <TabsTrigger value="risco">Risco</TabsTrigger>
             <TabsTrigger value="empresas">Candidaturas</TabsTrigger>
             <TabsTrigger value="desportos">Desportos</TabsTrigger>
@@ -133,6 +135,9 @@ function AdminPage() {
           </TabsContent>
           <TabsContent value="pagamentos" className="mt-4">
             <PaymentsTable />
+          </TabsContent>
+          <TabsContent value="payted" className="mt-4">
+            <PaytedPanel />
           </TabsContent>
           <TabsContent value="risco" className="mt-4">
             <RiskTable />

@@ -283,13 +283,30 @@ export const reconcilePayment = createServerFn({ method: "POST" })
     const { data: intent, error } = await admin
       .from("payment_intents")
       .select(
-        "id, wallet_id, direction, method, amount, status, reference, provider_transaction_id",
+        "id, user_id, wallet_id, direction, provider, method, amount, status, reference, provider_transaction_id",
       )
       .eq("reference", data.reference)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!intent) throw new Error("Pagamento não encontrado.");
     if (intent.status === "succeeded") return { status: "succeeded" as const, message: null };
+
+    // Intenções e-Mola servidas pela PayTED reconciliam contra a PayTED.
+    if (intent.provider === "payted") {
+      const { syncPaytedIntent } = await import("@/lib/payments/payted.server");
+      const result = await syncPaytedIntent({
+        id: intent.id as string,
+        user_id: intent.user_id as string,
+        wallet_id: intent.wallet_id as string,
+        direction: intent.direction as string,
+        amount: intent.amount as number,
+        reference: intent.reference as string,
+        status: intent.status as string,
+        provider_transaction_id: (intent.provider_transaction_id as string | null) ?? null,
+      });
+      return { status: result.status, message: result.message ?? null };
+    }
+
 
     const netshop = await import("@/lib/payments/netshop.server");
     const ids = [intent.reference as string];
