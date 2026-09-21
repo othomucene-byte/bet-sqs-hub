@@ -85,6 +85,20 @@ function message(data: Json): string | null {
   return null;
 }
 
+/** Erros de validação estilo Laravel: { message, errors: { campo: [msg] } }. */
+function validationDetails(data: Json): string | null {
+  const errors = asObject(data["errors"]);
+  if (!errors) return null;
+  const parts: string[] = [];
+  for (const [field, msgs] of Object.entries(errors)) {
+    const list = Array.isArray(msgs) ? msgs : [msgs];
+    for (const m of list) {
+      if (typeof m === "string" && m.trim()) parts.push(`${field}: ${m.trim()}`);
+    }
+  }
+  return parts.length ? parts.join(" | ").slice(0, 400) : null;
+}
+
 /** Estados PayTED: `pago`/`completed` pago; `erro`/`failed`/`cancelled` falhado. */
 export function normalizePaytedStatus(raw: string | null): PaytedStatus {
   const value = (raw ?? "").toLowerCase();
