@@ -428,12 +428,13 @@ function PagamentosPage() {
               : "A configurar"}
           </Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            Gateway de pagamentos Netshop
+            Gateways de pagamento
           </h1>
           <p className="text-muted-foreground">
             Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh e cartão
             Visa/Mastercard. Sem taxas para o cliente — o saldo só muda após confirmação assinada
-            pelo gateway ou reconciliação direta com a NetShop.
+            pelo gateway ou reconciliação direta. e-Mola é processado pela PayTED; M-Pesa, mKesh e
+            cartão pela NetShop.
           </p>
         </header>
 
