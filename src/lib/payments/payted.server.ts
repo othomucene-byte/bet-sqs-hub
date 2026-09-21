@@ -147,14 +147,15 @@ async function request(
 
     const data = (await res.json().catch(() => ({}))) as Json;
     if (!res.ok) {
+      const details = validationDetails(data);
       // Nunca registamos chaves nem PIN: apenas rota, código e mensagem.
-      console.error("payted api error", method, path, res.status, message(data) ?? "");
+      console.error("payted api error", method, path, res.status, message(data) ?? "", details ?? "");
       const error = asObject(data["error"]);
       return {
         ok: false,
         httpStatus: res.status,
         code: str(data["codigo_erro"]) ?? (error ? str(error["code"]) : null) ?? str(data["error"]),
-        message: message(data),
+        message: details ?? message(data),
       };
     }
     return { ok: true, ...parseOperation(data) };
