@@ -2786,52 +2786,82 @@ export type Database = {
           away_logo: string | null
           away_score: number | null
           away_team: string
+          away_team_external_id: string | null
           commence_at: string
           competition_id: string
           created_at: string
+          elapsed_minutes: number | null
+          extra_minutes: number | null
           home_logo: string | null
           home_score: number | null
           home_team: string
+          home_team_external_id: string | null
           id: string
+          live_updated_at: string | null
           odds_updated_at: string | null
+          period: string | null
+          provider: string
           provider_event_id: string
+          provider_status: string | null
+          round: string | null
           settled_at: string | null
           status: string
           updated_at: string
+          venue: string | null
         }
         Insert: {
           away_logo?: string | null
           away_score?: number | null
           away_team: string
+          away_team_external_id?: string | null
           commence_at: string
           competition_id: string
           created_at?: string
+          elapsed_minutes?: number | null
+          extra_minutes?: number | null
           home_logo?: string | null
           home_score?: number | null
           home_team: string
+          home_team_external_id?: string | null
           id?: string
+          live_updated_at?: string | null
           odds_updated_at?: string | null
+          period?: string | null
+          provider?: string
           provider_event_id: string
+          provider_status?: string | null
+          round?: string | null
           settled_at?: string | null
           status?: string
           updated_at?: string
+          venue?: string | null
         }
         Update: {
           away_logo?: string | null
           away_score?: number | null
           away_team?: string
+          away_team_external_id?: string | null
           commence_at?: string
           competition_id?: string
           created_at?: string
+          elapsed_minutes?: number | null
+          extra_minutes?: number | null
           home_logo?: string | null
           home_score?: number | null
           home_team?: string
+          home_team_external_id?: string | null
           id?: string
+          live_updated_at?: string | null
           odds_updated_at?: string | null
+          period?: string | null
+          provider?: string
           provider_event_id?: string
+          provider_status?: string | null
+          round?: string | null
           settled_at?: string | null
           status?: string
           updated_at?: string
+          venue?: string | null
         }
         Relationships: [
           {
@@ -2839,6 +2869,126 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "sport_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sport_live_updates: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: number
+          kind: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: number
+          kind: string
+          payload?: Json
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: number
+          kind?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_live_updates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sport_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sport_match_events: {
+        Row: {
+          assist: string | null
+          comments: string | null
+          created_at: string
+          detail: string | null
+          event_id: string
+          external_key: string
+          extra_minute: number | null
+          id: string
+          kind: string
+          minute: number | null
+          player: string | null
+          team_side: string | null
+        }
+        Insert: {
+          assist?: string | null
+          comments?: string | null
+          created_at?: string
+          detail?: string | null
+          event_id: string
+          external_key: string
+          extra_minute?: number | null
+          id?: string
+          kind: string
+          minute?: number | null
+          player?: string | null
+          team_side?: string | null
+        }
+        Update: {
+          assist?: string | null
+          comments?: string | null
+          created_at?: string
+          detail?: string | null
+          event_id?: string
+          external_key?: string
+          extra_minute?: number | null
+          id?: string
+          kind?: string
+          minute?: number | null
+          player?: string | null
+          team_side?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_match_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sport_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sport_match_stats: {
+        Row: {
+          event_id: string
+          id: string
+          metric: string
+          team_side: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          metric: string
+          team_side: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          metric?: string
+          team_side?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_match_stats_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sport_events"
             referencedColumns: ["id"]
           },
         ]
@@ -2887,6 +3037,39 @@ export type Database = {
           },
         ]
       }
+      sport_teams: {
+        Row: {
+          country: string | null
+          created_at: string
+          external_id: string
+          id: string
+          logo: string | null
+          name: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          external_id: string
+          id?: string
+          logo?: string | null
+          name: string
+          provider?: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          external_id?: string
+          id?: string
+          logo?: string | null
+          name?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sports: {
         Row: {
           active: boolean
@@ -2914,6 +3097,99 @@ export type Database = {
           key?: string
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sports_provider_config: {
+        Row: {
+          active: boolean
+          catalog_interval_seconds: number
+          created_at: string
+          daily_request_budget: number
+          enabled_sports: Json
+          id: string
+          last_catalog_sync_at: string | null
+          last_error: string | null
+          last_error_at: string | null
+          last_live_sync_at: string | null
+          live_budget_share: number
+          live_interval_seconds: number
+          provider: string
+          requests_day: string
+          requests_today: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          catalog_interval_seconds?: number
+          created_at?: string
+          daily_request_budget?: number
+          enabled_sports?: Json
+          id?: string
+          last_catalog_sync_at?: string | null
+          last_error?: string | null
+          last_error_at?: string | null
+          last_live_sync_at?: string | null
+          live_budget_share?: number
+          live_interval_seconds?: number
+          provider?: string
+          requests_day?: string
+          requests_today?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          catalog_interval_seconds?: number
+          created_at?: string
+          daily_request_budget?: number
+          enabled_sports?: Json
+          id?: string
+          last_catalog_sync_at?: string | null
+          last_error?: string | null
+          last_error_at?: string | null
+          last_live_sync_at?: string | null
+          live_budget_share?: number
+          live_interval_seconds?: number
+          provider?: string
+          requests_day?: string
+          requests_today?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sports_sync_log: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          events_inserted: number
+          id: number
+          kind: string
+          matches_touched: number
+          ok: boolean
+          requests_used: number
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          events_inserted?: number
+          id?: number
+          kind: string
+          matches_touched?: number
+          ok?: boolean
+          requests_used?: number
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          events_inserted?: number
+          id?: number
+          kind?: string
+          matches_touched?: number
+          ok?: boolean
+          requests_used?: number
         }
         Relationships: []
       }
@@ -4169,6 +4445,13 @@ export type Database = {
           _selection: string
         }
         Returns: string
+      }
+      sports_consume_requests: {
+        Args: { _count: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
+        }[]
       }
       transfer_between_wallets: {
         Args: {
