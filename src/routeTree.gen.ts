@@ -45,6 +45,7 @@ import { Route as AuthenticatedInvestidorIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedInvestidorExtratoRouteImport } from './routes/_authenticated/investidor.extrato'
 import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_authenticated/investidor.ordens'
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
+import { Route as ApiPublicPaytedProbeRouteImport } from './routes/api/public/payted-probe'
 import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
@@ -259,6 +260,11 @@ const AuthenticatedInvestidorRendimentosRoute =
     path: '/investidor/rendimentos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicPaytedProbeRoute = ApiPublicPaytedProbeRouteImport.update({
+  id: '/api/public/payted-probe',
+  path: '/api/public/payted-probe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExchangeAssetSymbolRoute = ExchangeAssetSymbolRouteImport.update({
   id: '/exchange/asset/$symbol',
   path: '/exchange/asset/$symbol',
@@ -412,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
@@ -470,6 +477,7 @@ export interface FileRoutesByTo {
   '/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
@@ -530,6 +538,7 @@ export interface FileRoutesById {
   '/_authenticated/investidor/extrato': typeof AuthenticatedInvestidorExtratoRoute
   '/_authenticated/investidor/ordens': typeof AuthenticatedInvestidorOrdensRoute
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
+  '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
@@ -590,6 +599,7 @@ export interface FileRouteTypes {
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
+    | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
     | '/investidor/'
     | '/api/public/cron/bonus-expiry'
@@ -648,6 +658,7 @@ export interface FileRouteTypes {
     | '/investidor/extrato'
     | '/investidor/ordens'
     | '/investidor/rendimentos'
+    | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
     | '/investidor'
     | '/api/public/cron/bonus-expiry'
@@ -707,6 +718,7 @@ export interface FileRouteTypes {
     | '/_authenticated/investidor/extrato'
     | '/_authenticated/investidor/ordens'
     | '/_authenticated/investidor/rendimentos'
+    | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
     | '/_authenticated/investidor/'
     | '/api/public/cron/bonus-expiry'
@@ -741,6 +753,7 @@ export interface RootRouteChildren {
   PagamentosRoute: typeof PagamentosRoute
   OauthAutorizarRoute: typeof OauthAutorizarRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
+  ApiPublicPaytedProbeRoute: typeof ApiPublicPaytedProbeRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
@@ -1016,6 +1029,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvestidorRendimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/payted-probe': {
+      id: '/api/public/payted-probe'
+      path: '/api/public/payted-probe'
+      fullPath: '/api/public/payted-probe'
+      preLoaderRoute: typeof ApiPublicPaytedProbeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exchange/asset/$symbol': {
       id: '/exchange/asset/$symbol'
       path: '/exchange/asset/$symbol'
@@ -1277,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   PagamentosRoute: PagamentosRoute,
   OauthAutorizarRoute: OauthAutorizarRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
+  ApiPublicPaytedProbeRoute: ApiPublicPaytedProbeRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
