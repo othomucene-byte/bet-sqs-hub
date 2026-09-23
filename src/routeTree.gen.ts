@@ -49,8 +49,10 @@ import { Route as ApiPublicPaytedProbeRouteImport } from './routes/api/public/pa
 import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
+import { Route as ApiPublicCronSportsLiveRouteImport } from './routes/api/public/cron/sports-live'
 import { Route as ApiPublicCronSportsSyncRouteImport } from './routes/api/public/cron/sports-sync'
 import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
+import { Route as ApiPublicSportsStreamRouteImport } from './routes/api/public/sports/stream'
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicWebhooksPaytedRouteImport } from './routes/api/public/webhooks/payted'
@@ -281,6 +283,11 @@ const ApiPublicCronExchangeAiRoute = ApiPublicCronExchangeAiRouteImport.update({
   path: '/api/public/cron/exchange-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronSportsLiveRoute = ApiPublicCronSportsLiveRouteImport.update({
+  id: '/api/public/cron/sports-live',
+  path: '/api/public/cron/sports-live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronSportsSyncRoute = ApiPublicCronSportsSyncRouteImport.update({
   id: '/api/public/cron/sports-sync',
   path: '/api/public/cron/sports-sync',
@@ -292,6 +299,11 @@ const ApiPublicCronWebhookDispatchRoute =
     path: '/api/public/cron/webhook-dispatch',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSportsStreamRoute = ApiPublicSportsStreamRouteImport.update({
+  id: '/api/public/sports/stream',
+  path: '/api/public/sports/stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1OpenapiDotjsonRoute =
   ApiPublicV1OpenapiDotjsonRouteImport.update({
     id: '/api/public/v1/openapi.json',
@@ -423,8 +435,10 @@ export interface FileRoutesByFullPath {
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
+  '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
+  '/api/public/sports/stream': typeof ApiPublicSportsStreamRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
@@ -482,8 +496,10 @@ export interface FileRoutesByTo {
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
+  '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
+  '/api/public/sports/stream': typeof ApiPublicSportsStreamRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
@@ -543,8 +559,10 @@ export interface FileRoutesById {
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
+  '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
   '/api/public/cron/sports-sync': typeof ApiPublicCronSportsSyncRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
+  '/api/public/sports/stream': typeof ApiPublicSportsStreamRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
@@ -604,8 +622,10 @@ export interface FileRouteTypes {
     | '/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
+    | '/api/public/cron/sports-live'
     | '/api/public/cron/sports-sync'
     | '/api/public/cron/webhook-dispatch'
+    | '/api/public/sports/stream'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
@@ -663,8 +683,10 @@ export interface FileRouteTypes {
     | '/investidor'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
+    | '/api/public/cron/sports-live'
     | '/api/public/cron/sports-sync'
     | '/api/public/cron/webhook-dispatch'
+    | '/api/public/sports/stream'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
@@ -723,8 +745,10 @@ export interface FileRouteTypes {
     | '/_authenticated/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
+    | '/api/public/cron/sports-live'
     | '/api/public/cron/sports-sync'
     | '/api/public/cron/webhook-dispatch'
+    | '/api/public/sports/stream'
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
@@ -757,8 +781,10 @@ export interface RootRouteChildren {
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
+  ApiPublicCronSportsLiveRoute: typeof ApiPublicCronSportsLiveRoute
   ApiPublicCronSportsSyncRoute: typeof ApiPublicCronSportsSyncRoute
   ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
+  ApiPublicSportsStreamRoute: typeof ApiPublicSportsStreamRoute
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicWebhooksPaytedRoute: typeof ApiPublicWebhooksPaytedRoute
@@ -1057,6 +1083,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronExchangeAiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/sports-live': {
+      id: '/api/public/cron/sports-live'
+      path: '/api/public/cron/sports-live'
+      fullPath: '/api/public/cron/sports-live'
+      preLoaderRoute: typeof ApiPublicCronSportsLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/sports-sync': {
       id: '/api/public/cron/sports-sync'
       path: '/api/public/cron/sports-sync'
@@ -1069,6 +1102,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/webhook-dispatch'
       fullPath: '/api/public/cron/webhook-dispatch'
       preLoaderRoute: typeof ApiPublicCronWebhookDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sports/stream': {
+      id: '/api/public/sports/stream'
+      path: '/api/public/sports/stream'
+      fullPath: '/api/public/sports/stream'
+      preLoaderRoute: typeof ApiPublicSportsStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/openapi.json': {
@@ -1301,8 +1341,10 @@ const rootRouteChildren: RootRouteChildren = {
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
+  ApiPublicCronSportsLiveRoute: ApiPublicCronSportsLiveRoute,
   ApiPublicCronSportsSyncRoute: ApiPublicCronSportsSyncRoute,
   ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,
+  ApiPublicSportsStreamRoute: ApiPublicSportsStreamRoute,
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicWebhooksPaytedRoute: ApiPublicWebhooksPaytedRoute,
