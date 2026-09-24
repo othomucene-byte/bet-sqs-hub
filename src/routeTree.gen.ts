@@ -36,6 +36,7 @@ import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
 import { Route as SportsIndexRouteImport } from './routes/sports.index'
 import { Route as SportsLiveRouteImport } from './routes/sports.live'
 import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
+import { Route as AuthenticatedAdminSportsRouteImport } from './routes/_authenticated/admin.sports'
 import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeListarRouteImport } from './routes/_authenticated/exchange.listar'
 import { Route as AuthenticatedExchangeOrdersRouteImport } from './routes/_authenticated/exchange.orders'
@@ -207,6 +208,12 @@ const AuthenticatedAdminExchangeRoute =
   AuthenticatedAdminExchangeRouteImport.update({
     id: '/exchange',
     path: '/exchange',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSportsRoute =
+  AuthenticatedAdminSportsRouteImport.update({
+    id: '/sports',
+    path: '/sports',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedExchangeHistoryRoute =
@@ -440,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/exchange/': typeof ExchangeIndexRoute
   '/sports/': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/admin/sports': typeof AuthenticatedAdminSportsRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/listar': typeof AuthenticatedExchangeListarRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
@@ -504,6 +512,7 @@ export interface FileRoutesByTo {
   '/exchange': typeof ExchangeIndexRoute
   '/sports': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/admin/sports': typeof AuthenticatedAdminSportsRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/listar': typeof AuthenticatedExchangeListarRoute
   '/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
@@ -570,6 +579,7 @@ export interface FileRoutesById {
   '/exchange/': typeof ExchangeIndexRoute
   '/sports/': typeof SportsIndexRoute
   '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
+  '/_authenticated/admin/sports': typeof AuthenticatedAdminSportsRoute
   '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/_authenticated/exchange/listar': typeof AuthenticatedExchangeListarRoute
   '/_authenticated/exchange/orders': typeof AuthenticatedExchangeOrdersRoute
@@ -636,6 +646,7 @@ export interface FileRouteTypes {
     | '/exchange/'
     | '/sports/'
     | '/admin/exchange'
+    | '/admin/sports'
     | '/exchange/history'
     | '/exchange/listar'
     | '/exchange/orders'
@@ -700,6 +711,7 @@ export interface FileRouteTypes {
     | '/exchange'
     | '/sports'
     | '/admin/exchange'
+    | '/admin/sports'
     | '/exchange/history'
     | '/exchange/listar'
     | '/exchange/orders'
@@ -765,6 +777,7 @@ export interface FileRouteTypes {
     | '/exchange/'
     | '/sports/'
     | '/_authenticated/admin/exchange'
+    | '/_authenticated/admin/sports'
     | '/_authenticated/exchange/history'
     | '/_authenticated/exchange/listar'
     | '/_authenticated/exchange/orders'
@@ -1031,6 +1044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminExchangeRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/sports': {
+      id: '/_authenticated/admin/sports'
+      path: '/sports'
+      fullPath: '/admin/sports'
+      preLoaderRoute: typeof AuthenticatedAdminSportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/exchange/history': {
       id: '/_authenticated/exchange/history'
       path: '/exchange/history'
@@ -1288,10 +1308,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminExchangeRoute: typeof AuthenticatedAdminExchangeRoute
+  AuthenticatedAdminSportsRoute: typeof AuthenticatedAdminSportsRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminExchangeRoute: AuthenticatedAdminExchangeRoute,
+  AuthenticatedAdminSportsRoute: AuthenticatedAdminSportsRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
