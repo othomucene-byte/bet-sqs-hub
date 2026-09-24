@@ -34,6 +34,7 @@ import { Route as AuthenticatedRodaRouteImport } from './routes/_authenticated/r
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
 import { Route as SportsIndexRouteImport } from './routes/sports.index'
+import { Route as SportsLiveRouteImport } from './routes/sports.live'
 import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
 import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeListarRouteImport } from './routes/_authenticated/exchange.listar'
@@ -48,6 +49,7 @@ import { Route as AuthenticatedInvestidorOrdensRouteImport } from './routes/_aut
 import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes/_authenticated/investidor.rendimentos'
 import { Route as ApiPublicPaytedProbeRouteImport } from './routes/api/public/payted-probe'
 import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
+import { Route as SportsMatchesIdRouteImport } from './routes/sports.matches.$id'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsLiveRouteImport } from './routes/api/public/cron/sports-live'
@@ -196,6 +198,11 @@ const SportsIndexRoute = SportsIndexRouteImport.update({
   path: '/sports/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SportsLiveRoute = SportsLiveRouteImport.update({
+  id: '/sports/live',
+  path: '/sports/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminExchangeRoute =
   AuthenticatedAdminExchangeRouteImport.update({
     id: '/exchange',
@@ -276,6 +283,11 @@ const ApiPublicPaytedProbeRoute = ApiPublicPaytedProbeRouteImport.update({
 const ExchangeAssetSymbolRoute = ExchangeAssetSymbolRouteImport.update({
   id: '/exchange/asset/$symbol',
   path: '/exchange/asset/$symbol',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SportsMatchesIdRoute = SportsMatchesIdRouteImport.update({
+  id: '/sports/matches/$id',
+  path: '/sports/matches/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCronBonusExpiryRoute =
@@ -424,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
+  '/sports/live': typeof SportsLiveRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/sports/': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -439,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
+  '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
@@ -486,6 +500,7 @@ export interface FileRoutesByTo {
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
+  '/sports/live': typeof SportsLiveRoute
   '/exchange': typeof ExchangeIndexRoute
   '/sports': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -501,6 +516,7 @@ export interface FileRoutesByTo {
   '/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
+  '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
@@ -550,6 +566,7 @@ export interface FileRoutesById {
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
+  '/sports/live': typeof SportsLiveRoute
   '/exchange/': typeof ExchangeIndexRoute
   '/sports/': typeof SportsIndexRoute
   '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
@@ -565,6 +582,7 @@ export interface FileRoutesById {
   '/_authenticated/investidor/rendimentos': typeof AuthenticatedInvestidorRendimentosRoute
   '/api/public/payted-probe': typeof ApiPublicPaytedProbeRoute
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
+  '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
@@ -614,6 +632,7 @@ export interface FileRouteTypes {
     | '/promocoes'
     | '/roda'
     | '/oauth/autorizar'
+    | '/sports/live'
     | '/exchange/'
     | '/sports/'
     | '/admin/exchange'
@@ -629,6 +648,7 @@ export interface FileRouteTypes {
     | '/investidor/rendimentos'
     | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
+    | '/sports/matches/$id'
     | '/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
@@ -676,6 +696,7 @@ export interface FileRouteTypes {
     | '/promocoes'
     | '/roda'
     | '/oauth/autorizar'
+    | '/sports/live'
     | '/exchange'
     | '/sports'
     | '/admin/exchange'
@@ -691,6 +712,7 @@ export interface FileRouteTypes {
     | '/investidor/rendimentos'
     | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
+    | '/sports/matches/$id'
     | '/investidor'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
@@ -739,6 +761,7 @@ export interface FileRouteTypes {
     | '/_authenticated/promocoes'
     | '/_authenticated/roda'
     | '/oauth/autorizar'
+    | '/sports/live'
     | '/exchange/'
     | '/sports/'
     | '/_authenticated/admin/exchange'
@@ -754,6 +777,7 @@ export interface FileRouteTypes {
     | '/_authenticated/investidor/rendimentos'
     | '/api/public/payted-probe'
     | '/exchange/asset/$symbol'
+    | '/sports/matches/$id'
     | '/_authenticated/investidor/'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
@@ -788,10 +812,12 @@ export interface RootRouteChildren {
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
   OauthAutorizarRoute: typeof OauthAutorizarRoute
+  SportsLiveRoute: typeof SportsLiveRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
   SportsIndexRoute: typeof SportsIndexRoute
   ApiPublicPaytedProbeRoute: typeof ApiPublicPaytedProbeRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
+  SportsMatchesIdRoute: typeof SportsMatchesIdRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsLiveRoute: typeof ApiPublicCronSportsLiveRoute
@@ -991,6 +1017,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sports/live': {
+      id: '/sports/live'
+      path: '/sports/live'
+      fullPath: '/sports/live'
+      preLoaderRoute: typeof SportsLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/exchange': {
       id: '/_authenticated/admin/exchange'
       path: '/exchange'
@@ -1087,6 +1120,13 @@ declare module '@tanstack/react-router' {
       path: '/exchange/asset/$symbol'
       fullPath: '/exchange/asset/$symbol'
       preLoaderRoute: typeof ExchangeAssetSymbolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sports/matches/$id': {
+      id: '/sports/matches/$id'
+      path: '/sports/matches/$id'
+      fullPath: '/sports/matches/$id'
+      preLoaderRoute: typeof SportsMatchesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/bonus-expiry': {
@@ -1356,10 +1396,12 @@ const rootRouteChildren: RootRouteChildren = {
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
   OauthAutorizarRoute: OauthAutorizarRoute,
+  SportsLiveRoute: SportsLiveRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
   SportsIndexRoute: SportsIndexRoute,
   ApiPublicPaytedProbeRoute: ApiPublicPaytedProbeRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
+  SportsMatchesIdRoute: SportsMatchesIdRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsLiveRoute: ApiPublicCronSportsLiveRoute,
