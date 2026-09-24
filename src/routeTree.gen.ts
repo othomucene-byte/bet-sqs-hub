@@ -33,6 +33,7 @@ import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRodaRouteImport } from './routes/_authenticated/roda'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
+import { Route as SportsIndexRouteImport } from './routes/sports.index'
 import { Route as AuthenticatedAdminExchangeRouteImport } from './routes/_authenticated/admin.exchange'
 import { Route as AuthenticatedExchangeHistoryRouteImport } from './routes/_authenticated/exchange.history'
 import { Route as AuthenticatedExchangeListarRouteImport } from './routes/_authenticated/exchange.listar'
@@ -188,6 +189,11 @@ const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
 const OauthAutorizarRoute = OauthAutorizarRouteImport.update({
   id: '/oauth/autorizar',
   path: '/oauth/autorizar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SportsIndexRoute = SportsIndexRouteImport.update({
+  id: '/sports/',
+  path: '/sports/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminExchangeRoute =
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/sports/': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/listar': typeof AuthenticatedExchangeListarRoute
@@ -480,6 +487,7 @@ export interface FileRoutesByTo {
   '/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange': typeof ExchangeIndexRoute
+  '/sports': typeof SportsIndexRoute
   '/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/exchange/listar': typeof AuthenticatedExchangeListarRoute
@@ -543,6 +551,7 @@ export interface FileRoutesById {
   '/_authenticated/roda': typeof AuthenticatedRodaRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/exchange/': typeof ExchangeIndexRoute
+  '/sports/': typeof SportsIndexRoute
   '/_authenticated/admin/exchange': typeof AuthenticatedAdminExchangeRoute
   '/_authenticated/exchange/history': typeof AuthenticatedExchangeHistoryRoute
   '/_authenticated/exchange/listar': typeof AuthenticatedExchangeListarRoute
@@ -606,6 +615,7 @@ export interface FileRouteTypes {
     | '/roda'
     | '/oauth/autorizar'
     | '/exchange/'
+    | '/sports/'
     | '/admin/exchange'
     | '/exchange/history'
     | '/exchange/listar'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/roda'
     | '/oauth/autorizar'
     | '/exchange'
+    | '/sports'
     | '/admin/exchange'
     | '/exchange/history'
     | '/exchange/listar'
@@ -729,6 +740,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roda'
     | '/oauth/autorizar'
     | '/exchange/'
+    | '/sports/'
     | '/_authenticated/admin/exchange'
     | '/_authenticated/exchange/history'
     | '/_authenticated/exchange/listar'
@@ -777,6 +789,7 @@ export interface RootRouteChildren {
   PagamentosRoute: typeof PagamentosRoute
   OauthAutorizarRoute: typeof OauthAutorizarRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
+  SportsIndexRoute: typeof SportsIndexRoute
   ApiPublicPaytedProbeRoute: typeof ApiPublicPaytedProbeRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
@@ -969,6 +982,13 @@ declare module '@tanstack/react-router' {
       path: '/oauth/autorizar'
       fullPath: '/oauth/autorizar'
       preLoaderRoute: typeof OauthAutorizarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sports/': {
+      id: '/sports/'
+      path: '/sports'
+      fullPath: '/sports/'
+      preLoaderRoute: typeof SportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/exchange': {
@@ -1337,6 +1357,7 @@ const rootRouteChildren: RootRouteChildren = {
   PagamentosRoute: PagamentosRoute,
   OauthAutorizarRoute: OauthAutorizarRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
+  SportsIndexRoute: SportsIndexRoute,
   ApiPublicPaytedProbeRoute: ApiPublicPaytedProbeRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
