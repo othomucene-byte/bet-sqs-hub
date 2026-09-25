@@ -390,7 +390,7 @@ export async function syncSportsResults(): Promise<{
   const { data: pending } = await supabaseAdmin
     .from("sport_events")
     .select("id, provider_event_id, home_team, away_team, commence_at")
-    .in("status", ["scheduled", "live", "closed"])
+    .in("status", ["scheduled", "live", "halftime", "finished", "suspended", "closed"])
     .lt("commence_at", new Date().toISOString());
 
   // Uma chamada por dia (o plano gratuito não permite consultar por id/next)
