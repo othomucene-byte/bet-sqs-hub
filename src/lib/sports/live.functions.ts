@@ -388,7 +388,7 @@ export const updateSportsConfig = createServerFn({ method: "POST" })
     const config = await readConfig();
     if (!config) return { ok: false as const, error: "Configuração ausente." };
 
-    const patch: Record<string, unknown> = {};
+    const patch: Record<string, string | number | boolean | string[]> = {};
     if (data.active !== undefined) patch["active"] = data.active;
     if (data.liveIntervalSeconds !== undefined) patch["live_interval_seconds"] = data.liveIntervalSeconds;
     if (data.catalogIntervalSeconds !== undefined)
@@ -399,7 +399,7 @@ export const updateSportsConfig = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("sports_provider_config")
-      .update(patch)
+      .update(patch as never)
       .eq("id", config.id);
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };

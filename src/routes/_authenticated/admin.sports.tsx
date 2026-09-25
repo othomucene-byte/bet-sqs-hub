@@ -55,7 +55,13 @@ function AdminSportsPage() {
   const [budget, setBudget] = useState<string>("");
 
   const save = useMutation({
-    mutationFn: (patch: Parameters<typeof updateSportsConfig>[0]["data"]) => saveConfig({ data: patch }),
+    mutationFn: (patch: {
+      active?: boolean;
+      liveIntervalSeconds?: number;
+      catalogIntervalSeconds?: number;
+      dailyRequestBudget?: number;
+      enabledSports?: string[];
+    }) => saveConfig({ data: patch }),
     onSuccess: (result) => {
       if (result.ok) {
         toast.success("Configuração guardada.");
