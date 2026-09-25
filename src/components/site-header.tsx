@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   ShieldHalf,
   Ticket,
+  Radio,
   Trophy,
   UserRound,
   Wallet,
