@@ -56,7 +56,6 @@ import { Route as AuthenticatedInvestidorRendimentosRouteImport } from './routes
 import { Route as ApiPublicPaytedProbeRouteImport } from './routes/api/public/payted-probe'
 import { Route as ExchangeAssetSymbolRouteImport } from './routes/exchange.asset.$symbol'
 import { Route as SportsMatchesIdRouteImport } from './routes/sports.matches.$id'
-import { Route as ApiPublicCronAffiliateApproveRouteImport } from './routes/api/public/cron/affiliate-approve'
 import { Route as ApiPublicCronBonusExpiryRouteImport } from './routes/api/public/cron/bonus-expiry'
 import { Route as ApiPublicCronExchangeAiRouteImport } from './routes/api/public/cron/exchange-ai'
 import { Route as ApiPublicCronSportsLiveRouteImport } from './routes/api/public/cron/sports-live'
@@ -329,12 +328,6 @@ const SportsMatchesIdRoute = SportsMatchesIdRouteImport.update({
   path: '/sports/matches/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCronAffiliateApproveRoute =
-  ApiPublicCronAffiliateApproveRouteImport.update({
-    id: '/api/public/cron/affiliate-approve',
-    path: '/api/public/cron/affiliate-approve',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicCronBonusExpiryRoute =
   ApiPublicCronBonusExpiryRouteImport.update({
     id: '/api/public/cron/bonus-expiry',
@@ -505,7 +498,6 @@ export interface FileRoutesByFullPath {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/investidor/': typeof AuthenticatedInvestidorIndexRoute
-  '/api/public/cron/affiliate-approve': typeof ApiPublicCronAffiliateApproveRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
@@ -576,7 +568,6 @@ export interface FileRoutesByTo {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/investidor': typeof AuthenticatedInvestidorIndexRoute
-  '/api/public/cron/affiliate-approve': typeof ApiPublicCronAffiliateApproveRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
@@ -649,7 +640,6 @@ export interface FileRoutesById {
   '/exchange/asset/$symbol': typeof ExchangeAssetSymbolRoute
   '/sports/matches/$id': typeof SportsMatchesIdRoute
   '/_authenticated/investidor/': typeof AuthenticatedInvestidorIndexRoute
-  '/api/public/cron/affiliate-approve': typeof ApiPublicCronAffiliateApproveRoute
   '/api/public/cron/bonus-expiry': typeof ApiPublicCronBonusExpiryRoute
   '/api/public/cron/exchange-ai': typeof ApiPublicCronExchangeAiRoute
   '/api/public/cron/sports-live': typeof ApiPublicCronSportsLiveRoute
@@ -722,7 +712,6 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/sports/matches/$id'
     | '/investidor/'
-    | '/api/public/cron/affiliate-approve'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-live'
@@ -793,7 +782,6 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/sports/matches/$id'
     | '/investidor'
-    | '/api/public/cron/affiliate-approve'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-live'
@@ -865,7 +853,6 @@ export interface FileRouteTypes {
     | '/exchange/asset/$symbol'
     | '/sports/matches/$id'
     | '/_authenticated/investidor/'
-    | '/api/public/cron/affiliate-approve'
     | '/api/public/cron/bonus-expiry'
     | '/api/public/cron/exchange-ai'
     | '/api/public/cron/sports-live'
@@ -908,7 +895,6 @@ export interface RootRouteChildren {
   ApiPublicPaytedProbeRoute: typeof ApiPublicPaytedProbeRoute
   ExchangeAssetSymbolRoute: typeof ExchangeAssetSymbolRoute
   SportsMatchesIdRoute: typeof SportsMatchesIdRoute
-  ApiPublicCronAffiliateApproveRoute: typeof ApiPublicCronAffiliateApproveRoute
   ApiPublicCronBonusExpiryRoute: typeof ApiPublicCronBonusExpiryRoute
   ApiPublicCronExchangeAiRoute: typeof ApiPublicCronExchangeAiRoute
   ApiPublicCronSportsLiveRoute: typeof ApiPublicCronSportsLiveRoute
@@ -1262,13 +1248,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SportsMatchesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/cron/affiliate-approve': {
-      id: '/api/public/cron/affiliate-approve'
-      path: '/api/public/cron/affiliate-approve'
-      fullPath: '/api/public/cron/affiliate-approve'
-      preLoaderRoute: typeof ApiPublicCronAffiliateApproveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/cron/bonus-expiry': {
       id: '/api/public/cron/bonus-expiry'
       path: '/api/public/cron/bonus-expiry'
@@ -1559,7 +1538,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaytedProbeRoute: ApiPublicPaytedProbeRoute,
   ExchangeAssetSymbolRoute: ExchangeAssetSymbolRoute,
   SportsMatchesIdRoute: SportsMatchesIdRoute,
-  ApiPublicCronAffiliateApproveRoute: ApiPublicCronAffiliateApproveRoute,
   ApiPublicCronBonusExpiryRoute: ApiPublicCronBonusExpiryRoute,
   ApiPublicCronExchangeAiRoute: ApiPublicCronExchangeAiRoute,
   ApiPublicCronSportsLiveRoute: ApiPublicCronSportsLiveRoute,

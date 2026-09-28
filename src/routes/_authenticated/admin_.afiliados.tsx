@@ -91,7 +91,7 @@ function AdminAffiliates() {
             {field("min_deposit", "Depósito mínimo (MZN)")}
             {field("attribution_hours", "Prazo do link (horas)")}
             {field("validation_days", "Validação (dias)")}
-            {field("min_payout", "Levantamento mínimo (MZN)")}
+            {field("min_payout", "Levantamento mínimo (MZN)")} {field("link_validity_days", "Validade do link (dias)")}
           </div>
           <label className="mt-3 block text-xs text-muted-foreground">Regras de cancelamento e estorno
             <textarea value={String(cfg["reversal_rules"] ?? "")} onChange={(e) => setCfg({ ...cfg, reversal_rules: e.target.value })} rows={2} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground" />
@@ -116,7 +116,7 @@ function AdminAffiliates() {
         <Table title="Comissões" head={["Afiliado", "Evento", "Base", "Comissão", "Disponível em", "Estado", ""]}>
           {d.com.map((c) => (
             <tr key={c.id} className="border-t">
-              <td className="py-2 font-mono">{codeOf(c.affiliate_id)}</td><td>{c.event === "signup" ? "Cadastro" : "1.º depósito"}</td>
+              <td className="py-2 font-mono">{codeOf(c.affiliate_id)}</td><td>{c.event === "bet" ? "Aposta" : c.event === "investment" ? "Investimento" : c.event === "signup" ? "Cadastro" : "1.º depósito"}</td>
               <td>{mzn(Number(c.base_amount))}</td><td>{mzn(Number(c.amount))}</td><td>{dt(c.available_at)}</td><td>{c.status}</td>
               <td className="space-x-1 text-right">
                 {c.status === "pending" && <>
