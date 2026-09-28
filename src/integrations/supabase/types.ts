@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          image_url: string
+          size: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url: string
+          size?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url?: string
+          size?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       affiliate_clicks: {
         Row: {
           affiliate_id: string
@@ -33,6 +60,155 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "affiliate_clicks_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          available_at: string
+          base_amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          event: string
+          id: string
+          note: string | null
+          referral_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          available_at: string
+          base_amount?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          event: string
+          id?: string
+          note?: string | null
+          referral_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          available_at?: string
+          base_amount?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          event?: string
+          id?: string
+          note?: string | null
+          referral_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: true
+            referencedRelation: "affiliate_referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_config: {
+        Row: {
+          attribution_hours: number
+          commission_type: string
+          commission_value: number
+          enabled: boolean
+          id: number
+          min_deposit: number
+          min_payout: number
+          reversal_rules: string
+          trigger_event: string
+          updated_at: string
+          validation_days: number
+        }
+        Insert: {
+          attribution_hours?: number
+          commission_type?: string
+          commission_value?: number
+          enabled?: boolean
+          id?: number
+          min_deposit?: number
+          min_payout?: number
+          reversal_rules?: string
+          trigger_event?: string
+          updated_at?: string
+          validation_days?: number
+        }
+        Update: {
+          attribution_hours?: number
+          commission_type?: string
+          commission_value?: number
+          enabled?: boolean
+          id?: number
+          min_deposit?: number
+          min_payout?: number
+          reversal_rules?: string
+          trigger_event?: string
+          updated_at?: string
+          validation_days?: number
+        }
+        Relationships: []
+      }
+      affiliate_payouts: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          method: string
+          note: string | null
+          status: string
+          transaction_reference: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          method?: string
+          note?: string | null
+          status?: string
+          transaction_reference?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          method?: string
+          note?: string | null
+          status?: string
+          transaction_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_affiliate_id_fkey"
             columns: ["affiliate_id"]
             isOneToOne: false
             referencedRelation: "affiliates"
@@ -3610,7 +3786,73 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      affiliate_admin_banner: {
+        Args: {
+          _active: boolean
+          _id: string
+          _image_url: string
+          _size: string
+          _title: string
+        }
+        Returns: undefined
+      }
+      affiliate_admin_commission: {
+        Args: { _id: string; _note: string; _status: string }
+        Returns: undefined
+      }
+      affiliate_admin_config: {
+        Args: { _cfg: Json }
+        Returns: {
+          attribution_hours: number
+          commission_type: string
+          commission_value: number
+          enabled: boolean
+          id: number
+          min_deposit: number
+          min_payout: number
+          reversal_rules: string
+          trigger_event: string
+          updated_at: string
+          validation_days: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliate_config"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      affiliate_admin_payout: {
+        Args: { _action: string; _id: string; _note: string }
+        Returns: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          method: string
+          note: string | null
+          status: string
+          transaction_reference: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliate_payouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      affiliate_admin_status: {
+        Args: { _id: string; _status: string }
+        Returns: undefined
+      }
+      affiliate_available: { Args: { _affiliate_id: string }; Returns: number }
       affiliate_claim: { Args: { _code: string }; Returns: string }
+      affiliate_create_commission: {
+        Args: { _base: number; _event: string; _referral_id: string }
+        Returns: undefined
+      }
       affiliate_join: {
         Args: never
         Returns: {
@@ -3623,6 +3865,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "affiliates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      affiliate_request_payout: {
+        Args: { _amount: number }
+        Returns: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          method: string
+          note: string | null
+          status: string
+          transaction_reference: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliate_payouts"
           isOneToOne: true
           isSetofReturn: false
         }
