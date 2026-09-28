@@ -94,7 +94,7 @@ export function CandleChart({
   const volTop = priceH + 24;
   const volH = H - volTop;
   const step = W / candles.length;
-  const bodyW = Math.max(2, step * 0.56);
+  const bodyW = Math.min(26, Math.max(2, step * 0.56));
   const maxVol = Math.max(...candles.map((c) => c.volume), 1);
   const y = (p: number) => priceH - ((p - view.min) / (view.max - view.min)) * priceH;
   const gridLines = [0, 0.25, 0.5, 0.75, 1];
