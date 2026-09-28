@@ -11,6 +11,7 @@ import {
   Code2,
   CreditCard,
   Gamepad2,
+  Handshake,
   IdCard,
   LineChart,
   LogOut,
