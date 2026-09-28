@@ -80,6 +80,8 @@ export type Database = {
           id: string
           note: string | null
           referral_id: string
+          source_id: string | null
+          source_kind: string | null
           status: string
         }
         Insert: {
@@ -94,6 +96,8 @@ export type Database = {
           id?: string
           note?: string | null
           referral_id: string
+          source_id?: string | null
+          source_kind?: string | null
           status?: string
         }
         Update: {
@@ -108,6 +112,8 @@ export type Database = {
           id?: string
           note?: string | null
           referral_id?: string
+          source_id?: string | null
+          source_kind?: string | null
           status?: string
         }
         Relationships: [
@@ -121,7 +127,7 @@ export type Database = {
           {
             foreignKeyName: "affiliate_commissions_referral_id_fkey"
             columns: ["referral_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "affiliate_referrals"
             referencedColumns: ["id"]
           },
@@ -134,6 +140,7 @@ export type Database = {
           commission_value: number
           enabled: boolean
           id: number
+          link_validity_days: number
           min_deposit: number
           min_payout: number
           reversal_rules: string
@@ -147,6 +154,7 @@ export type Database = {
           commission_value?: number
           enabled?: boolean
           id?: number
+          link_validity_days?: number
           min_deposit?: number
           min_payout?: number
           reversal_rules?: string
@@ -160,6 +168,7 @@ export type Database = {
           commission_value?: number
           enabled?: boolean
           id?: number
+          link_validity_days?: number
           min_deposit?: number
           min_payout?: number
           reversal_rules?: string
@@ -249,6 +258,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          expires_at: string
           id: string
           status: string
           user_id: string
@@ -256,6 +266,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          expires_at: string
           id?: string
           status?: string
           user_id: string
@@ -263,6 +274,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          expires_at?: string
           id?: string
           status?: string
           user_id?: string
@@ -3808,6 +3820,7 @@ export type Database = {
           commission_value: number
           enabled: boolean
           id: number
+          link_validity_days: number
           min_deposit: number
           min_payout: number
           reversal_rules: string
@@ -3849,6 +3862,16 @@ export type Database = {
       }
       affiliate_available: { Args: { _affiliate_id: string }; Returns: number }
       affiliate_claim: { Args: { _code: string }; Returns: string }
+      affiliate_commission_for: {
+        Args: {
+          _base: number
+          _event: string
+          _source_id: string
+          _source_kind: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       affiliate_create_commission: {
         Args: { _base: number; _event: string; _referral_id: string }
         Returns: undefined
@@ -3858,6 +3881,7 @@ export type Database = {
         Returns: {
           code: string
           created_at: string
+          expires_at: string
           id: string
           status: string
           user_id: string

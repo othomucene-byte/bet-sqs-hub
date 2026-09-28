@@ -7,8 +7,15 @@ const mzn = (n: number) => `${Number(n).toLocaleString("pt-PT", { minimumFractio
 const dt = (s: string) => new Date(s).toLocaleString("pt-PT", { timeZone: "Africa/Maputo" });
 const STATUS: Record<string, string> = {
   pending: "Em validação", approved: "Aprovada", rejected: "Rejeitada", reversed: "Estornada",
-  requested: "Pedido", paid: "Pago",
+  available: "Disponível", requested: "Pedido", paid: "Pago",
 };
+const EVENT: Record<string, string> = {
+  signup: "Cadastro", first_deposit: "1.º depósito", bet: "Aposta", investment: "Investimento",
+};
+const past = (s: string) => new Date(s).getTime() <= Date.now();
+/** Estado mostrado: uma pendência cujo prazo de validação terminou já está disponível. */
+const stateOf = (c: { status: string; available_at: string }) =>
+  c.status === "pending" && past(c.available_at) ? "available" : c.status;
 
 export function AffiliateExtras({ affiliateId, link }: { affiliateId: string; link: string }) {
   const qc = useQueryClient();
@@ -28,8 +35,8 @@ export function AffiliateExtras({ affiliateId, link }: { affiliateId: string; li
   });
   const d = q.data;
   if (!d) return null;
-  const pending = d.com.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.amount), 0);
-  const conversions = d.com.filter((c) => c.status !== "rejected").length;
+  const pending = d.com.filter((c) => c.status === "pending" && !past(c.available_at)).reduce((s, c) => s + Number(c.amount), 0);
+  const conversions = new Set(d.com.filter((c) => c.status !== "rejected").map((c) => c.referral_id)).size;
 
   const request = async () => {
     const v = Number(amount.replace(",", "."));
@@ -66,8 +73,8 @@ export function AffiliateExtras({ affiliateId, link }: { affiliateId: string; li
 
       <List title="Comissões" empty="Ainda sem comissões.">
         {d.com.map((c) => (
-          <Row key={c.id} left={`${c.event === "signup" ? "Cadastro" : "1.º depósito"} · ${dt(c.created_at)}`}
-            right={`${mzn(Number(c.amount))} · ${STATUS[c.status]}`} />
+          <Row key={c.id} left={`${EVENT[c.event] ?? c.event} · ${dt(c.created_at)}`}
+            right={`${mzn(Number(c.amount))} · ${STATUS[stateOf(c)] ?? c.status}`} />
         ))}
       </List>
 
