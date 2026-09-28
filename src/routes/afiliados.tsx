@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Copy, MousePointerClick, UserPlus, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
+import { AffiliateExtras } from "@/components/affiliate-extras";
 
 export const Route = createFileRoute("/afiliados")({
   head: () => ({
@@ -81,7 +82,7 @@ function AffiliatesPage() {
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>Um link por afiliado.</li>
               <li>Cadastro atribuído apenas a contas criadas nas 24h seguintes ao clique.</li>
-              <li>Cliques não contam como conversões. As comissões serão configuradas pela administração.</li>
+              <li>Cliques não contam como conversões. Comissões conforme as regras em vigor, após validação.</li>
             </ul>
             <button disabled={busy} onClick={join} className="mt-5 rounded-md bg-[hsl(0_75%_50%)] px-5 py-2 font-semibold text-[hsl(0_0%_100%)] disabled:opacity-50">
               {busy ? "A inscrever…" : "Inscrever-me"}
@@ -111,6 +112,7 @@ function AffiliatesPage() {
               <Stat icon={<MousePointerClick className="size-5" />} label="Cliques" value={d.clicks ?? 0} />
               <Stat icon={<UserPlus className="size-5" />} label="Cadastros" value={d.refs?.length ?? 0} />
             </div>
+            <AffiliateExtras affiliateId={d.aff.id} link={link} />
             <div className="rounded-xl border bg-card p-5">
               <h2 className="font-display font-semibold">Cadastros recentes</h2>
               {d.refs?.length ? (
