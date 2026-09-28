@@ -31,6 +31,7 @@ import { Route as AuthenticatedNavigatorRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as AuthenticatedRodaRouteImport } from './routes/_authenticated/roda'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
 import { Route as SportsIndexRouteImport } from './routes/sports.index'
@@ -183,6 +184,11 @@ const AuthenticatedRodaRoute = AuthenticatedRodaRouteImport.update({
   id: '/roda',
   path: '/roda',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 const ExchangeIndexRoute = ExchangeIndexRouteImport.update({
   id: '/exchange/',
@@ -422,7 +428,7 @@ const ApiPublicV1TradingOrdersIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
@@ -442,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
   '/exchange/': typeof ExchangeIndexRoute
@@ -487,7 +494,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
@@ -507,6 +514,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
   '/exchange': typeof ExchangeIndexRoute
@@ -554,7 +562,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/roda': typeof AuthenticatedRodaRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
   '/exchange/': typeof ExchangeIndexRoute
@@ -641,6 +650,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/roda'
+    | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
     | '/exchange/'
@@ -706,6 +716,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/roda'
+    | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
     | '/exchange'
@@ -772,6 +783,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/_authenticated/roda'
+    | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
     | '/exchange/'
@@ -819,7 +831,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   DesportosRoute: typeof DesportosRoute
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
@@ -1008,6 +1020,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/roda'
       preLoaderRoute: typeof AuthenticatedRodaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/exchange/': {
       id: '/exchange/'
@@ -1381,6 +1400,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 interface ApiPublicV1MarketAssetsRouteChildren {
   ApiPublicV1MarketAssetsSymbolRoute: typeof ApiPublicV1MarketAssetsSymbolRoute
 }
@@ -1412,7 +1441,7 @@ const ApiPublicV1TradingOrdersRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   DesportosRoute: DesportosRoute,
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
