@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "Betting \u0026 Invest Hub"
+const SITE_NAME = "Betfcom SQs"
 const SENDER_DOMAIN = "notify.betfcom.com"
 const ROOT_DOMAIN = "betfcom.com"
 const FROM_DOMAIN = "betfcom.com"
