@@ -307,7 +307,7 @@ export function BigChart({
 }) {
   const stroke = up ? "var(--primary)" : "var(--destructive)";
   return (
-    <div style={{ height }} className="w-full">
+    <div style={{ height }} className="w-full min-w-0 max-w-full overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={values} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
           <defs>
