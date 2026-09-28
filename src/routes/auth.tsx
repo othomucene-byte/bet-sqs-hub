@@ -4,6 +4,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,20 +91,22 @@ function AuthPage() {
     try {
       // Guardado à parte: o destino não pode ir no redirect_uri (rota protegida).
       sessionStorage.setItem("betfcom:next", destination);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
-      if (error) {
+      if (result.error) {
         toast.error("Não foi possível entrar com o Google.");
         return;
       }
+      if (result.redirected) return;
+      navigate({ to: destination });
+    } catch {
+      toast.error("Não foi possível entrar com o Google.");
     } finally {
       setBusy(false);
     }
   }
+
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
