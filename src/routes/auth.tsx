@@ -187,6 +187,29 @@ function AuthPage() {
               </Button>
             </form>
 
+            {mode === "signin" && (
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
+                disabled={busy}
+                onClick={async () => {
+                  if (!email) {
+                    toast.error("Escreva primeiro o seu email.");
+                    return;
+                  }
+                  setBusy(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  setBusy(false);
+                  if (error) toast.error(error.message);
+                  else toast.success("Enviámos um email para redefinir a palavra-passe.");
+                }}
+              >
+                Esqueceu a palavra-passe?
+              </button>
+            )}
+
             <button
               type="button"
               className="w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
