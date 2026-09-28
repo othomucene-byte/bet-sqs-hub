@@ -5,13 +5,14 @@ import {
   ArrowRight,
   BadgeCheck,
   Building2,
+  CalendarClock,
   FileCheck2,
+  Gamepad2,
   LineChart,
   Lock,
   ScrollText,
   ShieldCheck,
-  Ticket,
-  TrendingUp,
+  Trophy,
   Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,15 @@ import {
 } from "@/components/ui/accordion";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { MarketTicker } from "@/components/home/market-ticker";
+import { MarketTable } from "@/components/home/market-table";
+import { Sparkline } from "@/components/home/sparkline";
 import { getPaymentsStatus } from "@/lib/payments/netshop.functions";
-import heroImage from "@/assets/hero.jpg";
+import { getMarketOverview } from "@/lib/exchange/market.functions";
+import { getSportsBoard } from "@/lib/sports/sports.functions";
+import { MARKET_STATUS_LABEL, pct } from "@/lib/exchange/format";
+import { shortLabel } from "@/lib/sports/markets";
+import { gameCatalog } from "@/lib/games/catalog";
 import logoCard from "@/assets/logo-card.png.asset.json";
 import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
 import logoEmola from "@/assets/logo-emola.png.asset.json";
@@ -37,7 +45,6 @@ const payLogos = [
   { src: logoMkesh.url, alt: "mKesh" },
   { src: logoCard.url, alt: "Visa e Mastercard" },
 ];
-
 
 const title = "Betfcom SQs — Investimentos, Apostas e Casino em Moçambique";
 const description =
@@ -79,23 +86,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Landing,
 });
-
-const produtos = [
-  {
-    icon: TrendingUp,
-    tag: "SQs Investimentos",
-    title: "Investir em produtos estruturados",
-    text: "Carteira financeira, produtos com prazo, taxas e risco explícitos, acompanhamento de rendimentos e histórico completo.",
-    items: ["Carteira financeira", "Produtos de investimento", "Rendimentos", "Empresas"],
-  },
-  {
-    icon: Ticket,
-    tag: "SQs Apostas",
-    title: "Sportsbook moderno e separado",
-    text: "Área independente com eventos, mercados, odds, bilhetes e liquidação. Betting Wallet separada contabilisticamente.",
-    items: ["Betting Wallet", "Eventos e mercados", "Bilhetes", "Liquidação"],
-  },
-];
 
 const beneficios = [
   {
@@ -149,143 +139,379 @@ const faq = [
     q: "Como deposito e levanto dinheiro?",
     a: "Em meticais, através dos métodos disponíveis na página de pagamentos: M-Pesa, e-Mola, mKesh e cartão Visa/Mastercard. Cada depósito ou levantamento é confirmado pelo provedor e registado no seu extrato.",
   },
-
   {
     q: "Como funciona a candidatura de empresas?",
     a: "Empresa → candidatura → KYC/KYB → análise → aprovação → publicação. Só após conformidade legal os projetos podem receber investimento.",
   },
 ];
 
+const HOUR = new Intl.DateTimeFormat("pt-PT", {
+  day: "2-digit",
+  month: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 function Landing() {
   const fetchStatus = useServerFn(getPaymentsStatus);
   const status = useQuery({ queryKey: ["payments-status"], queryFn: () => fetchStatus() });
   const active = Object.entries(status.data?.methods ?? {}).filter(([, on]) => on).length;
-  const paymentsBadge = status.isLoading
-    ? "A verificar métodos de pagamento…"
-    : active > 0
-      ? `${active} métodos de pagamento activos em MZN`
-      : "Métodos de pagamento em configuração";
+
+  const fetchMarket = useServerFn(getMarketOverview);
+  const market = useQuery({
+    queryKey: ["home-market"],
+    queryFn: () => fetchMarket({ data: { environment: "LIVE" } }),
+    staleTime: 60_000,
+  });
+  const assets = market.data?.assets ?? [];
+
+  const fetchSports = useServerFn(getSportsBoard);
+  const sports = useQuery({
+    queryKey: ["home-sports"],
+    queryFn: () => fetchSports(),
+    staleTime: 60_000,
+  });
+  const events = (sports.data?.events ?? []).slice(0, 3);
+
+  const topAsset = assets.find((a) => a.changePct != null) ?? assets[0];
+  const crashGames = gameCatalog.filter((g) => g.kind === "Crash").slice(0, 4);
+  const instantGames = gameCatalog.filter((g) => g.kind === "Instantâneo").slice(0, 3);
+  const marketStatusLabel = market.data
+    ? `Mercado ${(MARKET_STATUS_LABEL[market.data.marketStatus] ?? market.data.marketStatus).toLowerCase()}`
+    : "SQs Exchange";
 
   return (
-
     <div className="min-h-screen">
       <SiteHeader />
+      <MarketTicker
+        assets={assets}
+        loading={market.isLoading}
+        marketStatusLabel={marketStatusLabel}
+      />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden">
+        {/* Hero — portal duplo */}
+        <section className="relative overflow-hidden border-b border-border/60">
           <div className="bg-hero-gradient absolute inset-0" aria-hidden="true" />
-          <img
-            src={heroImage}
-            alt="Visualização de desempenho financeiro sob luzes de estádio"
-            width={1600}
-            height={1008}
-            className="absolute inset-0 size-full object-cover opacity-25 mix-blend-screen"
-          />
-          <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:py-28">
-            <Badge variant="secondary" className="mb-5">
-              {paymentsBadge}
-            </Badge>
-            <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-hero-foreground sm:text-6xl">
-              Investir e apostar, com a mesma exigência de confiança.
-            </h1>
-            <p className="mt-5 max-w-xl text-base text-hero-muted sm:text-lg">
-              Duas áreas independentes — SQs Investimentos e SQs Apostas — sob uma única identidade
-              verificada, com carteiras separadas e histórico completo de cada movimento.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" asChild>
-                <a href="/investimentos">
-                  Ver produtos de investimento <ArrowRight className="ml-1.5 size-4" />
-                </a>
-              </Button>
-              <Button size="lg" variant="secondary" asChild>
-                <a href="/exchange">Ver empresas e investir</a>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="/auth">Criar conta</a>
+          <div className="grid-lines absolute inset-0 opacity-40" aria-hidden="true" />
+          <div className="relative mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
+            <div className="max-w-2xl">
+              <Badge variant="secondary" className="mb-4">
+                {status.isLoading
+                  ? "A verificar métodos de pagamento…"
+                  : active > 0
+                    ? `${active} métodos de pagamento activos em MZN`
+                    : "Métodos de pagamento em configuração"}
+              </Badge>
+              <h1 className="font-display text-3xl font-bold leading-[1.05] tracking-tight text-hero-foreground sm:text-5xl">
+                Mercados e apostas na mesma plataforma, com a mesma exigência.
+              </h1>
+              <p className="mt-4 text-sm text-hero-muted sm:text-base">
+                SQs Investimentos e SQs Apostas funcionam em separado, com carteiras independentes,
+                verificação de identidade e registo completo de cada movimento.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-4 lg:grid-cols-2">
+              {/* Portal investimentos */}
+              <article className="rounded-2xl border border-hero-foreground/15 bg-background/85 p-5 shadow-[var(--shadow-card)] backdrop-blur-sm sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-brand-gradient flex size-9 items-center justify-center rounded-xl text-primary-foreground">
+                      <LineChart className="size-5" />
+                    </span>
+                    <div>
+                      <p className="font-display text-base font-bold">SQs Investimentos</p>
+                      <p className="text-xs text-muted-foreground">
+                        {market.data ? market.data.marketName : "Mercado SQs Exchange"}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] uppercase">
+                    {market.data
+                      ? (MARKET_STATUS_LABEL[market.data.marketStatus] ?? market.data.marketStatus)
+                      : "—"}
+                  </Badge>
+                </div>
+
+                <div className="mt-5 rounded-xl border border-border bg-secondary/40 p-4">
+                  {market.isLoading ? (
+                    <p className="text-sm text-muted-foreground">A carregar mercado…</p>
+                  ) : topAsset ? (
+                    <>
+                      <p className="text-xs text-muted-foreground">Em destaque</p>
+                      <div className="mt-1 flex items-end justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="font-display text-xl font-bold">{topAsset.symbol}</p>
+                          <p className="truncate text-xs text-muted-foreground">{topAsset.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-display text-xl font-bold tabular-nums">
+                            {(topAsset.lastPrice ?? topAsset.referencePrice) != null
+                              ? `${(topAsset.lastPrice ?? topAsset.referencePrice)!.toFixed(2)} MZN`
+                              : "Sem cotação"}
+                          </p>
+                          <p
+                            className={`text-xs tabular-nums ${
+                              (topAsset.changePct ?? 0) >= 0 ? "text-primary" : "text-destructive"
+                            }`}
+                          >
+                            {pct(topAsset.changePct)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Sparkline
+                          points={
+                            topAsset.spark.length > 1
+                              ? topAsset.spark
+                              : topAsset.referenceHistory.map((h) => h.price)
+                          }
+                          positive={(topAsset.changePct ?? 0) >= 0}
+                          className="h-12 w-full"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Ainda não há ativos publicados no mercado.
+                    </p>
+                  )}
+                </div>
+
+                <ul className="mt-4 grid gap-2 text-sm">
+                  {["Ações e obrigações em meticais", "Produtos com prazo, taxa e risco explícitos", "Carteira e extrato sempre disponíveis"].map(
+                    (i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <BadgeCheck className="size-4 shrink-0 text-primary" /> {i}
+                      </li>
+                    ),
+                  )}
+                </ul>
+
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Button className="flex-1" asChild>
+                    <a href="/exchange">
+                      Explorar mercados <ArrowRight className="ml-1.5 size-4" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" className="flex-1" asChild>
+                    <a href="/investimentos">Produtos de investimento</a>
+                  </Button>
+                </div>
+              </article>
+
+              {/* Portal apostas */}
+              <article className="rounded-2xl border border-hero-foreground/15 bg-bet-surface p-5 shadow-[var(--shadow-card)] sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-bet-green text-bet-green-foreground">
+                      <Trophy className="size-5" />
+                    </span>
+                    <div>
+                      <p className="font-display text-base font-bold text-bet-foreground">
+                        SQs Apostas
+                      </p>
+                      <p className="text-xs text-bet-muted">Desportos, crash e jogos rápidos</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-bet-green text-[10px] uppercase text-bet-green-foreground">
+                    Ao vivo
+                  </Badge>
+                </div>
+
+                <div className="mt-5 space-y-2">
+                  {sports.isLoading ? (
+                    <p className="text-sm text-bet-muted">A carregar jogos…</p>
+                  ) : events.length === 0 ? (
+                    <p className="rounded-xl border border-bet-line bg-bet-panel p-4 text-sm text-bet-muted">
+                      Sem eventos disponíveis neste momento.
+                    </p>
+                  ) : (
+                    events.map((ev) => {
+                      const h2h = ev.odds.filter((o) => o.market === "h2h").slice(0, 3);
+                      return (
+                        <a
+                          key={ev.id}
+                          href={`/sports/matches/${ev.id}`}
+                          className="block rounded-xl border border-bet-line bg-bet-panel p-3 transition-colors hover:border-bet-green/60"
+                        >
+                          <div className="flex items-center gap-2 text-[11px] text-bet-muted">
+                            <CalendarClock className="size-3" />
+                            {HOUR.format(new Date(ev.commenceAt))} · {ev.competitionName}
+                          </div>
+                          <p className="mt-1 truncate text-sm font-semibold text-bet-foreground">
+                            {ev.homeTeam} <span className="text-bet-muted">vs</span> {ev.awayTeam}
+                          </p>
+                          {h2h.length > 0 && (
+                            <div className="mt-2 grid grid-cols-3 gap-2">
+                              {h2h.map((o) => (
+                                <span
+                                  key={o.selection}
+                                  className="flex items-center justify-between rounded-lg bg-bet-chip px-2 py-1.5 text-xs"
+                                >
+                                  <span className="text-bet-muted">
+                                    {shortLabel(o.market, o.selection, o.line)}
+                                  </span>
+                                  <span className="font-display font-bold tabular-nums text-bet-green">
+                                    {o.price.toFixed(2)}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </a>
+                      );
+                    })
+                  )}
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {crashGames.slice(0, 2).map((g) => (
+                    <a
+                      key={g.slug}
+                      href={g.href}
+                      className="relative h-20 overflow-hidden rounded-xl border border-bet-line"
+                    >
+                      <img
+                        src={g.background}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 size-full object-cover"
+                      />
+                      <span className="absolute inset-0 bg-gradient-to-t from-bet-surface/90 to-transparent" />
+                      <span className="absolute bottom-2 left-2 font-display text-sm font-bold text-bet-foreground">
+                        {g.name}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    className="flex-1 bg-bet-green font-bold uppercase tracking-wide text-bet-green-foreground hover:bg-bet-green/90"
+                    asChild
+                  >
+                    <a href="/desportos">
+                      Apostar agora <ArrowRight className="ml-1.5 size-4" />
+                    </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-bet-line bg-transparent text-bet-foreground hover:bg-bet-panel hover:text-bet-foreground"
+                    asChild
+                  >
+                    <a href="/jogos">Ver jogos</a>
+                  </Button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {/* Mercados */}
+        <section id="mercados" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold sm:text-3xl">Mercados SQs Exchange</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Preços, variação, livro de ofertas e volume vindos do servidor. Quando não há
+                negócios executados, o valor mostrado é de referência e está assinalado.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <a href="/exchange">
+                Abrir terminal <ArrowRight className="ml-1.5 size-4" />
+              </a>
+            </Button>
+          </div>
+          <div className="mt-6">
+            <MarketTable assets={assets} loading={market.isLoading} />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Câmbios (USD, EUR, ZAR) e commodities: fonte de dados de mercado ainda não configurada —
+            não mostramos valores sem fonte verificável.
+          </p>
+        </section>
+
+        {/* Jogos */}
+        <section className="border-y border-border/60 bg-card/40">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+                  <Gamepad2 className="size-6 text-primary" /> Jogos e rondas rápidas
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Rondas geradas e liquidadas no servidor, com histórico verificável.
+                </p>
+              </div>
+              <Button variant="outline" asChild>
+                <a href="/jogos">Ver todos os jogos</a>
               </Button>
             </div>
 
-            <dl className="mt-14 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
-              {[
-                ["Moeda", "Metical (MZN)"],
-                ["Carteiras", "Investimentos · Apostas"],
-                ["Depósitos", "Móveis e cartão"],
-                ["Histórico", "Extrato completo"],
-              ].map(([k, v]) => (
-                <div
-                  key={k}
-                  className="min-w-0 rounded-xl border border-hero-foreground/15 bg-hero-foreground/5 p-3"
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...crashGames, ...instantGames].slice(0, 8).map((g) => (
+                <a
+                  key={g.slug}
+                  href={g.href}
+                  className="group relative h-40 overflow-hidden rounded-2xl border border-border"
                 >
-                  <dt className="text-xs text-hero-muted">{k}</dt>
-                  <dd className="mt-1 font-display text-sm font-semibold text-hero-foreground sm:text-base">
-                    {v}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
-
-        {/* Métodos de pagamento */}
-        <section className="border-b border-border/60 bg-card/40">
-          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-8 sm:flex-row sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-              Depósitos e levantamentos em meticais, confirmados no servidor.
-            </p>
-            <ul className="flex flex-wrap items-center justify-center gap-6">
-              {payLogos.map((logo) => (
-                <li key={logo.alt}>
                   <img
-                    src={logo.src}
-                    alt={logo.alt}
+                    src={g.background}
+                    alt=""
                     loading="lazy"
-                    className="h-7 w-auto object-contain opacity-80"
+                    className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </li>
+                  {g.character && (
+                    <img
+                      src={g.character}
+                      alt=""
+                      loading="lazy"
+                      className="absolute bottom-6 right-2 h-16 w-auto object-contain drop-shadow-lg"
+                    />
+                  )}
+                  <span className="absolute inset-0 bg-gradient-to-t from-bet-surface via-bet-surface/30 to-transparent" />
+                  <span className="absolute left-3 top-3 rounded-md bg-bet-surface/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-bet-foreground">
+                    {g.kind}
+                  </span>
+                  <span className="absolute bottom-3 left-3 right-3">
+                    <span className="block font-display text-base font-bold text-bet-foreground">
+                      {g.name}
+                    </span>
+                    <span className="block text-[11px] text-bet-muted">{g.studio}</span>
+                  </span>
+                </a>
               ))}
-            </ul>
+            </div>
           </div>
         </section>
 
-
-
-        {/* Produtos */}
-        <section id="produtos" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
-          <h2 className="text-2xl font-bold sm:text-4xl">Dois produtos, uma plataforma</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Cada produto tem a sua própria carteira, o seu próprio fluxo e as suas próprias regras
-            de risco.
+        {/* Pagamentos */}
+        <section className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-8 sm:flex-row sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Depósitos e levantamentos em meticais, confirmados no servidor.
           </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {produtos.map((p) => (
-              <article key={p.tag} className="card-elevated p-6">
-                <div className="flex items-center gap-3">
-                  <span className="bg-brand-gradient flex size-10 items-center justify-center rounded-xl text-primary-foreground">
-                    <p.icon className="size-5" />
-                  </span>
-                  <Badge variant="outline">{p.tag}</Badge>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{p.text}</p>
-                <ul className="mt-4 grid gap-2 text-sm">
-                  {p.items.map((i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <BadgeCheck className="size-4 text-primary" /> {i}
-                    </li>
-                  ))}
-                </ul>
-              </article>
+          <ul className="flex flex-wrap items-center justify-center gap-6">
+            {payLogos.map((logo) => (
+              <li key={logo.alt}>
+                <img
+                  src={logo.src}
+                  alt={logo.alt}
+                  loading="lazy"
+                  className="h-7 w-auto object-contain opacity-80"
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
 
         {/* Benefícios */}
         <section className="border-y border-border/60 bg-card/40">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
-            <h2 className="text-2xl font-bold sm:text-4xl">Benefícios</h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
+            <h2 className="text-2xl font-bold sm:text-3xl">Benefícios</h2>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {beneficios.map((b) => (
                 <article key={b.title} className="card-elevated p-5">
                   <b.icon className="size-5 text-primary" />
@@ -298,9 +524,9 @@ function Landing() {
         </section>
 
         {/* Como funciona */}
-        <section id="como-funciona" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
-          <h2 className="text-2xl font-bold sm:text-4xl">Como funciona</h2>
-          <ol className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <section id="como-funciona" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
+          <h2 className="text-2xl font-bold sm:text-3xl">Como funciona</h2>
+          <ol className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {passos.map((s) => (
               <li key={s.n} className="card-elevated p-5">
                 <span className="font-display text-sm font-bold text-primary">{s.n}</span>
@@ -313,10 +539,10 @@ function Landing() {
 
         {/* Segurança */}
         <section id="seguranca" className="border-y border-border/60 bg-card/40">
-          <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-16 sm:py-24 lg:grid-cols-2">
+          <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:py-16 lg:grid-cols-2">
             <div>
               <Lock className="size-6 text-primary" />
-              <h2 className="mt-4 text-2xl font-bold sm:text-4xl">Segurança desde o início</h2>
+              <h2 className="mt-4 text-2xl font-bold sm:text-3xl">Segurança desde o início</h2>
               <p className="mt-3 text-muted-foreground">
                 O frontend nunca é a autoridade sobre saldo, pagamento, investimento, aposta,
                 liquidação ou levantamento. Tudo é validado no backend.
@@ -334,7 +560,7 @@ function Landing() {
         </section>
 
         {/* Empresas */}
-        <section id="empresas" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
+        <section id="empresas" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
           <div className="card-elevated grid gap-8 p-6 sm:p-10 lg:grid-cols-2">
             <div>
               <Building2 className="size-6 text-primary" />
@@ -357,8 +583,11 @@ function Landing() {
                 "Aprovação",
                 "Publicação do projeto",
               ].map((step, i) => (
-                <li key={step} className="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 p-3 text-sm">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand-gradient font-display text-xs font-bold text-primary-foreground">
+                <li
+                  key={step}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 p-3 text-sm"
+                >
+                  <span className="bg-brand-gradient flex size-7 shrink-0 items-center justify-center rounded-lg font-display text-xs font-bold text-primary-foreground">
                     {i + 1}
                   </span>
                   {step}
@@ -370,8 +599,8 @@ function Landing() {
 
         {/* FAQ */}
         <section id="faq" className="border-t border-border/60 bg-card/40">
-          <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
-            <h2 className="text-2xl font-bold sm:text-4xl">Perguntas frequentes</h2>
+          <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
+            <h2 className="text-2xl font-bold sm:text-3xl">Perguntas frequentes</h2>
             <Accordion type="single" collapsible className="mt-6">
               {faq.map((f) => (
                 <AccordionItem key={f.q} value={f.q}>
@@ -384,7 +613,7 @@ function Landing() {
         </section>
 
         {/* Conta */}
-        <section id="conta" className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
+        <section id="conta" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
           <div className="card-elevated flex flex-col items-start gap-6 p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <FileCheck2 className="size-6 text-primary" />
