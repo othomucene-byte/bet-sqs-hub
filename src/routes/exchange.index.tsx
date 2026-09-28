@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Building2, Clock3, Search, ShieldCheck } from "lucide-react";
@@ -18,8 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 import { getMarketOverview } from "@/lib/exchange/market.functions";
-import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, pct, price } from "@/lib/exchange/format";
+import { getExchangeAccount } from "@/lib/exchange/trading.functions";
+import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, MZN, pct, price } from "@/lib/exchange/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/exchange/")({
