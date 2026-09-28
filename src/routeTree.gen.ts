@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AfiliadosRouteImport } from './routes/afiliados'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DesportosRouteImport } from './routes/desportos'
 import { Route as EmpresasRouteImport } from './routes/empresas'
@@ -84,6 +85,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AfiliadosRoute = AfiliadosRouteImport.update({
+  id: '/afiliados',
+  path: '/afiliados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -440,6 +446,7 @@ const ApiPublicV1TradingOrdersIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/afiliados': typeof AfiliadosRoute
   '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
@@ -508,6 +515,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/afiliados': typeof AfiliadosRoute
   '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
@@ -578,6 +586,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/afiliados': typeof AfiliadosRoute
   '/auth': typeof AuthRouteWithChildren
   '/desportos': typeof DesportosRoute
   '/empresas': typeof EmpresasRoute
@@ -648,6 +657,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/afiliados'
     | '/auth'
     | '/desportos'
     | '/empresas'
@@ -716,6 +726,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/afiliados'
     | '/auth'
     | '/desportos'
     | '/empresas'
@@ -785,6 +796,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/afiliados'
     | '/auth'
     | '/desportos'
     | '/empresas'
@@ -855,6 +867,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AfiliadosRoute: typeof AfiliadosRoute
   AuthRoute: typeof AuthRouteWithChildren
   DesportosRoute: typeof DesportosRoute
   EmpresasRoute: typeof EmpresasRoute
@@ -905,6 +918,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/afiliados': {
+      id: '/afiliados'
+      path: '/afiliados'
+      fullPath: '/afiliados'
+      preLoaderRoute: typeof AfiliadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1481,6 +1501,7 @@ const ApiPublicV1TradingOrdersRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AfiliadosRoute: AfiliadosRoute,
   AuthRoute: AuthRouteWithChildren,
   DesportosRoute: DesportosRoute,
   EmpresasRoute: EmpresasRoute,

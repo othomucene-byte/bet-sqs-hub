@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_clicks: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          referred_user_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_agent_config: {
         Row: {
           allowed_sources: Json
@@ -3531,6 +3610,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      affiliate_claim: { Args: { _code: string }; Returns: string }
+      affiliate_join: {
+        Args: never
+        Returns: {
+          code: string
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      affiliate_track_click: { Args: { _code: string }; Returns: boolean }
       ai_job_acquire: {
         Args: { _job_key: string; _lease_seconds?: number }
         Returns: {
