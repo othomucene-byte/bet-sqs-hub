@@ -127,7 +127,7 @@ function ExchangeMarket() {
           : "A carregar estado do mercado…"
       }
     >
-       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-3">
            {/* Cartão da carteira: o primeiro bloco no telefone, como num app de bolsa. */}
            <Panel padded={false}>
