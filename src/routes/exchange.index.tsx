@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Building2, Clock3, Search, ShieldCheck } from "lucide-react";
@@ -18,8 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 import { getMarketOverview } from "@/lib/exchange/market.functions";
-import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, pct, price } from "@/lib/exchange/format";
+import { getExchangeAccount } from "@/lib/exchange/trading.functions";
+import { ASSET_TYPE_LABEL, MARKET_STATUS_LABEL, MZN, pct, price } from "@/lib/exchange/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/exchange/")({
@@ -55,6 +57,18 @@ function ExchangeMarket() {
   });
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Todos");
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+  }, []);
+  const fetchAccount = useServerFn(getExchangeAccount);
+  const account = useQuery({
+    queryKey: ["exchange-account"],
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
+    enabled: signedIn === true,
+    staleTime: 10000,
+  });
+
 
   const rows = query.data?.assets ?? [];
   const assets = useMemo(() => {
@@ -113,8 +127,116 @@ function ExchangeMarket() {
           : "A carregar estado do mercado…"
       }
     >
-       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-3">
+           {/* Cartão da carteira: o primeiro bloco no telefone, como num app de bolsa. */}
+           <Panel padded={false}>
+             <div className="relative p-4">
+               <div
+                 className="pointer-events-none absolute inset-0 opacity-[0.12]"
+                 style={{ backgroundImage: "var(--gradient-primary)" }}
+               />
+               <div className="relative">
+                 <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                   A minha carteira
+                 </p>
+                 {signedIn === false ? (
+                   <>
+                     <p className="pt-1 font-mono text-3xl font-bold tabular-nums">—</p>
+                     <p className="pt-1 text-xs text-muted-foreground">
+                       <Link to="/auth" className="text-primary underline">
+                         Entre na sua conta
+                       </Link>{" "}
+                       para ver o seu saldo e as suas posições.
+                     </p>
+                   </>
+                 ) : account.isLoading ? (
+                   <Skeleton className="mt-2 h-10 w-40" />
+                 ) : (
+                   <>
+                     <p className="pt-1 font-mono text-3xl font-bold tabular-nums sm:text-4xl">
+                       {MZN.format(account.data?.totalValue ?? 0)}
+                     </p>
+                     <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                       <span
+                         className={cn(
+                           "rounded-md px-1.5 py-0.5 font-mono font-semibold tabular-nums",
+                           (account.data?.unrealizedPnl ?? 0) >= 0
+                             ? "bg-primary/15 text-primary"
+                             : "bg-destructive/15 text-destructive",
+                         )}
+                       >
+                         {pct(account.data?.unrealizedPnlPct ?? null)}
+                       </span>
+                       <span className="text-muted-foreground">
+                         Disponível {MZN.format(account.data?.available ?? 0)} · Investido{" "}
+                         {MZN.format(account.data?.portfolioValue ?? 0)}
+                       </span>
+                     </div>
+                   </>
+                 )}
+               </div>
+             </div>
+
+             <div className="border-t border-border/50">
+               <div className="flex items-center justify-between px-3 py-2">
+                 <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                   As minhas posições
+                 </h2>
+                 <Link to="/exchange/portfolio" className="text-[11px] text-primary underline">
+                   Ver tudo
+                 </Link>
+               </div>
+               <div className="divide-y divide-border/40">
+                 {(account.data?.positions ?? []).length === 0 && (
+                   <p className="px-3 pb-3 text-xs text-muted-foreground">
+                     Ainda não tem ações. Escolha uma empresa abaixo para investir.
+                   </p>
+                 )}
+                 {(account.data?.positions ?? []).slice(0, 4).map((p) => {
+                   const row = rows.find((a) => a.symbol === p.symbol);
+                   const positive = (p.pnlPct ?? 0) >= 0;
+                   return (
+                     <Link
+                       key={p.assetId}
+                       to="/exchange/asset/$symbol"
+                       params={{ symbol: p.symbol }}
+                       className="flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-secondary/40"
+                     >
+                       <AssetLogo symbol={p.symbol} name={p.name} logoUrl={row?.logoUrl ?? null} size={32} />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-xs font-semibold">{p.symbol}</p>
+                         <p className="truncate text-[10px] text-muted-foreground">
+                           {p.quantity} unidades
+                         </p>
+                       </div>
+                       <div className="h-6 w-14 shrink-0">
+                         {row && row.spark.length > 1 && <Spark values={row.spark} up={positive} />}
+                       </div>
+                       <div className="shrink-0 text-right">
+                         <p className="font-mono text-xs font-semibold tabular-nums">
+                           {price(p.lastPrice)}
+                         </p>
+                         <p
+                           className={cn(
+                             "font-mono text-[10px] tabular-nums",
+                             p.pnlPct == null
+                               ? "text-muted-foreground"
+                               : positive
+                                 ? "text-primary"
+                                 : "text-destructive",
+                           )}
+                         >
+                           {pct(p.pnlPct)}
+                         </p>
+                       </div>
+                     </Link>
+                   );
+                 })}
+               </div>
+             </div>
+           </Panel>
+
            {query.isLoading && <Skeleton className="h-[390px] w-full rounded-xl" />}
            {featured && (
              <Panel className="min-h-[390px]" padded={false}>
