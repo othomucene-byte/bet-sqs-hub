@@ -76,15 +76,15 @@ function AdminAffiliates() {
         <section className="rounded-xl border-t-4 border-[hsl(220_80%_45%)] bg-card p-5">
           <h2 className="font-semibold">Regras de comissão</h2>
           <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(cfg.enabled)} onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })} /> Programa ativo</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(cfg["enabled"])} onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })} /> Programa ativo</label>
             <label className="text-xs text-muted-foreground">Tipo
-              <select value={String(cfg.commission_type ?? "percent")} onChange={(e) => setCfg({ ...cfg, commission_type: e.target.value })} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground">
+              <select value={String(cfg["commission_type"] ?? "percent")} onChange={(e) => setCfg({ ...cfg, commission_type: e.target.value })} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground">
                 <option value="percent">Percentagem</option><option value="fixed">Valor fixo (MZN)</option>
               </select>
             </label>
-            {field("commission_value", cfg.commission_type === "fixed" ? "Valor por conversão (MZN)" : "Percentagem (%)")}
+            {field("commission_value", cfg["commission_type"] === "fixed" ? "Valor por conversão (MZN)" : "Percentagem (%)")}
             <label className="text-xs text-muted-foreground">Evento
-              <select value={String(cfg.trigger_event ?? "first_deposit")} onChange={(e) => setCfg({ ...cfg, trigger_event: e.target.value })} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground">
+              <select value={String(cfg["trigger_event"] ?? "first_deposit")} onChange={(e) => setCfg({ ...cfg, trigger_event: e.target.value })} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground">
                 <option value="first_deposit">Primeiro depósito</option><option value="signup">Cadastro</option>
               </select>
             </label>
@@ -94,7 +94,7 @@ function AdminAffiliates() {
             {field("min_payout", "Levantamento mínimo (MZN)")}
           </div>
           <label className="mt-3 block text-xs text-muted-foreground">Regras de cancelamento e estorno
-            <textarea value={String(cfg.reversal_rules ?? "")} onChange={(e) => setCfg({ ...cfg, reversal_rules: e.target.value })} rows={2} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground" />
+            <textarea value={String(cfg["reversal_rules"] ?? "")} onChange={(e) => setCfg({ ...cfg, reversal_rules: e.target.value })} rows={2} className="mt-1 w-full rounded border bg-background px-2 py-1.5 text-sm text-foreground" />
           </label>
           <button className={`${red} mt-3 px-4 py-2 text-sm`} onClick={() => run(supabase.rpc("affiliate_admin_config", { _cfg: cfg as never }), "Regras guardadas")}>Guardar regras</button>
         </section>
