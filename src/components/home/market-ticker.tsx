@@ -1,4 +1,8 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { getFxRates } from "@/lib/exchange/fx.functions";
 
 import type { MarketAssetRow } from "@/lib/exchange/market.functions";
 import { pct } from "@/lib/exchange/format";
