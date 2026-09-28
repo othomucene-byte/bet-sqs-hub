@@ -16,6 +16,8 @@ import { Route as DesportosRouteImport } from './routes/desportos'
 import { Route as EmpresasRouteImport } from './routes/empresas'
 import { Route as InvestimentosRouteImport } from './routes/investimentos'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBilhetesRouteImport } from './routes/_authenticated/bilhetes'
 import { Route as AuthenticatedBoostRouteImport } from './routes/_authenticated/boost'
@@ -107,6 +109,16 @@ const InvestimentosRoute = InvestimentosRouteImport.update({
 const PagamentosRoute = PagamentosRouteImport.update({
   id: '/pagamentos',
   path: '/pagamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -433,6 +445,8 @@ export interface FileRoutesByFullPath {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/boost': typeof AuthenticatedBoostRoute
@@ -499,6 +513,8 @@ export interface FileRoutesByTo {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bilhetes': typeof AuthenticatedBilhetesRoute
   '/boost': typeof AuthenticatedBoostRoute
@@ -567,6 +583,8 @@ export interface FileRoutesById {
   '/empresas': typeof EmpresasRoute
   '/investimentos': typeof InvestimentosRoute
   '/pagamentos': typeof PagamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/bilhetes': typeof AuthenticatedBilhetesRoute
   '/_authenticated/boost': typeof AuthenticatedBoostRoute
@@ -635,6 +653,8 @@ export interface FileRouteTypes {
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
+    | '/privacidade'
+    | '/termos'
     | '/admin'
     | '/bilhetes'
     | '/boost'
@@ -701,6 +721,8 @@ export interface FileRouteTypes {
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
+    | '/privacidade'
+    | '/termos'
     | '/admin'
     | '/bilhetes'
     | '/boost'
@@ -768,6 +790,8 @@ export interface FileRouteTypes {
     | '/empresas'
     | '/investimentos'
     | '/pagamentos'
+    | '/privacidade'
+    | '/termos'
     | '/_authenticated/admin'
     | '/_authenticated/bilhetes'
     | '/_authenticated/boost'
@@ -836,6 +860,8 @@ export interface RootRouteChildren {
   EmpresasRoute: typeof EmpresasRoute
   InvestimentosRoute: typeof InvestimentosRoute
   PagamentosRoute: typeof PagamentosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  TermosRoute: typeof TermosRoute
   OauthAutorizarRoute: typeof OauthAutorizarRoute
   SportsLiveRoute: typeof SportsLiveRoute
   ExchangeIndexRoute: typeof ExchangeIndexRoute
@@ -914,6 +940,20 @@ declare module '@tanstack/react-router' {
       path: '/pagamentos'
       fullPath: '/pagamentos'
       preLoaderRoute: typeof PagamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -1446,6 +1486,8 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresasRoute: EmpresasRoute,
   InvestimentosRoute: InvestimentosRoute,
   PagamentosRoute: PagamentosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  TermosRoute: TermosRoute,
   OauthAutorizarRoute: OauthAutorizarRoute,
   SportsLiveRoute: SportsLiveRoute,
   ExchangeIndexRoute: ExchangeIndexRoute,
