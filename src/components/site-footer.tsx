@@ -35,6 +35,11 @@ export function SiteFooter() {
         <div>
           <h3 className="text-sm font-semibold">Core Platform</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>
+              <a href="/afiliados" className="hover:text-foreground">
+                Programa de Afiliados
+              </a>
+            </li>
             <li>Auth &amp; KYC</li>
             <li>Wallet &amp; Ledger</li>
             <li>Payments</li>

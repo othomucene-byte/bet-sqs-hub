@@ -11,6 +11,7 @@ import {
   Code2,
   CreditCard,
   Gamepad2,
+  Handshake,
   IdCard,
   LineChart,
   LogOut,
@@ -72,7 +73,10 @@ const publicGroups: NavGroup[] = [
 
   {
     title: "Plataforma",
-    links: [{ href: "/#seguranca", label: "Segurança", icon: ShieldCheck }],
+    links: [
+      { href: "/afiliados", label: "Programa de Afiliados", icon: Handshake },
+      { href: "/#seguranca", label: "Segurança", icon: ShieldCheck },
+    ],
   },
 ];
 
@@ -112,6 +116,7 @@ const memberGroups: NavGroup[] = [
   {
     title: "Plataforma",
     links: [
+      { href: "/afiliados", label: "Programa de Afiliados", icon: Handshake },
       { href: "/developers", label: "API developers", icon: Code2 },
       { href: "/#seguranca", label: "Segurança", icon: ShieldCheck },
     ],
