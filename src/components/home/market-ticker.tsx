@@ -22,12 +22,21 @@ export function MarketTicker({
 }) {
   const fetchFx = useServerFn(getFxRates);
   const fx = useQuery({ queryKey: ["fx-rates"], queryFn: () => fetchFx(), staleTime: 30 * 60_000 });
-  const fxItems = (fx.data?.quotes ?? []).map((q) => (
-    <span key={q.pair} className="flex shrink-0 items-center gap-2 text-xs">
-      <span className="font-display font-bold tracking-tight">{q.pair}</span>
-      <span className="tabular-nums text-muted-foreground">{q.rate.toFixed(2)}</span>
-    </span>
-  ));
+  const fxItems = (fx.data?.quotes ?? []).map((q) => {
+    const up = (q.changePct ?? 0) >= 0;
+    const tone = q.changePct == null || q.changePct === 0 ? "text-muted-foreground" : up ? "text-primary" : "text-destructive";
+    return (
+      <span key={q.pair} className="flex shrink-0 items-center gap-2 text-xs">
+        <span className="font-display font-bold tracking-tight">{q.pair}</span>
+        <span className={`font-semibold tabular-nums ${tone}`}>{q.rate.toFixed(2)}</span>
+        <span className={`flex items-center gap-0.5 tabular-nums ${tone}`}>
+          {q.changePct != null && q.changePct !== 0 &&
+            (up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />)}
+          {pct(q.changePct)}
+        </span>
+      </span>
+    );
+  });
   const rows = assets
     .filter((a) => a.lastPrice != null || a.referencePrice != null)
     .slice(0, 14);
