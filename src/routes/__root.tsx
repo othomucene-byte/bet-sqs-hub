@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { AssistantWidget } from "@/components/assistant-widget";
+import { AffiliateTracker } from "@/components/affiliate-tracker";
 
 function NotFoundComponent() {
   return (
@@ -180,6 +181,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthBridge />
+      <AffiliateTracker />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <AssistantWidget />
