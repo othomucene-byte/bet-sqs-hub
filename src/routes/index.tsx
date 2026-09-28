@@ -367,7 +367,7 @@ function Landing() {
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  {crashGames.slice(0, 2).map((g) => (
+                  {crashGames.slice(0, events.length === 0 ? 4 : 2).map((g) => (
                     <a
                       key={g.slug}
                       href={g.href}
