@@ -99,7 +99,11 @@ export function MarketTable({ assets, loading }: { assets: MarketAssetRow[]; loa
                         </span>
                       </a>
                     </td>
-                    <td className="px-4 py-3 text-right font-display font-bold tabular-nums">
+                    <td
+                      className={`px-4 py-3 text-right font-display font-bold tabular-nums ${
+                        a.changePct == null ? "" : up ? "text-primary" : "text-destructive"
+                      }`}
+                    >
                       {value != null ? value.toFixed(2) : "—"}
                       {a.isReferenceOnly && (
                         <Badge variant="outline" className="ml-2 text-[9px] uppercase">
@@ -108,7 +112,7 @@ export function MarketTable({ assets, loading }: { assets: MarketAssetRow[]; loa
                       )}
                     </td>
                     <td
-                      className={`px-4 py-3 text-right tabular-nums ${
+                      className={`px-4 py-3 text-right font-semibold tabular-nums ${
                         a.changePct == null
                           ? "text-muted-foreground"
                           : up
@@ -116,6 +120,7 @@ export function MarketTable({ assets, loading }: { assets: MarketAssetRow[]; loa
                             : "text-destructive"
                       }`}
                     >
+                      {a.changePct != null && (up ? "▲ " : "▼ ")}
                       {pct(a.changePct)}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
