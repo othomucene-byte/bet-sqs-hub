@@ -1,4 +1,8 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { getFxRates } from "@/lib/exchange/fx.functions";
 
 import type { MarketAssetRow } from "@/lib/exchange/market.functions";
 import { pct } from "@/lib/exchange/format";
@@ -16,6 +20,14 @@ export function MarketTicker({
   loading: boolean;
   marketStatusLabel: string;
 }) {
+  const fetchFx = useServerFn(getFxRates);
+  const fx = useQuery({ queryKey: ["fx-rates"], queryFn: () => fetchFx(), staleTime: 30 * 60_000 });
+  const fxItems = (fx.data?.quotes ?? []).map((q) => (
+    <span key={q.pair} className="flex shrink-0 items-center gap-2 text-xs">
+      <span className="font-display font-bold tracking-tight">{q.pair}</span>
+      <span className="tabular-nums text-muted-foreground">{q.rate.toFixed(2)}</span>
+    </span>
+  ));
   const rows = assets
     .filter((a) => a.lastPrice != null || a.referencePrice != null)
     .slice(0, 14);
@@ -34,14 +46,15 @@ export function MarketTicker({
         </div>
 
         <div className="min-w-0 flex-1 overflow-hidden py-2">
-          {loading ? (
+          {loading && fxItems.length === 0 ? (
             <p className="px-3 text-xs text-muted-foreground">A carregar cotações…</p>
-          ) : rows.length === 0 ? (
+          ) : rows.length === 0 && fxItems.length === 0 ? (
             <p className="px-3 text-xs text-muted-foreground">
               Sem cotações disponíveis neste momento.
             </p>
           ) : (
             <div className="flex w-max animate-ticker gap-6 pl-3">
+              {fxItems}
               {[...rows, ...rows].map((a, i) => {
                 const value = a.lastPrice ?? a.referencePrice;
                 const up = (a.changePct ?? 0) >= 0;
