@@ -65,7 +65,11 @@ export function MarketTicker({
                     className="flex shrink-0 items-center gap-2 text-xs"
                   >
                     <span className="font-display font-bold tracking-tight">{a.symbol}</span>
-                    <span className="tabular-nums text-muted-foreground">
+                    <span
+                      className={`font-semibold tabular-nums ${
+                        a.changePct == null ? "text-foreground" : up ? "text-primary" : "text-destructive"
+                      }`}
+                    >
                       {value != null ? value.toFixed(2) : "—"}
                     </span>
                     <span
