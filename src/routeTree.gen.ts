@@ -65,6 +65,8 @@ import { Route as ApiPublicSportsStreamRouteImport } from './routes/api/public/s
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicWebhooksNetshopRouteImport } from './routes/api/public/webhooks/netshop'
 import { Route as ApiPublicWebhooksPaytedRouteImport } from './routes/api/public/webhooks/payted'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as ApiPublicV1MarketAssetsRouteImport } from './routes/api/public/v1/market.assets'
 import { Route as ApiPublicV1OauthAuthorizeRouteImport } from './routes/api/public/v1/oauth.authorize'
 import { Route as ApiPublicV1OauthRevokeRouteImport } from './routes/api/public/v1/oauth.revoke'
@@ -377,6 +379,16 @@ const ApiPublicWebhooksPaytedRoute = ApiPublicWebhooksPaytedRouteImport.update({
   path: '/api/public/webhooks/payted',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1MarketAssetsRoute = ApiPublicV1MarketAssetsRouteImport.update({
   id: '/api/public/v1/market/assets',
   path: '/api/public/v1/market/assets',
@@ -507,6 +519,8 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -577,6 +591,8 @@ export interface FileRoutesByTo {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -649,6 +665,8 @@ export interface FileRoutesById {
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
   '/api/public/webhooks/netshop': typeof ApiPublicWebhooksNetshopRoute
   '/api/public/webhooks/payted': typeof ApiPublicWebhooksPaytedRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/api/public/v1/market/assets': typeof ApiPublicV1MarketAssetsRouteWithChildren
   '/api/public/v1/oauth/authorize': typeof ApiPublicV1OauthAuthorizeRoute
   '/api/public/v1/oauth/revoke': typeof ApiPublicV1OauthRevokeRoute
@@ -721,6 +739,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -791,6 +811,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -862,6 +884,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/openapi.json'
     | '/api/public/webhooks/netshop'
     | '/api/public/webhooks/payted'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/api/public/v1/market/assets'
     | '/api/public/v1/oauth/authorize'
     | '/api/public/v1/oauth/revoke'
@@ -904,6 +928,8 @@ export interface RootRouteChildren {
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
   ApiPublicWebhooksNetshopRoute: typeof ApiPublicWebhooksNetshopRoute
   ApiPublicWebhooksPaytedRoute: typeof ApiPublicWebhooksPaytedRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   ApiPublicV1MarketAssetsRoute: typeof ApiPublicV1MarketAssetsRouteWithChildren
   ApiPublicV1OauthAuthorizeRoute: typeof ApiPublicV1OauthAuthorizeRoute
   ApiPublicV1OauthRevokeRoute: typeof ApiPublicV1OauthRevokeRoute
@@ -1311,6 +1337,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksPaytedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/market/assets': {
       id: '/api/public/v1/market/assets'
       path: '/api/public/v1/market/assets'
@@ -1547,6 +1587,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
   ApiPublicWebhooksNetshopRoute: ApiPublicWebhooksNetshopRoute,
   ApiPublicWebhooksPaytedRoute: ApiPublicWebhooksPaytedRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   ApiPublicV1MarketAssetsRoute: ApiPublicV1MarketAssetsRouteWithChildren,
   ApiPublicV1OauthAuthorizeRoute: ApiPublicV1OauthAuthorizeRoute,
   ApiPublicV1OauthRevokeRoute: ApiPublicV1OauthRevokeRoute,
