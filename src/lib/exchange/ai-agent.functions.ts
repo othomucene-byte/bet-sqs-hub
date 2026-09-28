@@ -75,8 +75,8 @@ export const getAgentStatus = createServerFn({ method: "POST" })
     z.object({ assetId: z.string().uuid().optional() }).parse(input ?? {}),
   )
   .handler(async ({ data }): Promise<AgentStatus> => {
-    const { publicClient } = await import("@/lib/investments/public-client.server");
-    const db = publicClient();
+    // Config/log are admin-only under RLS; the server reads only safe columns for public status.
+    const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
 
     const [configRes, jobRes] = await Promise.all([
       db
