@@ -57,6 +57,18 @@ function ExchangeMarket() {
   });
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Todos");
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+  }, []);
+  const fetchAccount = useServerFn(getExchangeAccount);
+  const account = useQuery({
+    queryKey: ["exchange-account"],
+    queryFn: () => fetchAccount({ data: { environment: "LIVE" as const } }),
+    enabled: signedIn === true,
+    staleTime: 10000,
+  });
+
 
   const rows = query.data?.assets ?? [];
   const assets = useMemo(() => {
