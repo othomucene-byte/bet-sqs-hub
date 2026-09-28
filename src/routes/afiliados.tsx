@@ -40,7 +40,10 @@ function AffiliatesPage() {
     setBusy(true);
     const { error } = await supabase.rpc("affiliate_join");
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["affiliate-me"] });
   };
 
