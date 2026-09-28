@@ -203,7 +203,7 @@ function ExchangeMarket() {
                        params={{ symbol: p.symbol }}
                        className="flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-secondary/40"
                      >
-                       <AssetLogo symbol={p.symbol} name={p.name} logoUrl={row?.logoUrl} size={32} />
+                       <AssetLogo symbol={p.symbol} name={p.name} logoUrl={row?.logoUrl ?? null} size={32} />
                        <div className="min-w-0 flex-1">
                          <p className="text-xs font-semibold">{p.symbol}</p>
                          <p className="truncate text-[10px] text-muted-foreground">
