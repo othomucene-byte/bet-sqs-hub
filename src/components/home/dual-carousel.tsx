@@ -77,6 +77,8 @@ export function DualCarousel() {
   };
 
   const resume = () => setPaused(false);
+  const current = slides[active];
+  const CurrentIcon = current.icon;
 
   return (
     <section className="border-y border-border/60 bg-card/40" aria-roledescription="carrossel">
@@ -92,47 +94,39 @@ export function DualCarousel() {
             if (!event.currentTarget.contains(event.relatedTarget)) resume();
           }}
         >
-          {slides.map((slide, index) => {
-            const Icon = slide.icon;
-            const isActive = index === active;
-            return (
-              <article
-                key={slide.title}
-                className={`absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none ${
-                  isActive ? "z-10 opacity-100" : "pointer-events-none opacity-0"
-                }`}
-                aria-hidden={!isActive}
-              >
-                <img
-                  src={slide.image}
-                  alt={slide.alt}
-                  className="absolute inset-0 size-full object-cover"
-                  loading={index === 0 ? "eager" : "lazy"}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-bet-surface via-bet-surface/80 to-bet-surface/10" />
-                <div className="relative z-10 flex h-full max-w-2xl flex-col justify-center px-6 pb-12 pt-8 sm:px-12 sm:pb-14">
-                  <Icon className="mb-4 size-7 text-bet-green" aria-hidden="true" />
-                  <h2 className="text-2xl font-bold text-bet-foreground sm:text-4xl">{slide.title}</h2>
-                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-bet-muted sm:text-base">
-                    {slide.description}
-                  </p>
-                  <div className="mt-5">
-                    <Button className="bg-bet-green text-bet-green-foreground hover:bg-bet-green/90" asChild>
-                      <a href={slide.href} tabIndex={isActive ? 0 : -1}>
-                        {slide.action} <ArrowRight className="size-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+          {slides.map((slide, index) => (
+            <img
+              key={slide.title}
+              src={slide.image}
+              alt={index === active ? slide.alt : ""}
+              className={`absolute inset-0 size-full object-cover transition-opacity duration-700 motion-reduce:transition-none ${
+                index === active ? "opacity-100" : "opacity-0"
+              }`}
+              loading={index === 0 ? "eager" : "lazy"}
+              aria-hidden={index !== active}
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-r from-bet-surface via-bet-surface/80 to-bet-surface/10" />
+          <article className="relative z-10 flex h-full max-w-2xl flex-col justify-center px-6 pb-16 pt-7 sm:px-12 sm:pb-14" aria-live="polite">
+            <CurrentIcon className="mb-3 size-7 text-bet-green sm:mb-4" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-bet-foreground sm:text-4xl">{current.title}</h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-bet-muted sm:text-base">
+              {current.description}
+            </p>
+            <div className="mt-5">
+              <Button className="bg-bet-green text-bet-green-foreground hover:bg-bet-green/90" asChild>
+                <a href={current.href}>
+                  {current.action} <ArrowRight className="size-4" />
+                </a>
+              </Button>
+            </div>
+          </article>
 
           <Button
             type="button"
             variant="secondary"
             size="icon"
-            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 bg-background/80 shadow-md backdrop-blur-sm"
+            className="absolute bottom-3 left-3 z-20 bg-background/80 shadow-md backdrop-blur-sm sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
             aria-label="Imagem anterior"
             onClick={() => navigate(active - 1)}
           >
@@ -142,7 +136,7 @@ export function DualCarousel() {
             type="button"
             variant="secondary"
             size="icon"
-            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 bg-background/80 shadow-md backdrop-blur-sm"
+            className="absolute bottom-3 right-3 z-20 bg-background/80 shadow-md backdrop-blur-sm sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
             aria-label="Imagem seguinte"
             onClick={() => navigate(active + 1)}
           >
