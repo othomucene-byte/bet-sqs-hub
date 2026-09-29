@@ -77,7 +77,7 @@ export function DualCarousel() {
   };
 
   const resume = () => setPaused(false);
-  const current = slides[active];
+  const current = slides[active] ?? slides[0];
   const CurrentIcon = current.icon;
 
   return (
