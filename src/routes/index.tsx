@@ -25,27 +25,15 @@ import {
 } from "@/components/ui/accordion";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { DualCarousel } from "@/components/home/dual-carousel";
 import { MarketTicker } from "@/components/home/market-ticker";
 import { MarketTable } from "@/components/home/market-table";
 import { Sparkline } from "@/components/home/sparkline";
-import { getPaymentsStatus } from "@/lib/payments/netshop.functions";
 import { getMarketOverview } from "@/lib/exchange/market.functions";
 import { getSportsBoard } from "@/lib/sports/sports.functions";
 import { MARKET_STATUS_LABEL, pct } from "@/lib/exchange/format";
 import { shortLabel } from "@/lib/sports/markets";
 import { gameCatalog } from "@/lib/games/catalog";
-import logoCard from "@/assets/logo-card.png.asset.json";
-import logoMpesa from "@/assets/logo-mpesa.png.asset.json";
-import logoEmola from "@/assets/logo-emola.png.asset.json";
-import logoMkesh from "@/assets/logo-mkesh.png.asset.json";
-
-const payLogos = [
-  { src: logoMpesa.url, alt: "M-Pesa" },
-  { src: logoEmola.url, alt: "e-Mola" },
-  { src: logoMkesh.url, alt: "mKesh" },
-  { src: logoCard.url, alt: "Visa e Mastercard" },
-];
-
 const title = "Betfcom SQs — Investimentos, Apostas e Casino em Moçambique";
 const description =
   "Betfcom SQs: plataforma de investimentos, apostas desportivas e jogos de casino em meticais, com carteiras separadas, KYC e registo completo de cada movimento. Investir e apostar envolve risco.";
@@ -153,10 +141,6 @@ const HOUR = new Intl.DateTimeFormat("pt-PT", {
 });
 
 function Landing() {
-  const fetchStatus = useServerFn(getPaymentsStatus);
-  const status = useQuery({ queryKey: ["payments-status"], queryFn: () => fetchStatus() });
-  const active = Object.entries(status.data?.methods ?? {}).filter(([, on]) => on).length;
-
   const fetchMarket = useServerFn(getMarketOverview);
   const market = useQuery({
     queryKey: ["home-market"],
@@ -196,13 +180,6 @@ function Landing() {
           <div className="grid-lines absolute inset-0 opacity-40" aria-hidden="true" />
           <div className="relative mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
             <div className="max-w-2xl">
-              <Badge variant="secondary" className="mb-4">
-                {status.isLoading
-                  ? "A verificar métodos de pagamento…"
-                  : active > 0
-                    ? `${active} métodos de pagamento activos em MZN`
-                    : "Métodos de pagamento em configuração"}
-              </Badge>
               <h1 className="font-display text-3xl font-bold leading-[1.05] tracking-tight text-hero-foreground sm:text-5xl">
                 Mercados e apostas na mesma plataforma, com a mesma exigência.
               </h1>
@@ -409,6 +386,8 @@ function Landing() {
           </div>
         </section>
 
+        <DualCarousel />
+
         {/* Mercados */}
         <section id="mercados" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -486,25 +465,6 @@ function Landing() {
               ))}
             </div>
           </div>
-        </section>
-
-        {/* Pagamentos */}
-        <section className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-8 sm:flex-row sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Depósitos e levantamentos em meticais, confirmados no servidor.
-          </p>
-          <ul className="flex flex-wrap items-center justify-center gap-6">
-            {payLogos.map((logo) => (
-              <li key={logo.alt}>
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  loading="lazy"
-                  className="h-7 w-auto object-contain opacity-80"
-                />
-              </li>
-            ))}
-          </ul>
         </section>
 
         {/* Benefícios */}
