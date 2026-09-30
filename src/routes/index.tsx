@@ -172,6 +172,7 @@ function Landing() {
         loading={market.isLoading}
         marketStatusLabel={marketStatusLabel}
       />
+      <DualCarousel />
 
       <main>
         {/* Hero — portal duplo */}
@@ -385,8 +386,6 @@ function Landing() {
             </div>
           </div>
         </section>
-
-        <DualCarousel />
 
         {/* Mercados */}
         <section id="mercados" className="mx-auto w-full max-w-6xl px-4 py-12 sm:py-16">
