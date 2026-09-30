@@ -1,37 +1,79 @@
 import * as React from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, LineChart, Trophy } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Gamepad2, LineChart, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import investmentImage from "@/assets/hero.jpg";
 import bettingImage from "@/assets/games/track-bg.jpg";
 import skyImage from "@/assets/games/sky-bg.jpg.asset.json";
+import aviatorImage from "@/assets/aviator-banner.png.asset.json";
+import chickenImage from "@/assets/games/chicken-hero.png";
+import lionImage from "@/assets/games/lion-hero.png";
 
 const slides = [
   {
-    title: "SQs Investimentos",
-    description: "Acompanhe mercados, analise oportunidades e invista com informação clara sobre cada risco.",
+    eyebrow: "SQs Investimentos",
+    title: "INVISTA NO SEU FUTURO",
+    description: "Empresas. Oportunidades. Rendimentos.",
     image: investmentImage,
-    alt: "Visual de mercado financeiro com gráfico em crescimento",
+    alt: "Mercado financeiro com gráfico verde em crescimento",
     href: "/investimentos",
-    action: "Explorar investimentos",
+    action: "Saber mais",
     icon: LineChart,
+    tone: "primary",
   },
   {
-    title: "SQs Apostas",
-    description: "Desportos, jogos rápidos e uma experiência criada para decisões simples em qualquer dispositivo.",
+    eyebrow: "SQs Apostas",
+    title: "APOSTAS COM MAIS EMOÇÃO",
+    description: "Desportos. Odds reais. Viva a experiência.",
     image: bettingImage,
-    alt: "Pista iluminada que representa a velocidade dos jogos e apostas",
+    alt: "Pista desportiva iluminada com sensação de velocidade",
     href: "/desportos",
-    action: "Ver apostas",
+    action: "Apostar agora",
     icon: Trophy,
+    tone: "destructive",
   },
   {
-    title: "Jogos Betfcom SQs",
-    description: "Entre nos jogos da plataforma com rondas verificáveis e operações confirmadas no servidor.",
-    image: skyImage.url,
-    alt: "Céu aberto usado na experiência de jogos Betfcom SQs",
+    eyebrow: "SQs Apostas",
+    title: "VOE MAIS ALTO",
+    description: "Aviator. Rondas rápidas. Emoção em tempo real.",
+    image: aviatorImage.url,
+    alt: "Avião do jogo Aviator sobre uma cidade iluminada",
+    href: "/jogos",
+    action: "Jogar agora",
+    icon: Zap,
+    tone: "destructive",
+  },
+  {
+    eyebrow: "Jogos SQs",
+    title: "DESAFIE A SORTE",
+    description: "Jogos rápidos. Rondas verificáveis. Controlo total.",
+    image: chickenImage,
+    alt: "Personagem do jogo Chicken da Betfcom SQs",
+    href: "/jogos",
+    action: "Ver jogos",
+    icon: Gamepad2,
+    tone: "primary",
+  },
+  {
+    eyebrow: "Jogos SQs",
+    title: "ENTRE NA SELVA",
+    description: "Ação. Estratégia. Rondas confirmadas no servidor.",
+    image: lionImage,
+    alt: "Leão do jogo de selva da Betfcom SQs",
     href: "/jogos",
     action: "Descobrir jogos",
-    icon: Trophy,
+    icon: Gamepad2,
+    tone: "destructive",
+  },
+  {
+    eyebrow: "Betfcom SQs",
+    title: "JOGUE COM TRANSPARÊNCIA",
+    description: "Rondas verificáveis. Registo completo. Jogo responsável.",
+    image: skyImage.url,
+    alt: "Céu aberto da experiência de jogos Betfcom SQs",
+    href: "/jogos",
+    action: "Explorar",
+    icon: Zap,
+    tone: "primary",
   },
 ] as const;
 
@@ -81,10 +123,10 @@ export function DualCarousel() {
   const CurrentIcon = current.icon;
 
   return (
-    <section className="border-y border-border/60 bg-card/40" aria-roledescription="carrossel">
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
+    <section className="border-b border-border/60 bg-background" aria-roledescription="carrossel" aria-label="Destaques Betfcom SQs">
+      <div className="mx-auto w-full max-w-6xl px-3 py-3 sm:px-4 sm:py-5">
         <div
-          className="relative h-72 overflow-hidden rounded-xl border border-border bg-bet-surface sm:h-96"
+          className="relative h-[19rem] overflow-hidden rounded-lg border border-border bg-bet-surface sm:h-[25rem]"
           onMouseEnter={keepPaused}
           onMouseLeave={resume}
           onPointerDown={keepPaused}
@@ -106,15 +148,19 @@ export function DualCarousel() {
               aria-hidden={index !== active}
             />
           ))}
-          <div className="absolute inset-0 bg-gradient-to-r from-bet-surface via-bet-surface/80 to-bet-surface/10" />
-          <article className="relative z-10 flex h-full max-w-2xl flex-col justify-center px-6 pb-16 pt-7 sm:px-12 sm:pb-14" aria-live="polite">
-            <CurrentIcon className="mb-3 size-7 text-bet-green sm:mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-bet-foreground sm:text-4xl">{current.title}</h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-bet-muted sm:text-base">
+          <div className="absolute inset-0 bg-gradient-to-r from-bet-surface via-bet-surface/85 to-bet-surface/15" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bet-surface to-transparent" />
+          <article className="relative z-10 flex h-full max-w-xl flex-col justify-center px-12 pb-14 pt-6 sm:px-16 sm:pb-12" aria-live="polite">
+            <div className={`mb-3 flex items-center gap-2 text-sm font-bold ${current.tone === "destructive" ? "text-destructive" : "text-primary"}`}>
+              <CurrentIcon className="size-5" aria-hidden="true" />
+              <span>{current.eyebrow}</span>
+            </div>
+            <h2 className="max-w-md text-3xl font-extrabold leading-tight text-bet-foreground sm:text-5xl">{current.title}</h2>
+            <p className="mt-3 max-w-md text-sm font-medium leading-relaxed text-bet-foreground/85 sm:text-base">
               {current.description}
             </p>
             <div className="mt-5">
-              <Button className="bg-bet-green text-bet-green-foreground hover:bg-bet-green/90" asChild>
+              <Button variant="outline" className={`bg-bet-surface/35 font-bold backdrop-blur-sm ${current.tone === "destructive" ? "border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground" : "border-primary text-primary hover:bg-primary hover:text-primary-foreground"}`} asChild>
                 <a href={current.href}>
                   {current.action} <ArrowRight className="size-4" />
                 </a>
@@ -126,7 +172,7 @@ export function DualCarousel() {
             type="button"
             variant="secondary"
             size="icon"
-            className="absolute bottom-3 left-3 z-20 bg-background/80 shadow-md backdrop-blur-sm sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
+            className="absolute left-2 top-1/2 z-20 -translate-y-1/2 border-bet-foreground/30 bg-bet-surface/65 text-bet-foreground shadow-md backdrop-blur-sm hover:bg-bet-surface sm:left-4"
             aria-label="Imagem anterior"
             onClick={() => navigate(active - 1)}
           >
@@ -136,7 +182,7 @@ export function DualCarousel() {
             type="button"
             variant="secondary"
             size="icon"
-            className="absolute bottom-3 right-3 z-20 bg-background/80 shadow-md backdrop-blur-sm sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
+            className="absolute right-2 top-1/2 z-20 -translate-y-1/2 border-bet-foreground/30 bg-bet-surface/65 text-bet-foreground shadow-md backdrop-blur-sm hover:bg-bet-surface sm:right-4"
             aria-label="Imagem seguinte"
             onClick={() => navigate(active + 1)}
           >
@@ -149,8 +195,8 @@ export function DualCarousel() {
                 key={slide.title}
                 type="button"
                 variant="secondary"
-                className={`h-2 min-h-0 p-0 transition-[width,opacity] duration-300 ${
-                  index === active ? "w-7 bg-bet-green" : "w-2 bg-bet-foreground/60"
+                className={`size-2 min-h-0 rounded-full p-0 transition-[width,opacity] duration-300 ${
+                  index === active ? "w-7 bg-primary" : "bg-bet-foreground/50"
                 }`}
                 aria-label={`Mostrar ${slide.title}`}
                 aria-current={index === active ? "true" : undefined}
