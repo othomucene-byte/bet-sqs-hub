@@ -27,6 +27,8 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
   { id: 15, name: "Mundial de Clubes", region: "FIFA" },
   { id: 3, name: "Liga Europa", region: "UEFA" },
   { id: 848, name: "Liga Conferência", region: "UEFA" },
+  { id: 5, name: "Liga das Nações", region: "UEFA" },
+  { id: 536, name: "Liga das Nações CONCACAF", region: "CONCACAF" },
 ];
 
 /** Dias à frente cobertos e orçamento de chamadas (plano gratuito: 100/dia). */
@@ -239,35 +241,10 @@ export async function syncSportsCatalog(): Promise<{
   let oddsCount = 0;
   let compCount = 0;
 
-  // Competições acompanhadas
-  const compIds = new Map<number, string>();
-  for (const league of LEAGUES) {
-    const { data: compRow, error: compError } = await supabaseAdmin
-      .from("sport_competitions")
-      .upsert(
-        {
-          sport_id: sportRow.id,
-          key: `af_${league.id}`,
-          name: league.name,
-          region: league.region,
-          active: true,
-        },
-        { onConflict: "key" },
-      )
-      .select("id")
-      .single();
-    if (compError || !compRow) {
-      errors.push(`competição ${league.name}: ${compError?.message ?? "falhou"}`);
-      continue;
-    }
-    compIds.set(league.id, compRow.id);
-    compCount += 1;
-  }
-
-  // Jogos por dia (o parâmetro `date` está disponível em qualquer plano)
-  const selected: ApiFixture[] = [];
+  // Todas as ligas devolvidas pelo fornecedor; as principais têm prioridade.
+  const priority = new Map(LEAGUES.map((l, i) => [l.id, i]));
+  const candidates: ApiFixture[] = [];
   for (const date of upcomingDates(DAYS_AHEAD)) {
-    if (selected.length >= MAX_EVENTS) break;
     let fixtures: ApiFixture[] = [];
     try {
       fixtures = await fixturesByDate(date);
@@ -276,13 +253,46 @@ export async function syncSportsCatalog(): Promise<{
       continue;
     }
     for (const fixture of fixtures) {
-      if (selected.length >= MAX_EVENTS) break;
-      if (!compIds.has(fixture.league?.id)) continue;
+      if (!fixture.league?.id) continue;
       if (fixture.fixture?.status?.short !== "NS") continue;
       const commence = new Date(fixture.fixture.date);
       if (Number.isNaN(commence.getTime()) || commence.getTime() <= Date.now()) continue;
-      selected.push(fixture);
+      candidates.push(fixture);
     }
+  }
+  candidates.sort((a, b) => {
+    const pa = priority.get(a.league.id) ?? 999;
+    const pb = priority.get(b.league.id) ?? 999;
+    if (pa !== pb) return pa - pb;
+    return new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime();
+  });
+  const selected = candidates.slice(0, MAX_EVENTS);
+
+  const compIds = new Map<number, string>();
+  for (const fixture of selected) {
+    const lg = fixture.league as ApiFixture["league"] & { country?: string };
+    if (compIds.has(lg.id)) continue;
+    const known = LEAGUES.find((l) => l.id === lg.id);
+    const { data: compRow, error: compError } = await supabaseAdmin
+      .from("sport_competitions")
+      .upsert(
+        {
+          sport_id: sportRow.id,
+          key: `af_${lg.id}`,
+          name: known?.name ?? lg.name,
+          region: known?.region ?? lg.country ?? "Internacional",
+          active: true,
+        },
+        { onConflict: "key" },
+      )
+      .select("id")
+      .single();
+    if (compError || !compRow) {
+      errors.push(`competição ${lg.name}: ${compError?.message ?? "falhou"}`);
+      continue;
+    }
+    compIds.set(lg.id, compRow.id);
+    compCount += 1;
   }
 
   selected.sort(
