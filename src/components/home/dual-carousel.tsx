@@ -1,12 +1,8 @@
 import * as React from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, Gamepad2, LineChart, Trophy, Zap } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, LineChart, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import investmentImage from "@/assets/hero.jpg";
 import bettingImage from "@/assets/games/track-bg.jpg";
-import skyImage from "@/assets/games/sky-bg.jpg.asset.json";
-import aviatorImage from "@/assets/aviator-banner.png.asset.json";
-import chickenImage from "@/assets/games/chicken-hero.png";
-import lionImage from "@/assets/games/lion-hero.png";
 
 const slides = [
   {
@@ -30,50 +26,6 @@ const slides = [
     action: "Apostar agora",
     icon: Trophy,
     tone: "destructive",
-  },
-  {
-    eyebrow: "SQs Apostas",
-    title: "VOE MAIS ALTO",
-    description: "Aviator. Rondas rápidas. Emoção em tempo real.",
-    image: aviatorImage.url,
-    alt: "Avião do jogo Aviator sobre uma cidade iluminada",
-    href: "/jogos",
-    action: "Jogar agora",
-    icon: Zap,
-    tone: "destructive",
-  },
-  {
-    eyebrow: "Jogos SQs",
-    title: "DESAFIE A SORTE",
-    description: "Jogos rápidos. Rondas verificáveis. Controlo total.",
-    image: chickenImage,
-    alt: "Personagem do jogo Chicken da Betfcom SQs",
-    href: "/jogos",
-    action: "Ver jogos",
-    icon: Gamepad2,
-    tone: "primary",
-  },
-  {
-    eyebrow: "Jogos SQs",
-    title: "ENTRE NA SELVA",
-    description: "Ação. Estratégia. Rondas confirmadas no servidor.",
-    image: lionImage,
-    alt: "Leão do jogo de selva da Betfcom SQs",
-    href: "/jogos",
-    action: "Descobrir jogos",
-    icon: Gamepad2,
-    tone: "destructive",
-  },
-  {
-    eyebrow: "Betfcom SQs",
-    title: "JOGUE COM TRANSPARÊNCIA",
-    description: "Rondas verificáveis. Registo completo. Jogo responsável.",
-    image: skyImage.url,
-    alt: "Céu aberto da experiência de jogos Betfcom SQs",
-    href: "/jogos",
-    action: "Explorar",
-    icon: Zap,
-    tone: "primary",
   },
 ] as const;
 
