@@ -330,19 +330,40 @@ export async function syncSportsCatalog(): Promise<{
     eventCount += 1;
   }
 
-  // Cotações: lote pequeno, dos jogos há mais tempo sem atualização.
-  // O fornecedor só aceita 10 pedidos por minuto, por isso nunca pedimos
-  // tudo de uma vez — cada execução completa uma parte.
-  const { data: staleEvents } = await supabaseAdmin
+  // Cotações: um pedido por jogo, mas priorizado — primeiro as ligas
+  // principais sem cotações, depois as restantes, e só no fim as
+  // atualizações de jogos que já têm cotações. Assim cada execução garante
+  // cotações nos jogos que aparecem primeiro na página de desportos.
+  const { data: scheduledEvents, error: staleError } = await supabaseAdmin
     .from("sport_events")
-    .select("id, provider_event_id, odds_updated_at")
+    .select("id, provider_event_id, odds_updated_at, sport_competitions(key)")
     .eq("status", "scheduled")
-    .gt("commence_at", new Date().toISOString())
-    .order("odds_updated_at", { ascending: true, nullsFirst: true })
-    .limit(MAX_ODDS_CALLS);
+    .gt("commence_at", new Date().toISOString());
+  if (staleError) errors.push(`jogos para cotações: ${staleError.message}`);
+
+  const priorityOf = (key: string | null) => {
+    if (!key) return 1;
+    const idx = LEAGUES.findIndex((lg) => `af_${lg.id}` === key);
+    return idx === -1 ? 1 : 0;
+  };
+  const staleEvents = (scheduledEvents ?? [])
+    .map((e: Record<string, unknown>) => ({
+      id: e.id as number,
+      provider_event_id: e.provider_event_id as number | string,
+      odds_updated_at: e.odds_updated_at as string | null,
+      key: ((e.sport_competitions as { key?: string } | null)?.key) ?? null,
+    }))
+    .sort((a, b) => {
+      const p = priorityOf(a.key) - priorityOf(b.key);
+      if (p !== 0) return p;
+      const aOdds = a.odds_updated_at ?? "";
+      const bOdds = b.odds_updated_at ?? "";
+      if (aOdds !== bOdds) return aOdds < bOdds ? -1 : 1;
+      return 0;
+    });
 
   let oddsCalls = 0;
-  for (const event of staleEvents ?? []) {
+  for (const event of staleEvents) {
     if (Date.now() - startedAt > TIME_BUDGET_MS) break;
     if (oddsCalls >= MAX_ODDS_CALLS) break;
     if (oddsCalls > 0) await sleep(ODDS_SPACING_MS);
