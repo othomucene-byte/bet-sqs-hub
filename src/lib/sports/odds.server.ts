@@ -330,61 +330,75 @@ export async function syncSportsCatalog(): Promise<{
     eventCount += 1;
   }
 
-  // Cotações: um único pedido por dia traz as cotações de TODOS os jogos
-  // desse dia — muito mais jogos cobertos com poucos pedidos (o fornecedor
-  // só aceita 10 pedidos por minuto e o plano gratuito tem quota diária).
+  // Cotações: um pedido por jogo, mas priorizado — primeiro as ligas
+  // principais sem cotações, depois as restantes, e só no fim as
+  // atualizações de jogos que já têm cotações. Assim cada execução garante
+  // cotações nos jogos que aparecem primeiro na página de desportos.
+  const { data: scheduledEvents, error: staleError } = await supabaseAdmin
+    .from("sport_events")
+    .select("id, provider_event_id, odds_updated_at, sport_competitions(key)")
+    .eq("status", "scheduled")
+    .gt("commence_at", new Date().toISOString());
+  if (staleError) errors.push(`jogos para cotações: ${staleError.message}`);
+
+  const priorityOf = (key: string | null) => {
+    if (!key) return 1;
+    const idx = LEAGUES.findIndex((lg) => `af_${lg.id}` === key);
+    return idx === -1 ? 1 : 0;
+  };
+  const staleEvents = (scheduledEvents ?? [])
+    .map((e: Record<string, unknown>) => ({
+      id: e.id as number,
+      provider_event_id: e.provider_event_id as number | string,
+      odds_updated_at: e.odds_updated_at as string | null,
+      key: ((e.sport_competitions as { key?: string } | null)?.key) ?? null,
+    }))
+    .sort((a, b) => {
+      const p = priorityOf(a.key) - priorityOf(b.key);
+      if (p !== 0) return p;
+      const aOdds = a.odds_updated_at ?? "";
+      const bOdds = b.odds_updated_at ?? "";
+      if (aOdds !== bOdds) return aOdds < bOdds ? -1 : 1;
+      return 0;
+    });
+
   let oddsCalls = 0;
-  for (const date of upcomingDates(DAYS_AHEAD)) {
+  for (const event of staleEvents) {
     if (Date.now() - startedAt > TIME_BUDGET_MS) break;
     if (oddsCalls >= MAX_ODDS_CALLS) break;
     if (oddsCalls > 0) await sleep(ODDS_SPACING_MS);
+    oddsCalls += 1;
 
     let oddsEntries: ApiOddsFixture[] = [];
     try {
-      oddsEntries = await call<ApiOddsFixture[]>("/odds", { date });
-      oddsCalls += 1;
+      oddsEntries = await call<ApiOddsFixture[]>("/odds", {
+        fixture: String(event.provider_event_id),
+      });
     } catch (error) {
-      errors.push(`cotações de ${date}: ${(error as Error).message}`);
+      errors.push(`cotações ${event.provider_event_id}: ${(error as Error).message}`);
       continue;
     }
-    const byFixture = new Map(oddsEntries.map((e) => [String(e.fixture.id), e]));
 
-    const { data: dayEvents, error: dayError } = await supabaseAdmin
+    const rows = buildOdds(oddsEntries[0] ?? { fixture: { id: 0 } });
+    await supabaseAdmin
       .from("sport_events")
-      .select("id, provider_event_id")
-      .eq("status", "scheduled")
-      .gte("commence_at", `${date}T00:00:00+00:00`)
-      .lt("commence_at", `${date}T23:59:59+00:00`);
-    if (dayError) {
-      errors.push(`jogos de ${date} para cotações: ${dayError.message}`);
-      continue;
-    }
+      .update({ odds_updated_at: new Date().toISOString() })
+      .eq("id", event.id);
+    await supabaseAdmin.from("sport_odds").delete().eq("event_id", event.id);
+    if (!rows.length) continue;
 
-    for (const event of dayEvents ?? []) {
-      const entry = byFixture.get(String(event.provider_event_id));
-      if (!entry) continue;
-
-      const rows = buildOdds(entry);
-      await supabaseAdmin
-        .from("sport_events")
-        .update({ odds_updated_at: new Date().toISOString() })
-        .eq("id", event.id);
-      await supabaseAdmin.from("sport_odds").delete().eq("event_id", event.id);
-      if (!rows.length) continue;
-
-      const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
-        rows.map((row) => ({
-          event_id: event.id,
-          market: row.market,
-          selection: row.selection,
-          line: row.line,
-          price: row.price,
-          active: true,
-        })),
-      );
-      if (oddsError) errors.push(`cotações do jogo ${event.provider_event_id}: ${oddsError.message}`);
-      else oddsCount += rows.length;
-    }
+    const { error: oddsError } = await supabaseAdmin.from("sport_odds").insert(
+      rows.map((row) => ({
+        event_id: event.id,
+        market: row.market,
+        selection: row.selection,
+        line: row.line,
+        price: row.price,
+        active: true,
+      })),
+    );
+    if (oddsError) errors.push(`cotações do jogo ${event.provider_event_id}: ${oddsError.message}`);
+    else oddsCount += rows.length;
   }
 
   return { competitions: compCount, events: eventCount, odds: oddsCount, errors };
