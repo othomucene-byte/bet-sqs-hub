@@ -102,15 +102,11 @@ function normalizeMsisdn(method: Method, raw: string): string | null {
 }
 
 /**
- * Payment router: e-Mola é servido pela PayTED; os restantes métodos continuam
- * exactamente como estão, na NetShop.
+ * e-Mola passou a ser processado pela NetShop (wallet NETSHOP_WALLET_ID_EMOLA).
+ * Intenções PayTED antigas continuam reconciliáveis.
  */
 function paytedHandlesEmola(): boolean {
-  return Boolean(
-    process.env["PAYTED_SECRET_KEY"] &&
-      process.env["PAYTED_APP_ID"] &&
-      process.env["PAYTED_WEBHOOK_SECRET"],
-  );
+  return false;
 }
 
 /** Estado da integração, lido do servidor — nunca presumido no browser. */
