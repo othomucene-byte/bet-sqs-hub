@@ -267,6 +267,34 @@ export const listPayments = createServerFn({ method: "GET" })
     }));
   });
 
+/** Levantamentos de todos os clientes (direction = withdrawal), para consulta. */
+export const listWithdrawals = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const admin = await assertAdmin(context as unknown as AuthedContext);
+    const { data, error } = await admin
+      .from("payment_intents")
+      .select(
+        "id, user_id, method, amount, currency, status, reference, payer_identifier, provider_transaction_id, created_at",
+      )
+      .eq("direction", "withdrawal")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row: any) => ({
+      id: row.id as string,
+      userId: row.user_id as string,
+      method: row.method as string,
+      amount: Number(row.amount),
+      currency: row.currency as string,
+      status: row.status as string,
+      reference: row.reference as string,
+      payerIdentifier: (row.payer_identifier as string | null) ?? null,
+      providerTransactionId: (row.provider_transaction_id as string | null) ?? null,
+      createdAt: row.created_at as string,
+    }));
+  });
+
 /**
  * Reconcilia uma intenção diretamente com a NetShop. Consulta a referência do
  * comerciante e o identificador devolvido pelo gateway, pois operações móveis
