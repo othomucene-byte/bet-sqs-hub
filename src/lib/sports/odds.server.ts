@@ -35,7 +35,7 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 const DAYS_AHEAD = 2;
 const MAX_EVENTS = 60;
 /** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
-const MAX_ODDS_CALLS = 6;
+const MAX_ODDS_CALLS = 10;
 const ODDS_SPACING_MS = 1200;
 /** Orçamento de tempo por execução (o servidor tem limite por pedido). */
 const TIME_BUDGET_MS = 25_000;
@@ -348,10 +348,10 @@ export async function syncSportsCatalog(): Promise<{
   };
   const staleEvents = (scheduledEvents ?? [])
     .map((e: Record<string, unknown>) => ({
-      id: e.id as number,
-      provider_event_id: e.provider_event_id as number | string,
-      odds_updated_at: e.odds_updated_at as string | null,
-      key: ((e.sport_competitions as { key?: string } | null)?.key) ?? null,
+      id: e["id"] as string,
+      provider_event_id: e["provider_event_id"] as number | string,
+      odds_updated_at: e["odds_updated_at"] as string | null,
+      key: ((e["sport_competitions"] as { key?: string } | null)?.key) ?? null,
     }))
     .sort((a, b) => {
       const p = priorityOf(a.key) - priorityOf(b.key);
