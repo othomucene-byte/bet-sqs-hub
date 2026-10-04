@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  adminPlatformPayout,
   amIAdmin,
   decideKyc,
   getAdminOverview,
@@ -136,6 +137,7 @@ function AdminPage() {
             <InvestmentsTable />
           </TabsContent>
           <TabsContent value="levantamentos" className="mt-4">
+            <PlatformPayoutCard />
             <WithdrawalsTable />
           </TabsContent>
           <TabsContent value="pagamentos" className="mt-4">
@@ -590,6 +592,64 @@ function PaymentsTable() {
             ))}
           </TableBody>
         </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlatformPayoutCard() {
+  const payout = useServerFn(adminPlatformPayout);
+  const [method, setMethod] = useState<"mpesa" | "emola">("emola");
+  const [amount, setAmount] = useState("");
+  const [msisdn, setMsisdn] = useState("");
+  const m = useMutation({
+    mutationFn: () => payout({ data: { method, amount: Number(amount), msisdn } }),
+    onSuccess: (r) => {
+      if (r.ok) {
+        toast.success(`Levantamento enviado (${r.status}). Ref.: ${r.reference}`);
+        setAmount("");
+      } else toast.error(r.message);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base">Levantar da plataforma</CardTitle>
+        <CardDescription>
+          Envia dinheiro da conta NetShop da plataforma para o seu número, sem entrar na NetShop.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3 sm:grid-cols-4">
+        <div className="space-y-1">
+          <Label>Método</Label>
+          <Select value={method} onValueChange={(v) => setMethod(v as "mpesa" | "emola")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="emola">e-Mola</SelectItem>
+              <SelectItem value="mpesa">M-Pesa</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label>Montante (MZN)</Label>
+          <Input type="number" min={10} value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label>Número</Label>
+          <Input inputMode="tel" value={msisdn} onChange={(e) => setMsisdn(e.target.value)} placeholder="86xxxxxxx" />
+        </div>
+        <div className="flex items-end">
+          <Button
+            className="w-full"
+            disabled={m.isPending || Number(amount) < 10 || msisdn.length < 9}
+            onClick={() => {
+              if (confirm(`Confirmar levantamento de ${amount} MZN para ${msisdn}?`)) m.mutate();
+            }}
+          >
+            {m.isPending ? "A enviar…" : "Levantar"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
