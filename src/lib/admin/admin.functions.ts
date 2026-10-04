@@ -296,6 +296,58 @@ export const listWithdrawals = createServerFn({ method: "GET" })
   });
 
 /**
+ * Levantamento da plataforma pelo administrador: payout direto da wallet
+ * NetShop (M-Pesa/e-Mola) para o número indicado, sem passar pelo painel
+ * NetShop. Não mexe em carteiras de clientes; fica registado em audit_logs.
+ */
+export const adminPlatformPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        method: z.enum(["mpesa", "emola"]),
+        amount: z.number().min(10).max(1_000_000),
+        msisdn: z.string().min(9).max(16),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context as unknown as AuthedContext);
+    const value = data.msisdn.replace(/[\s-]/g, "");
+    const rule = data.method === "mpesa" ? /^(?:\+?258)?8[45]\d{7}$/ : /^(?:\+?258)?8[67]\d{7}$/;
+    if (!rule.test(value)) return { ok: false as const, message: "Número inválido para o método escolhido." };
+    const msisdn = `+258${value.replace(/^\+?258/, "")}`;
+    const reference = `adm_${crypto.randomUUID().replace(/-/g, "")}`;
+    const netshop = await import("@/lib/payments/netshop.server");
+    const payout = await netshop.createPayout({
+      method: data.method,
+      amount: data.amount,
+      reference,
+      msisdn,
+      metadata: { admin_id: context.userId, kind: "platform_withdrawal" },
+    });
+    await admin.from("audit_logs").insert({
+      user_id: context.userId,
+      action: "admin_platform_payout",
+      entity: "netshop_payout",
+      metadata: {
+        reference,
+        method: data.method,
+        amount: data.amount,
+        msisdn,
+        ok: payout.ok,
+        status: payout.ok ? payout.status : "failed",
+        message: payout.message ?? null,
+      },
+    });
+    if (!payout.ok || payout.status === "failed") {
+      return { ok: false as const, message: payout.message ?? "O gateway recusou o levantamento." };
+    }
+    return { ok: true as const, reference, status: payout.status };
+  });
+
+
+/**
  * Reconcilia uma intenção diretamente com a NetShop. Consulta a referência do
  * comerciante e o identificador devolvido pelo gateway, pois operações móveis
  * podem concluir depois de um `timeout_no_callback`. Nunca aceita um estado
