@@ -39,6 +39,7 @@ import {
   listKycQueue,
   listPayments,
   listRiskSignals,
+  listWithdrawals,
   postReturn,
   reconcilePayment,
   reviewApplication,
@@ -117,6 +118,7 @@ function AdminPage() {
             <TabsTrigger value="kyc">KYC</TabsTrigger>
             <TabsTrigger value="ordens">Ordens</TabsTrigger>
             <TabsTrigger value="investimentos">Investimentos</TabsTrigger>
+            <TabsTrigger value="levantamentos">Levantamentos</TabsTrigger>
             <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
             <TabsTrigger value="payted">PayTED e-Mola</TabsTrigger>
             <TabsTrigger value="risco">Risco</TabsTrigger>
@@ -132,6 +134,9 @@ function AdminPage() {
           </TabsContent>
           <TabsContent value="investimentos" className="mt-4">
             <InvestmentsTable />
+          </TabsContent>
+          <TabsContent value="levantamentos" className="mt-4">
+            <WithdrawalsTable />
           </TabsContent>
           <TabsContent value="pagamentos" className="mt-4">
             <PaymentsTable />
@@ -585,6 +590,68 @@ function PaymentsTable() {
             ))}
           </TableBody>
         </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function WithdrawalsTable() {
+  const fetchWithdrawals = useServerFn(listWithdrawals);
+  const withdrawals = useQuery({
+    queryKey: ["admin-withdrawals"],
+    queryFn: () => fetchWithdrawals(),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Levantamentos</CardTitle>
+        <CardDescription>
+          Pedidos de levantamento de todos os clientes. Cada intenção tem referência única e o
+          valor só sai da carteira quando o provedor confirma o pagamento.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        {(withdrawals.data ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {withdrawals.isLoading ? "A carregar…" : "Sem levantamentos registados."}
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Método</TableHead>
+                <TableHead>Número / identificador</TableHead>
+                <TableHead className="text-right">Montante</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Referência</TableHead>
+                <TableHead>Ref. gateway</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(withdrawals.data ?? []).map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="whitespace-nowrap text-xs">
+                    {new Date(row.createdAt).toLocaleString("pt-PT")}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{row.userId.slice(0, 8)}</TableCell>
+                  <TableCell>{row.method}</TableCell>
+                  <TableCell className="font-mono text-xs">{row.payerIdentifier ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">{MZN.format(row.amount)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{row.status}</Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{row.reference}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {row.providerTransactionId ?? "—"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );
