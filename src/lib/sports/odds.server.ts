@@ -35,7 +35,7 @@ const LEAGUES: Array<{ id: number; name: string; region: string }> = [
 const DAYS_AHEAD = 2;
 const MAX_EVENTS = 60;
 /** Poucas chamadas de cotações por execução: o fornecedor só aceita 10/minuto. */
-const MAX_ODDS_CALLS = 6;
+const MAX_ODDS_CALLS = 10;
 const ODDS_SPACING_MS = 1200;
 /** Orçamento de tempo por execução (o servidor tem limite por pedido). */
 const TIME_BUDGET_MS = 25_000;
