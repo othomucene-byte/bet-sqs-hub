@@ -348,10 +348,10 @@ export async function syncSportsCatalog(): Promise<{
   };
   const staleEvents = (scheduledEvents ?? [])
     .map((e: Record<string, unknown>) => ({
-      id: e.id as string,
-      provider_event_id: e.provider_event_id as number | string,
-      odds_updated_at: e.odds_updated_at as string | null,
-      key: ((e.sport_competitions as { key?: string } | null)?.key) ?? null,
+      id: e["id"] as string,
+      provider_event_id: e["provider_event_id"] as number | string,
+      odds_updated_at: e["odds_updated_at"] as string | null,
+      key: ((e["sport_competitions"] as { key?: string } | null)?.key) ?? null,
     }))
     .sort((a, b) => {
       const p = priorityOf(a.key) - priorityOf(b.key);
