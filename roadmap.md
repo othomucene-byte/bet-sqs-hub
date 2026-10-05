@@ -1,5 +1,10 @@
 # Roadmap
 
+## Carrossel publicitário
+- [ ] Criar seis imagens novas sem texto para publicidades gerais da plataforma.
+- [ ] Apresentar dois destaques lado a lado num carrossel compacto, preservando o restante site.
+- [ ] Verificar rolagem de 4 segundos, navegação, pausa e dimensões móvel/computador.
+
 - [x] Desportos: sincronização em lotes pequenos (tempo + 10 pedidos/min do fornecedor); 2 dias de jogos (limite do plano gratuito)
 - [x] Aviator/Fish: o multiplicador congela no instante exato do fim da ronda
 
