@@ -12,4 +12,4 @@
 ## Regras de arquitetura
 
 - Comissões de afiliados são geradas por triggers (`affiliate_on_wager`) nas tabelas de apostas/investimentos (`game_bets`, `bet_slips`, `instant_rounds`, `investments`) via `affiliate_commission_for`, deduplicadas por `(source_kind, source_id)` e estornadas quando o evento de origem é anulado. A disponibilidade deriva do prazo (`available_at`) em `affiliate_available`; **não usar pg_cron nem aprovação manual em massa** para validar comissões.
-- Keep the homepage editorial carousel isolated in `components/home`, with paired slides and text separate from image assets, so visual interaction stays independent of financial data and controls remain accessible.
+- Keep the homepage editorial carousel isolated in `components/home`, with slides grouped in pages of two (an odd trailing slide spans the full page) and text separate from image assets, so visual interaction stays independent of financial data and controls remain accessible.
