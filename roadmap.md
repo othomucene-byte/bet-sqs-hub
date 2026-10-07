@@ -1,5 +1,9 @@
 # Roadmap
 
+## Aviator 3D
+- [ ] Isolar o cenário 3D do Aviator, preservando rondas, apostas e pagamentos existentes.
+- [ ] Validar carregamento, movimento e dimensões em computador e telemóvel.
+
 ## Carrossel publicitário
 - [x] Criar seis imagens novas sem texto para publicidades gerais da plataforma.
 - [x] Apresentar dois destaques lado a lado num carrossel compacto, preservando o restante site.
