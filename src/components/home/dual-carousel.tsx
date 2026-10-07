@@ -67,11 +67,11 @@ export function DualCarousel() {
               if (!hovering.current) setPaused(false);
             }
           }}>
-          <div className="flex h-full w-[300%] transition-transform duration-700 ease-in-out motion-reduce:transition-none" style={{ transform: `translateX(-${active * (100 / pages.length)}%)` }}>
+          <div className="flex h-full transition-transform duration-700 ease-in-out motion-reduce:transition-none" style={{ transform: `translateX(-${active * (100 / pages.length)}%)`, width: `${pages.length * 100}%` }}>
             {pages.map((page, pageIndex) => (
-              <div key={pageIndex} className="grid h-full w-1/3 shrink-0 grid-cols-2 divide-x divide-border/60" aria-hidden={pageIndex !== active} inert={pageIndex !== active}>
+              <div key={pageIndex} className="grid h-full shrink-0 grid-cols-2 divide-x divide-border/60" style={{ width: `${100 / pages.length}%` }} aria-hidden={pageIndex !== active} inert={pageIndex !== active}>
                 {page.map((panel) => (
-                  <article key={panel.href} className="relative h-full min-w-0 overflow-hidden">
+                  <article key={panel.href} className={`relative h-full min-w-0 overflow-hidden ${page.length === 1 ? "col-span-2" : ""}`}>
                     <img src={panel.image} alt={panel.alt} width={1024} height={768} loading={pageIndex === 0 ? "eager" : "lazy"} className="absolute inset-0 size-full object-cover object-right" />
                     <div className="absolute inset-0 bg-gradient-to-r from-bet-surface/90 via-bet-surface/55 to-bet-surface/5" />
                     <div className="relative z-10 flex h-full flex-col justify-center px-5 py-4 sm:px-10 sm:py-6">
