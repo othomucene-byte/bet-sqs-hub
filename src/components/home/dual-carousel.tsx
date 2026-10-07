@@ -6,6 +6,7 @@ import exchangeImage from "@/assets/home/exchange.jpg";
 import gamesImage from "@/assets/home/games.jpg";
 import communityImage from "@/assets/home/community.jpg";
 import accountImage from "@/assets/home/account.jpg";
+import promotionsImage from "@/assets/home/promotions.jpg";
 import { Button } from "@/components/ui/button";
 
 const panels = [
@@ -15,8 +16,9 @@ const panels = [
   { eyebrow: "Jogos Betfcom", title: "ENTRE NO", highlight: "JOGO", description: "Aviator. Fish. Roda da Betfcom. +18.", action: "Ver jogos", href: "/jogos", image: gamesImage, alt: "Avião vermelho ilustrativo sobre o mar", tone: "destructive" },
   { eyebrow: "Afiliados Betfcom", title: "PARTILHE A", highlight: "BETFCOM", description: "O seu link. A sua comunidade.", action: "Ver programa", href: "/afiliados", image: communityImage, alt: "Três cadeiras verdes à volta de uma mesa", tone: "primary" },
   { eyebrow: "A sua conta", title: "FAÇA PARTE DA", highlight: "BETFCOM", description: "Conta pessoal. Identidade verificada.", action: "Criar conta", href: "/auth", image: accountImage, alt: "Cadeado metálico e chave de vidro verde", tone: "primary" },
+  { eyebrow: "Promoções Betfcom", title: "BÓNUS ATÉ", highlight: "+500%", description: "Boas-vindas. Apostas grátis. Flexibilidade para apostar e investir à sua maneira. +18.", action: "Ver promoções", href: "/promocoes", image: promotionsImage, alt: "Caixa de presente azul-marinho com fichas verdes e moedas douradas", tone: "primary" },
 ] as const;
-const pages = [panels.slice(0, 2), panels.slice(2, 4), panels.slice(4, 6)];
+const pages = Array.from({ length: Math.ceil(panels.length / 2) }, (_, i) => panels.slice(i * 2, i * 2 + 2));
 
 export function DualCarousel() {
   const [active, setActive] = React.useState(0);
@@ -65,11 +67,11 @@ export function DualCarousel() {
               if (!hovering.current) setPaused(false);
             }
           }}>
-          <div className="flex h-full w-[300%] transition-transform duration-700 ease-in-out motion-reduce:transition-none" style={{ transform: `translateX(-${active * (100 / pages.length)}%)` }}>
+          <div className="flex h-full transition-transform duration-700 ease-in-out motion-reduce:transition-none" style={{ transform: `translateX(-${active * (100 / pages.length)}%)`, width: `${pages.length * 100}%` }}>
             {pages.map((page, pageIndex) => (
-              <div key={pageIndex} className="grid h-full w-1/3 shrink-0 grid-cols-2 divide-x divide-border/60" aria-hidden={pageIndex !== active} inert={pageIndex !== active}>
+              <div key={pageIndex} className="grid h-full shrink-0 grid-cols-2 divide-x divide-border/60" style={{ width: `${100 / pages.length}%` }} aria-hidden={pageIndex !== active} inert={pageIndex !== active}>
                 {page.map((panel) => (
-                  <article key={panel.href} className="relative h-full min-w-0 overflow-hidden">
+                  <article key={panel.href} className={`relative h-full min-w-0 overflow-hidden ${page.length === 1 ? "col-span-2" : ""}`}>
                     <img src={panel.image} alt={panel.alt} width={1024} height={768} loading={pageIndex === 0 ? "eager" : "lazy"} className="absolute inset-0 size-full object-cover object-right" />
                     <div className="absolute inset-0 bg-gradient-to-r from-bet-surface/90 via-bet-surface/55 to-bet-surface/5" />
                     <div className="relative z-10 flex h-full flex-col justify-center px-5 py-4 sm:px-10 sm:py-6">
