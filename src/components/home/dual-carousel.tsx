@@ -6,6 +6,7 @@ import exchangeImage from "@/assets/home/exchange.jpg";
 import gamesImage from "@/assets/home/games.jpg";
 import communityImage from "@/assets/home/community.jpg";
 import accountImage from "@/assets/home/account.jpg";
+import promotionsImage from "@/assets/home/promotions.jpg";
 import { Button } from "@/components/ui/button";
 
 const panels = [
@@ -15,8 +16,9 @@ const panels = [
   { eyebrow: "Jogos Betfcom", title: "ENTRE NO", highlight: "JOGO", description: "Aviator. Fish. Roda da Betfcom. +18.", action: "Ver jogos", href: "/jogos", image: gamesImage, alt: "Avião vermelho ilustrativo sobre o mar", tone: "destructive" },
   { eyebrow: "Afiliados Betfcom", title: "PARTILHE A", highlight: "BETFCOM", description: "O seu link. A sua comunidade.", action: "Ver programa", href: "/afiliados", image: communityImage, alt: "Três cadeiras verdes à volta de uma mesa", tone: "primary" },
   { eyebrow: "A sua conta", title: "FAÇA PARTE DA", highlight: "BETFCOM", description: "Conta pessoal. Identidade verificada.", action: "Criar conta", href: "/auth", image: accountImage, alt: "Cadeado metálico e chave de vidro verde", tone: "primary" },
+  { eyebrow: "Promoções Betfcom", title: "BÓNUS ATÉ", highlight: "+500%", description: "Boas-vindas. Apostas grátis. Flexibilidade para apostar e investir à sua maneira. +18.", action: "Ver promoções", href: "/promocoes", image: promotionsImage, alt: "Caixa de presente azul-marinho com fichas verdes e moedas douradas", tone: "primary" },
 ] as const;
-const pages = [panels.slice(0, 2), panels.slice(2, 4), panels.slice(4, 6)];
+const pages = Array.from({ length: Math.ceil(panels.length / 2) }, (_, i) => panels.slice(i * 2, i * 2 + 2));
 
 export function DualCarousel() {
   const [active, setActive] = React.useState(0);
