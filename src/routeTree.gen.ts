@@ -35,6 +35,7 @@ import { Route as AuthenticatedNavigatorRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as AuthenticatedRodaRouteImport } from './routes/_authenticated/roda'
+import { Route as AuthenticatedTradeRouteImport } from './routes/_authenticated/trade'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ExchangeIndexRouteImport } from './routes/exchange.index'
 import { Route as OauthAutorizarRouteImport } from './routes/oauth.autorizar'
@@ -210,6 +211,11 @@ const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
 const AuthenticatedRodaRoute = AuthenticatedRodaRouteImport.update({
   id: '/roda',
   path: '/roda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTradeRoute = AuthenticatedTradeRouteImport.update({
+  id: '/trade',
+  path: '/trade',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -495,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
+  '/trade': typeof AuthenticatedTradeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
@@ -568,6 +575,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/roda': typeof AuthenticatedRodaRoute
+  '/trade': typeof AuthenticatedTradeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
@@ -643,6 +651,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/roda': typeof AuthenticatedRodaRoute
+  '/_authenticated/trade': typeof AuthenticatedTradeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/oauth/autorizar': typeof OauthAutorizarRoute
   '/sports/live': typeof SportsLiveRoute
@@ -718,6 +727,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/roda'
+    | '/trade'
     | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
@@ -791,6 +801,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/promocoes'
     | '/roda'
+    | '/trade'
     | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
@@ -865,6 +876,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/_authenticated/roda'
+    | '/_authenticated/trade'
     | '/auth/callback'
     | '/oauth/autorizar'
     | '/sports/live'
@@ -1138,6 +1150,13 @@ declare module '@tanstack/react-router' {
       path: '/roda'
       fullPath: '/roda'
       preLoaderRoute: typeof AuthenticatedRodaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/trade': {
+      id: '/_authenticated/trade'
+      path: '/trade'
+      fullPath: '/trade'
+      preLoaderRoute: typeof AuthenticatedTradeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/auth/callback': {
@@ -1494,6 +1513,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
   AuthenticatedRodaRoute: typeof AuthenticatedRodaRoute
+  AuthenticatedTradeRoute: typeof AuthenticatedTradeRoute
   AuthenticatedAdminAfiliadosRoute: typeof AuthenticatedAdminAfiliadosRoute
   AuthenticatedExchangeHistoryRoute: typeof AuthenticatedExchangeHistoryRoute
   AuthenticatedExchangeListarRoute: typeof AuthenticatedExchangeListarRoute
@@ -1524,6 +1544,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
   AuthenticatedRodaRoute: AuthenticatedRodaRoute,
+  AuthenticatedTradeRoute: AuthenticatedTradeRoute,
   AuthenticatedAdminAfiliadosRoute: AuthenticatedAdminAfiliadosRoute,
   AuthenticatedExchangeHistoryRoute: AuthenticatedExchangeHistoryRoute,
   AuthenticatedExchangeListarRoute: AuthenticatedExchangeListarRoute,

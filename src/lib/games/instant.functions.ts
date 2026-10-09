@@ -10,7 +10,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const INSTANT_GAMES = ["wheel", "chicken", "lion"] as const;
+export const INSTANT_GAMES = ["wheel", "chicken", "lion", "trade"] as const;
 export type InstantGame = (typeof INSTANT_GAMES)[number];
 
 export const INSTANT_LIMITS = { minBet: 3, maxBet: 25_000, rtp: 0.97 } as const;
@@ -114,6 +114,8 @@ const startInput = z.object({
   /** Chicken: 2 a 5 portas. Leão: 1 a 10 armadilhas. */
   doors: z.number().int().min(2).max(5).optional(),
   traps: z.number().int().min(1).max(10).optional(),
+  /** Trade: 1 = sobe, -1 = desce. */
+  dir: z.union([z.literal(1), z.literal(-1)]).optional(),
 });
 
 /** Abre a jogada: sela o resultado e debita a aposta. */
@@ -126,6 +128,7 @@ export const startInstantRound = createServerFn({ method: "POST" })
     const config: Record<string, number> = {};
     if (data.game === "chicken") config["doors"] = data.doors ?? 3;
     if (data.game === "lion") config["traps"] = data.traps ?? 3;
+    if (data.game === "trade") config["dir"] = data.dir ?? 1;
 
     const { data: round, error } = await supabaseAdmin.rpc("instant_start", {
       _user_id: context.userId,

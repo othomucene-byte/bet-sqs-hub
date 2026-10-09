@@ -101,7 +101,7 @@ function ChickenPage() {
                   sub={`${NUM.format(Number(game.stake) || 0)} MZN`}
                   tone={ACCENT}
                   disabled={game.busy}
-                  onClick={game.start}
+                  onClick={() => game.start()}
                 />
               }
             />

@@ -68,7 +68,7 @@ function WheelPage() {
               sub={`${NUM.format(Number(game.stake) || 0)} MZN`}
               tone={ACCENT}
               disabled={spinning || game.busy}
-              onClick={game.start}
+              onClick={() => game.start()}
             />
           }
         />
