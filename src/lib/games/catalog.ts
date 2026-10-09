@@ -90,4 +90,13 @@ export const gameCatalog: GameCard[] = [
     character: lionHero,
     accent: "#ffab00",
   },
+  {
+    slug: "trade",
+    href: "/trade",
+    name: "SQs Trade",
+    studio: "Betfcom SQs",
+    kind: "Instantâneo",
+    background: wheelBg,
+    accent: "#3ba4ff",
+  },
 ];

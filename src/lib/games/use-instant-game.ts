@@ -62,7 +62,7 @@ export function useInstantGame(game: InstantGame) {
   };
 
   const startMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (dir?: 1 | -1) => {
       const source = funding.resolve(1);
       const amount = Number(stake);
       return submitStart({
@@ -73,6 +73,7 @@ export function useInstantGame(game: InstantGame) {
           freeBetId: source.freeBetId,
           ...(game === "chicken" ? { doors: difficulty } : {}),
           ...(game === "lion" ? { traps: difficulty } : {}),
+          ...(game === "trade" ? { dir: dir ?? 1 } : {}),
         },
       });
     },
@@ -133,7 +134,7 @@ export function useInstantGame(game: InstantGame) {
     setDifficulty,
     lastResult,
     funding,
-    start: () => startMutation.mutate(),
+    start: (dir?: 1 | -1) => startMutation.mutate(dir),
     pick: (index: number) => pickMutation.mutate(index),
     cashout: () => cashoutMutation.mutate(),
   };
