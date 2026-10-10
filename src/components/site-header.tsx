@@ -56,6 +56,7 @@ const publicGroups: NavGroup[] = [
     title: "Apostas",
     links: [
       { href: "/jogos", label: "Jogos", icon: Gamepad2 },
+      { href: "/trade", label: "SQs Trade", icon: LineChart },
       { href: "/sports", label: "Jogos em direto", icon: Radio },
       { href: "/desportos", label: "Desportos", icon: Trophy },
     ],
@@ -95,6 +96,7 @@ const memberGroups: NavGroup[] = [
     title: "Apostas",
     links: [
       { href: "/jogos", label: "Jogos", icon: Gamepad2 },
+      { href: "/trade", label: "SQs Trade", icon: LineChart },
       { href: "/sports", label: "Jogos em direto", icon: Radio },
       { href: "/desportos", label: "Desportos", icon: Trophy },
       { href: "/bilhetes", label: "Os meus bilhetes", icon: Ticket },
