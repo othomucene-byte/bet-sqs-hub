@@ -1,5 +1,9 @@
 # Roadmap
 
+## Gráfico SQs Trade
+- [x] Organizar o gráfico com velas e níveis legíveis, sem alterar a lógica das jogadas.
+- [x] Verificar apresentação e carregamento sem fazer apostas reais.
+
 ## Aviator 3D
 - [ ] Isolar o cenário 3D do Aviator, preservando rondas, apostas e pagamentos existentes.
 - [ ] Validar carregamento, movimento e dimensões em computador e telemóvel.

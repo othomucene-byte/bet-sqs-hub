@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
+import { TradeChart, type TradeMark } from "@/components/games/trade-chart";
 import { InstantShell, StakeBar } from "@/components/games/instant-shell";
 import { useInstantGame } from "@/lib/games/use-instant-game";
 
@@ -23,131 +24,13 @@ export const Route = createFileRoute("/_authenticated/trade")({
 });
 
 const ACCENT = "#3ba4ff";
-const DURATION_MS = 5000;
 const NUM = new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-type Mark = { x: number; y: number; win: boolean; amount: number };
-
-/** Gráfico ilustrativo do jogo: não é cotação real de mercado. */
-function TradeChart({
-  running,
-  finalUp,
-  onDone,
-  marks,
-}: {
-  running: number;
-  finalUp: boolean | null;
-  onDone: () => void;
-  marks: Mark[];
-}) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const points = useRef<number[]>(Array.from({ length: 120 }, (_, i) => 50 + Math.sin(i / 7) * 8));
-  const doneRef = useRef(onDone);
-  doneRef.current = onDone;
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let raf = 0;
-    let last = 0;
-    const start = performance.now();
-    const entry = points.current[points.current.length - 1] ?? 50;
-    let finished = false;
-
-    const draw = (now: number) => {
-      const w = (canvas.width = canvas.clientWidth * 2);
-      const h = (canvas.height = canvas.clientHeight * 2);
-      if (now - last > 120) {
-        last = now;
-        const arr = points.current;
-        const prev = arr[arr.length - 1] ?? 50;
-        let next = prev + (Math.random() - 0.5) * 4;
-        if (running && finalUp !== null) {
-          const t = Math.min(1, (now - start) / DURATION_MS);
-          const target = entry + (finalUp ? 12 : -12);
-          next = next + (target - next) * t * 0.35;
-        }
-        arr.push(Math.max(8, Math.min(92, next)));
-        if (arr.length > 120) arr.shift();
-      }
-      const arr = points.current;
-      const step = w / (arr.length - 1);
-      ctx.clearRect(0, 0, w, h);
-      ctx.strokeStyle = "rgba(255,255,255,.06)";
-      for (let i = 1; i < 5; i += 1) {
-        ctx.beginPath();
-        ctx.moveTo(0, (h * i) / 5);
-        ctx.lineTo(w, (h * i) / 5);
-        ctx.stroke();
-      }
-      const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "rgba(59,164,255,.55)");
-      grad.addColorStop(1, "rgba(59,164,255,0)");
-      ctx.beginPath();
-      arr.forEach((v, i) => {
-        const y = h - (v / 100) * h;
-        if (i === 0) ctx.moveTo(0, y);
-        else ctx.lineTo(i * step, y);
-      });
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = ACCENT;
-      ctx.stroke();
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      if (running) {
-        const ey = h - (entry / 100) * h;
-        ctx.setLineDash([8, 8]);
-        ctx.strokeStyle = "rgba(255,255,255,.5)";
-        ctx.beginPath();
-        ctx.moveTo(0, ey);
-        ctx.lineTo(w, ey);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-      const lastV = arr[arr.length - 1] ?? 50;
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(w - 4, h - (lastV / 100) * h, 7, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (running && !finished && now - start >= DURATION_MS) {
-        finished = true;
-        doneRef.current();
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  }, [running, finalUp]);
-
-  return (
-    <div className="relative h-72 w-full">
-      <canvas ref={ref} className="h-full w-full" />
-      {marks.map((m, i) => (
-        <span
-          key={i}
-          className={`absolute -translate-x-1/2 rounded-md px-2 py-1 text-sm font-black ${
-            m.win ? "bg-fish-green text-fish-bg" : "bg-fish-red text-bet-foreground"
-          }`}
-          style={{ left: `${m.x}%`, top: `${m.y}%` }}
-        >
-          {m.win ? "+" : "-"}
-          {NUM.format(m.amount)} MT
-        </span>
-      ))}
-    </div>
-  );
-}
 
 function TradePage() {
   const game = useInstantGame("trade");
   const [running, setRunning] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
-  const [marks, setMarks] = useState<Mark[]>([]);
+  const [marks, setMarks] = useState<TradeMark[]>([]);
   const [shown, setShown] = useState<{ win: boolean; payout: number; stake: number } | null>(null);
   const result = game.lastResult;
 
@@ -204,9 +87,9 @@ function TradePage() {
         />
       }
     >
-      <div className="overflow-hidden rounded-2xl border border-fish-line/70 bg-fish-panel/80">
-        <div className="flex items-center justify-between border-b border-fish-line/70 px-4 py-2">
-          <p className="font-display font-bold">Índice SQs</p>
+      <div className="overflow-hidden rounded-lg border border-bet-line bg-bet-surface">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-bet-line px-4 py-3">
+          <div><p className="font-display text-sm font-bold">Índice SQs <span className="ml-2 text-[10px] font-normal text-bet-muted">ILUSTRATIVO</span></p><p className="mt-1 text-[10px] text-bet-muted">Velas · Escala do jogo</p></div>
           <p className="text-xs text-fish-muted">Prémio 1,94x · 5 s</p>
         </div>
         <TradeChart
