@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import {
   Gift,
   Banknote,
   Bell,
   Building2,
   ChevronDown,
+  ChevronRight,
+  ArrowUpRight,
   Code2,
   CreditCard,
   Gamepad2,
@@ -135,6 +137,7 @@ export function SiteHeader() {
   const [signedIn, setSignedIn] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   useEffect(() => {
     let active = true;
@@ -192,33 +195,22 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
-        {signedIn ? (
-          <>
-            <div className="sm:hidden">
-              <BrandLogo compact />
-            </div>
-            <div className="hidden sm:block">
-              <BrandLogo />
-            </div>
-          </>
-        ) : (
-          <BrandLogo />
-        )}
+      <div className="mx-auto grid min-h-18 w-full max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:flex sm:justify-between sm:px-6">
+        <div className="min-w-0"><BrandLogo /></div>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden min-w-0 items-center gap-1 xl:flex">
           {desktopLinks.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-md px-2.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {l.label}
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-2">
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
@@ -227,24 +219,24 @@ export function SiteHeader() {
             <>
               <Button
                 asChild
-                className="h-9 bg-bet-green px-3 text-sm font-bold uppercase tracking-wide text-bet-green-foreground hover:bg-bet-green/90 sm:px-4"
+                className="h-10 rounded-md px-3 text-xs font-semibold shadow-none sm:px-4 sm:text-sm"
               >
-                <a href="/pagamentos">Depósito</a>
+                <a href="/pagamentos"><ArrowUpRight className="hidden sm:block" />Depósito</a>
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
                     aria-label="Saldo e conta"
-                    className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary px-2.5 text-foreground transition-colors hover:bg-secondary/70"
+                    className="hidden h-10 items-center gap-2 rounded-md border border-border px-3 shadow-none sm:inline-flex"
                   >
                     <Banknote className="size-4 shrink-0 text-muted-foreground" />
                     <span className="font-display text-sm font-bold tabular-nums">
                       {bettingLabel}
                     </span>
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-72">
                   <div className="space-y-2 px-2 py-2">
@@ -302,31 +294,34 @@ export function SiteHeader() {
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-9 lg:hidden" aria-label="Abrir menu">
-                <Menu className="size-6" />
+              <Button variant="ghost" size="icon" className="size-10 rounded-md border border-border bg-card" aria-label="Abrir menu">
+                <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[19rem] gap-0 overflow-y-auto p-0">
-              <SheetTitle className="sr-only">Menu</SheetTitle>
+            <SheetContent side="right" aria-describedby={undefined} className="flex w-[min(22rem,calc(100vw-2rem))] max-w-none flex-col gap-0 overflow-hidden bg-sidebar p-0 text-sidebar-foreground sm:max-w-none">
+              <div className="shrink-0 border-b border-sidebar-border px-5 py-5 pr-12">
+                <SheetTitle className="sr-only">Menu Betfcom SQs</SheetTitle>
+                <BrandLogo />
+              </div>
 
-              <div className="space-y-3 border-b border-border/60 p-4 pt-12">
+              <div className="shrink-0 space-y-4 border-b border-sidebar-border px-5 py-4">
                 {signedIn ? (
                   <>
-                    <div className="rounded-xl border border-border bg-secondary/60 p-3">
+                    <div className="space-y-1">
                       <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                         Saldo de apostas
                       </p>
-                      <p className="font-display text-2xl font-bold tabular-nums">{bettingLabel}</p>
+                      <p className="font-display text-2xl font-semibold tabular-nums">{bettingLabel}</p>
                       {email && (
                         <p className="mt-1 truncate text-xs text-muted-foreground">{email}</p>
                       )}
                     </div>
                     <Button
                       asChild
-                      className="h-11 w-full bg-bet-green text-base font-bold uppercase tracking-wide text-bet-green-foreground hover:bg-bet-green/90"
+                      className="h-11 w-full justify-between rounded-md text-sm font-semibold shadow-none"
                     >
                       <a href="/pagamentos" onClick={() => setOpen(false)}>
-                        Depósito
+                        Depósito <ArrowUpRight className="size-4" />
                       </a>
                     </Button>
                   </>
@@ -346,25 +341,25 @@ export function SiteHeader() {
                 )}
               </div>
 
-              <nav className="p-3">
+              <nav aria-label="Navegação principal" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2">
                 {groups.map((group) => (
-                  <div key={group.title} className="mb-2">
-                    <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div key={group.title} className="border-b border-sidebar-border py-3 last:border-0">
+                    <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                       {group.title}
                     </p>
                     {group.links.map((l) => {
                       const Icon = l.icon;
                       const active =
-                        typeof window !== "undefined" && window.location.pathname === l.href;
+                        pathname === l.href;
                       return (
                         <a
                           key={`${group.title}-${l.href}`}
                           href={l.href}
                           onClick={() => setOpen(false)}
-                          className={`flex h-12 items-center gap-3 rounded-xl px-3 text-[15px] transition-colors ${
+                          className={`group flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                             active
-                              ? "bg-primary/15 font-semibold text-foreground"
-                              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                              ? "bg-sidebar-accent font-semibold text-sidebar-primary"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                           }`}
                         >
                           <Icon className="size-5 shrink-0" />
@@ -375,17 +370,17 @@ export function SiteHeader() {
                   </div>
                 ))}
 
-                <div className="flex h-12 items-center justify-between rounded-xl px-3">
-                  <span className="text-[15px] text-muted-foreground">Tema</span>
+                <div className="flex h-12 items-center justify-between px-3">
+                  <span className="text-sm text-muted-foreground">Tema</span>
                   <ThemeToggle />
                 </div>
               </nav>
 
               {signedIn && (
-                <div className="border-t border-border/60 p-3">
+                <div className="shrink-0 border-t border-sidebar-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                   <Button
                     variant="outline"
-                    className="h-11 w-full justify-start gap-3 text-[15px]"
+                    className="h-10 w-full justify-start gap-3 rounded-md text-sm shadow-none"
                     onClick={() => void signOut()}
                   >
                     <LogOut className="size-5" /> Terminar sessão
@@ -402,7 +397,7 @@ export function SiteHeader() {
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
       <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
