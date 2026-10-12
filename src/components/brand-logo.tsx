@@ -1,14 +1,13 @@
 import { Link } from "@tanstack/react-router";
+import brandAsset from "@/assets/betfcom-brand.jpeg.asset.json";
 
 export function BrandLogo({ compact = false }: { compact?: boolean }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5" aria-label="Betfcom SQs — início">
-      <span className="bg-brand-gradient flex size-9 items-center justify-center rounded-xl font-display text-sm font-bold text-primary-foreground shadow-glow">
-        SQ
-      </span>
+    <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="Betfcom SQs — início">
+      <img src={brandAsset.url} alt="" className="size-10 shrink-0 rounded-lg object-cover sm:size-11" />
       {!compact && (
-        <span className="font-display text-base font-semibold tracking-tight">
-          Betfcom <span className="text-brand-gradient">SQs</span>
+        <span className="min-w-0 font-display text-sm font-semibold leading-tight sm:text-base">
+          Betfcom <span className="block text-[11px] font-medium text-primary sm:text-xs">SQs</span>
         </span>
       )}
     </Link>

@@ -1,5 +1,9 @@
 # Roadmap
 
+## Menu e cabeçalho
+- [x] Refinar a barra superior e o menu com o logótipo enviado, preservando os links e as operações existentes.
+- [x] Verificar abertura, fecho e disposição em ecrãs pequenos e grandes.
+
 ## Gráfico SQs Trade
 - [x] Organizar o gráfico com velas e níveis legíveis, sem alterar a lógica das jogadas.
 - [x] Verificar apresentação e carregamento sem fazer apostas reais.
