@@ -8,17 +8,19 @@ import {
   ArrowUpFromLine,
   CheckCircle2,
   CreditCard,
+  LayoutDashboard,
   Loader2,
   Lock,
-  ShieldCheck,
+  Receipt,
   Smartphone,
+  Webhook,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,49 +70,6 @@ const methodLogo: Partial<Record<NetshopMethod["id"], string>> = {
   mkesh: logoMkesh.url,
   card: logoCard.url,
 };
-
-function MethodCard({ method, configured }: { method: NetshopMethod; configured: boolean }) {
-  const Icon = kindIcon[method.kind];
-  const logo = methodLogo[method.id];
-  return (
-    <Card className="card-elevated">
-      <CardHeader className="space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          {logo ? (
-            <img
-              src={logo}
-              alt={`Logótipo ${method.name}`}
-              width={40}
-              height={40}
-              className="size-10 rounded-xl object-contain"
-            />
-          ) : (
-            <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-              <Icon className="size-5 text-primary" />
-            </div>
-          )}
-          <Badge variant={configured ? "default" : "outline"}>
-            {configured ? "Ativo" : "Não configurado"}
-          </Badge>
-        </div>
-        <CardTitle className="text-base">{method.name}</CardTitle>
-        <CardDescription>
-          {method.provider} · {method.currency}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm text-muted-foreground">
-        <p>{method.notes}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {method.directions.includes("deposit") && <Badge variant="secondary">Depósito</Badge>}
-          {method.directions.includes("withdrawal") && (
-            <Badge variant="secondary">Levantamento</Badge>
-          )}
-          <Badge variant="outline">mín. {method.minDeposit} MZN</Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 const ERROR_LABEL: Record<string, string> = {
   not_configured: "Este método não está ativo na conta do gateway.",
@@ -256,17 +215,12 @@ function TransactionForm({
   }
 
   return (
-    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+    <div className="grid min-w-0 gap-6">
       <Card className="card-elevated">
         <CardHeader>
           <CardTitle className="text-lg">
             {isDeposit ? "Novo depósito" : "Novo levantamento"}
           </CardTitle>
-          <CardDescription>
-            {isDeposit
-              ? "O valor só entra na carteira depois de o gateway confirmar o pagamento por webhook."
-              : "O valor fica reservado no ledger e só sai de vez após confirmação do payout."}
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
@@ -278,9 +232,6 @@ function TransactionForm({
             >
               <option>Betting Wallet (MZN)</option>
             </select>
-            <p className="text-xs text-muted-foreground">
-              As carteiras de apostas e de investimentos são contabilisticamente separadas.
-            </p>
           </div>
 
           <div className="grid gap-2">
@@ -312,10 +263,9 @@ function TransactionForm({
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={!configured || busy}
               />
-              <p className="text-xs text-muted-foreground">
-                Taxa para o cliente: 0 MZN
-                {isDeposit && selected ? ` · mínimo ${selected.minDeposit} MZN` : ""}.
-              </p>
+              {isDeposit && selected ? (
+                <p className="text-xs text-muted-foreground">Mín. {selected.minDeposit} MZN</p>
+              ) : null}
             </div>
             <div className="grid gap-2">
               <Label htmlFor={`${direction}-identifier`}>
@@ -366,40 +316,6 @@ function TransactionForm({
           )}
         </CardContent>
       </Card>
-
-      <Card className="card-elevated">
-        <CardHeader>
-          <CardTitle className="text-lg">Fluxo validado no servidor</CardTitle>
-          <CardDescription>Ordem obrigatória de eventos para cada movimento.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ol className="space-y-4 text-sm">
-            {(isDeposit
-              ? [
-                  "Pedido de depósito criado no backend com valor, carteira e método.",
-                  "Netshop inicia a cobrança (USSD push ou checkout alojado).",
-                  "Webhook assinado confirma o pagamento; a assinatura HMAC é verificada.",
-                  "Ledger recebe a entrada com referência única (idempotente).",
-                  "O saldo é atualizado no servidor — nunca pelo browser.",
-                ]
-              : [
-                  "Pedido de levantamento validado no servidor (saldo suficiente).",
-                  "Fundos reservados no ledger (hold) — saldo disponível reduzido.",
-                  "Netshop executa o payout para a carteira móvel do titular.",
-                  "Webhook confirma a execução e fecha a intenção.",
-                  "Em falha, o valor reservado é reembolsado automaticamente.",
-                ]
-            ).map((step, i) => (
-              <li key={step} className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {i + 1}
-                </span>
-                <span className="text-muted-foreground">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -411,52 +327,95 @@ function PagamentosPage() {
     queryFn: () => fetchStatus(),
     staleTime: 60_000,
   });
-  const configured = status?.configured ?? false;
   const methodStatus: Partial<Record<NetshopMethod["id"], boolean>> = status?.methods ?? {};
-  const activeCount = Object.values(methodStatus).filter(Boolean).length;
 
   return (
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl px-4 py-12">
-        <header className="max-w-3xl space-y-4">
-          <Badge variant="outline" className="gap-1.5">
-            <ShieldCheck className="size-3.5" />
-            Netshop:{" "}
-            {configured
-              ? `${activeCount} wallet(s) ativa(s)${status?.gatewayOnline ? ", gateway online" : ", gateway sem resposta"}`
-              : "A configurar"}
-          </Badge>
+        <header className="space-y-2">
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            Gateways de pagamento
+            Pagamentos
           </h1>
-          <p className="text-muted-foreground">
-            Depósitos e levantamentos em meticais (MZN) com M-Pesa, e-Mola, mKesh e cartão
-            Visa/Mastercard. Sem taxas para o cliente — o saldo só muda após confirmação assinada
-            pelo gateway ou reconciliação direta. e-Mola é processado pela PayTED; M-Pesa, mKesh e
-            cartão pela NetShop.
-          </p>
+          <p className="text-muted-foreground">Depósitos e levantamentos em meticais (MZN).</p>
         </header>
 
-        <section className="mt-12">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight">
-            Métodos de pagamento
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Métodos disponíveis para Moçambique, em meticais (MZN).
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {NETSHOP_METHODS.map((m) => (
-              <MethodCard key={m.id} method={m} configured={Boolean(methodStatus[m.id])} />
-            ))}
+        <section className="mt-10 overflow-hidden rounded-3xl border border-border bg-bet-surface p-6 sm:p-8">
+          <div className="flex flex-col items-center gap-5 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-2 text-sm font-medium">
+              <Smartphone className="size-4 text-primary" />
+              O cliente paga por telemóvel ou cartão
+            </div>
+
+            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
+              {NETSHOP_METHODS.map((m) => {
+                const active = Boolean(methodStatus[m.id]);
+                const Icon = kindIcon[m.kind];
+                const logo = methodLogo[m.id];
+                return (
+                  <div
+                    key={m.id}
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-4"
+                  >
+                    {logo ? (
+                      <img src={logo} alt={m.name} className="size-10 rounded-xl object-contain" />
+                    ) : (
+                      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+                        <Icon className="size-5 text-primary" />
+                      </div>
+                    )}
+                    <span className="text-sm font-medium">{m.name}</span>
+                    <Badge variant={active ? "default" : "outline"}>
+                      {active ? "Ativo" : "Não configurado"}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="h-6 w-px bg-border" aria-hidden="true" />
+
+            <div className="card-elevated flex w-full max-w-md flex-col items-center gap-2 rounded-2xl border border-primary/30 bg-background p-5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-5 text-primary" />
+                <span className="font-heading text-lg font-semibold">NetShop</span>
+                <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Confirma com a operadora · Checkout e API
+              </p>
+              <Badge variant="secondary" className="gap-1.5">
+                <Receipt className="size-3.5" />
+                Recibo para o cliente
+              </Badge>
+            </div>
+
+            <div className="w-full max-w-3xl">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Na plataforma
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Webhook, title: "Sistema", text: "Webhook assinado" },
+                  { icon: ArrowUpFromLine, title: "Payout", text: "Envio automático" },
+                  { icon: LayoutDashboard, title: "Painel", text: "Extratos e reconciliação" },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-background p-4"
+                  >
+                    <item.icon className="size-5 text-primary" />
+                    <span className="text-sm font-semibold">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight">
-            Depósitos e levantamentos
-          </h2>
-          <Tabs defaultValue="deposit" className="mt-6">
+        <section className="mt-10">
+          <Tabs defaultValue="deposit">
             <TabsList>
               <TabsTrigger value="deposit" className="gap-1.5">
                 <ArrowDownToLine className="size-4" />
@@ -476,39 +435,6 @@ function PagamentosPage() {
           </Tabs>
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight">
-            Regras de segurança da integração
-          </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {[
-              {
-                title: "Credenciais só no servidor",
-                text: "Wallet ID e API key nunca chegam ao browser; as chamadas partem de server functions.",
-              },
-              {
-                title: "Webhook com assinatura verificada",
-                text: "Confirmações são aceites apenas com HMAC-SHA256 válido e comparação em tempo constante.",
-              },
-              {
-                title: "Idempotência por referência",
-                text: "Cada movimento tem referência única; webhooks repetidos não duplicam saldo.",
-              },
-              {
-                title: "Ledger imutável",
-                text: "Nenhuma linha é editada nem apagada — correções entram como novos movimentos.",
-              },
-            ].map((item) => (
-              <Card key={item.title} className="card-elevated">
-                <CardHeader className="space-y-2">
-                  <ShieldCheck className="size-5 text-primary" />
-                  <CardTitle className="text-base">{item.title}</CardTitle>
-                  <CardDescription>{item.text}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
       </main>
       <SiteFooter />
     </>
